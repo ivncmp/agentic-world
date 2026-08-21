@@ -1,0 +1,34 @@
+{
+  "name": "agentic-world",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json && mkdir -p dist/persistence/migrations && cp src/persistence/migrations/*.sql dist/persistence/migrations/",
+    "test": "vitest run",
+    "check": "tsc --noEmit && vitest run",
+    "soak": "tsc -p tsconfig.json && node dist/dev/soak.js",
+    "watch": "tsc -p tsconfig.json && node dist/dev/watch.js",
+    "diary": "tsc -p tsconfig.json && node dist/dev/diary.js",
+    "viewer": "vite",
+    "viewer:build": "vite build"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/pg": "^8.23.1",
+    "@types/three": "^0.185.4",
+    "@types/ws": "^8.18.1",
+    "phaser": "^4.2.1",
+    "three": "^0.185.1",
+    "typescript": "^5.9.0",
+    "vite": "8.2.1",
+    "vitest": "^3.0.0"
+  },
+  "dependencies": {
+    "pg": "^8.23.0",
+    "ws": "^8.21.3"
+  }
+}

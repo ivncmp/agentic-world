@@ -1,0 +1,26 @@
+{
+  "frame": 80,
+  "cols": 8,
+  "rows": 32,
+  "dirs": 8,
+  "anims": [
+    {
+      "name": "idle",
+      "frames": 4
+    },
+    {
+      "name": "walk",
+      "frames": 8
+    },
+    {
+      "name": "sit",
+      "frames": 2
+    },
+    {
+      "name": "talk",
+      "frames": 4
+    }
+  ],
+  "originY": 0.7514267301309672,
+  "extent": 0.62
+}

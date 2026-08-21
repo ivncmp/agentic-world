@@ -1,0 +1,121 @@
+# agentic-world — runtime for the simulation.
+#
+# Scope rule: this file contains ONLY what the product needs to run.
+# Deliberately NOT here:
+#   dproxy   — shells out to the `claude` CLI and needs the subscriber's OAuth
+#              credentials. Reached over the network via DPROXY_URL instead.
+#   dcontext — installs hooks into ~/.claude/settings.json on a workstation.
+#              Nothing to hook into inside a container.
+#   dwork    — tracks this project; is not part of it.
+#
+# Copy .env.example to .env before the first `docker compose up`.
+
+name: agentic-world
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: aw-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-aw}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-agentic_world}
+    ports:
+      # Non-default host port, to avoid colliding with any local Postgres.
+      - "${POSTGRES_PORT:-5532}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-aw} -d ${POSTGRES_DB:-agentic_world}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  dbrain:
+    build:
+      context: ./infra/dbrain
+      args:
+        DBRAIN_VERSION: ${DBRAIN_VERSION:-1.0.1}
+    container_name: aw-dbrain
+    restart: unless-stopped
+    ports:
+      # Non-default host ports, to avoid colliding with a workstation dbrain.
+      # This is a dedicated, clean brain for the simulation — never share it.
+      - "${DBRAIN_PORT:-7978}:7878"
+      - "${DBRAIN_DASHBOARD_PORT:-7979}:7879"
+    volumes:
+      - dbraindata:/data
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:7878/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  # Browse and query the world database from a browser. Development only:
+  # it connects with the app's own credentials and asks for no login, so it is
+  # bound to 127.0.0.1 and must never be exposed on a shared interface.
+  pgweb:
+    image: sosedoff/pgweb:latest
+    container_name: aw-pgweb
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      PGWEB_DATABASE_URL: postgres://${POSTGRES_USER:-aw}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@postgres:5432/${POSTGRES_DB:-agentic_world}?sslmode=disable
+    ports:
+      - "127.0.0.1:${PGWEB_PORT:-8082}:8081"
+
+  # The world itself: ticks on its own clock, persists as it goes, and
+  # broadcasts state. Cognition runs beside the loop, never inside it, so a
+  # 40-second scene never stops the world for everyone else.
+  engine:
+    build:
+      context: .
+      dockerfile: infra/engine/Dockerfile
+    container_name: aw-engine
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      dbrain:
+        condition: service_healthy
+    environment:
+      TICK_MS: ${TICK_MS:-2000}
+      SEED: ${SEED:-42}
+      LLM: ${LLM:-1}
+      PERSIST: "1"
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER:-aw}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+      POSTGRES_DB: ${POSTGRES_DB:-agentic_world}
+      DBRAIN_URL: http://dbrain:7878
+      DBRAIN_TOKEN: ${DBRAIN_TOKEN:-}
+      # dproxy lives on the host, not in here — it shells out to the Claude CLI
+      # and needs the subscriber's own credentials.
+      DPROXY_URL: ${DPROXY_URL:-http://host.docker.internal:7880}
+      DPROXY_API_KEY: ${DPROXY_API_KEY:-}
+    ports:
+      - "${ENGINE_PORT:-7070}:7070"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # The isometric viewer. nginx serves the built bundle and proxies /world,
+  # /agent, /state and the /live WebSocket to the engine, so the browser talks
+  # to a single origin and the engine's address never reaches the client.
+  viewer:
+    build:
+      context: .
+      dockerfile: infra/viewer/Dockerfile
+    container_name: aw-viewer
+    restart: unless-stopped
+    depends_on: [engine]
+    ports:
+      - "${VIEWER_PORT:-8080}:80"
+
+volumes:
+  pgdata:
+  dbraindata:

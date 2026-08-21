@@ -1,0 +1,21 @@
+# secrets
+.env
+
+# deps & build
+node_modules/
+dist/
+
+# OS / editor
+.DS_Store
+*.log
+
+# Claude Code local settings
+.claude/settings.local.json
+
+# dev artefacts
+src/dev/executions/
+__trash/
+preview/
+
+# 3D model binaries (Kenney CC0 — re-download from kenney.nl)
+tools/render-characters/models/*.glb

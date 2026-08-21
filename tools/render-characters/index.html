@@ -1,0 +1,182 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>character baker</title>
+<style>
+  body { background:#11151d; color:#dbe4f0; font:13px/1.6 ui-sans-serif, system-ui, sans-serif; margin:0; padding:20px }
+  #log { white-space:pre-wrap; font-family:ui-monospace, monospace; font-size:12px }
+  canvas.preview { image-rendering:pixelated; background:#1b2130; border:1px solid #2b3a52; margin:6px 6px 0 0 }
+  h1 { font-size:15px; margin:0 0 12px }
+</style>
+<h1>character baker</h1>
+<div id="log">starting…</div>
+<div id="previews"></div>
+
+<script type="importmap">
+{ "imports": { "three": "/three/build/three.module.js", "three/addons/": "/three/examples/jsm/" } }
+</script>
+
+<script type="module">
+import * as THREE from 'three'
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
+
+/**
+ * The projection has to be the tiles' projection or the people will not stand
+ * in the streets: azimuth 45°, and an elevation whose sine is exactly 0.5, so
+ * a unit square's top face lands twice as wide as it is tall.
+ */
+const AZIMUTH = Math.PI / 4
+const ELEVATION = Math.asin(0.5)
+
+const FRAME = 80
+const DIRS = 8
+
+/** Clip name -> how many frames to sample. Order defines the sheet's rows. */
+const ANIMS = [
+  { name: 'idle', frames: 4 },
+  { name: 'walk', frames: 8 },
+  { name: 'sit', frames: 2 },
+  { name: 'emote-yes', frames: 4, as: 'talk' },
+]
+const COLS = Math.max(...ANIMS.map((a) => a.frames))
+const ROWS = ANIMS.length * DIRS
+
+const CHARACTERS = [
+  'female-a', 'female-b', 'female-c', 'female-d', 'female-e', 'female-f',
+  'male-a', 'male-b', 'male-c', 'male-d', 'male-e', 'male-f',
+]
+
+const logEl = document.getElementById('log')
+const log = (m) => { logEl.textContent += '\n' + m; console.log(m) }
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true })
+renderer.setSize(FRAME, FRAME, false)
+renderer.setPixelRatio(1)
+renderer.setClearColor(0x000000, 0)
+renderer.outputColorSpace = THREE.SRGBColorSpace
+
+const scene = new THREE.Scene()
+// Flat-ish light, because the tiles it stands on are flat-shaded art. A strong
+// key light here makes the people look like they came from a different game.
+scene.add(new THREE.AmbientLight(0xffffff, 2.1))
+const key = new THREE.DirectionalLight(0xffffff, 1.5)
+key.position.set(-1, 2.2, 1.4)
+scene.add(key)
+
+const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.01, 100)
+
+const loader = new GLTFLoader()
+const loadGltf = (url) => new Promise((ok, err) => loader.load(url, ok, undefined, err))
+
+/**
+ * One framing for every character, not one per model.
+ *
+ * Fitting the camera to each model's own bounding box normalises them all to
+ * the same pixel height, which quietly throws away the difference between a
+ * tall character and a short one. These constants comfortably contain every
+ * model in the pack (~0.67 units tall) plus a swinging arm.
+ */
+const FRAME_CENTRE_Y = 0.36
+const FRAME_EXTENT = 0.62
+
+function setupCamera() {
+  camera.left = -FRAME_EXTENT
+  camera.right = FRAME_EXTENT
+  camera.top = FRAME_EXTENT
+  camera.bottom = -FRAME_EXTENT
+  const d = 20
+  const target = new THREE.Vector3(0, FRAME_CENTRE_Y, 0)
+  camera.position.set(
+    target.x + d * Math.cos(ELEVATION) * Math.cos(AZIMUTH),
+    target.y + d * Math.sin(ELEVATION),
+    target.z + d * Math.cos(ELEVATION) * Math.sin(AZIMUTH),
+  )
+  camera.lookAt(target)
+  camera.updateProjectionMatrix()
+}
+
+/**
+ * Where the character's feet land inside a frame, as a 0..1 fraction. The
+ * viewer needs this to stand people on the ground instead of guessing an
+ * origin — so measure it rather than eyeball it.
+ */
+function measureFootOrigin() {
+  const ndc = new THREE.Vector3(0, 0, 0).project(camera)
+  return (1 - ndc.y) / 2
+}
+
+async function bake(id) {
+  const gltf = await loadGltf(`/models/character-${id}.glb`)
+  const root = gltf.scene
+  // A pivot the animation cannot fight over: the clips move the model, so the
+  // heading has to be applied to something above them.
+  const pivot = new THREE.Group()
+  pivot.add(root)
+  scene.add(pivot)
+
+  const clips = new Map(gltf.animations.map((c) => [c.name, c]))
+  const mixer = new THREE.AnimationMixer(root)
+
+
+  const sheet = document.createElement('canvas')
+  sheet.width = COLS * FRAME
+  sheet.height = ROWS * FRAME
+  const ctx = sheet.getContext('2d')
+
+  for (let ai = 0; ai < ANIMS.length; ai++) {
+    const spec = ANIMS[ai]
+    const clip = clips.get(spec.name)
+    if (clip == null) { log(`  ${id}: no clip "${spec.name}"`); continue }
+    const action = mixer.clipAction(clip)
+    mixer.stopAllAction()
+    action.reset().play()
+
+    for (let dir = 0; dir < DIRS; dir++) {
+      pivot.rotation.y = (dir / DIRS) * Math.PI * 2
+      for (let f = 0; f < spec.frames; f++) {
+        // Sample strictly inside the clip: landing on the final key repeats
+        // frame 0 for a loop and the walk cycle stutters.
+        mixer.setTime((f / spec.frames) * clip.duration)
+        renderer.render(scene, camera)
+        const row = ai * DIRS + dir
+        ctx.drawImage(renderer.domElement, f * FRAME, row * FRAME)
+      }
+    }
+  }
+
+  scene.remove(pivot)
+
+  const meta = {
+    frame: FRAME, cols: COLS, rows: ROWS, dirs: DIRS,
+    anims: ANIMS.map((a) => ({ name: a.as ?? a.name, frames: a.frames })),
+    originY: measureFootOrigin(), extent: FRAME_EXTENT,
+  }
+  await fetch('/save', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: `character-${id}`, png: sheet.toDataURL('image/png'), meta }),
+  })
+
+  // Same scale on both axes, or the preview lies about the proportions and
+  // sends you hunting for a stretch that only exists in this canvas.
+  const shown = 2 // rows of the sheet to show
+  const scale = 0.5
+  const prev = document.createElement('canvas')
+  prev.className = 'preview'
+  prev.width = COLS * FRAME * scale
+  prev.height = FRAME * shown * scale
+  prev.getContext('2d').drawImage(
+    sheet, 0, 0, COLS * FRAME, FRAME * shown, 0, 0, prev.width, prev.height,
+  )
+  document.getElementById('previews').append(prev)
+
+  log(`  ${id}: ${sheet.width}x${sheet.height}`)
+}
+
+;(async () => {
+  setupCamera()
+  log(`baking ${CHARACTERS.length} characters, ${COLS}x${ROWS} frames of ${FRAME}px`)
+  for (const id of CHARACTERS) await bake(id)
+  log('done — sheets written to src/viewer/public/assets/characters/')
+  document.title = 'baked'
+})().catch((e) => log('FAILED: ' + e.stack))
+</script>
