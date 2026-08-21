@@ -1,0 +1,187 @@
+.dockerignore
+  s_bd786b17aefd99::t_175df8161c669f 1-5
+.env.example
+  s_bd786b17aefd99::t_e04f87fe8d5187 1-38
+.tool-versions
+  s_bd786b17aefd99::t_1765c4ad3fa783 1
+infra/dbrain/Dockerfile
+  s_bd786b17aefd99::t_c5395daf013f6f 1-26
+infra/engine/Dockerfile
+  s_bd786b17aefd99::t_9f1f6c499afa83 1-21
+package.json
+  s_fce98cc2b17265::t_5e02cb039b050e 1-34
+pnpm-lock.yaml
+  s_fce98cc2b17265::t_3950771451cf3b 1-1594
+src/agents/__tests__/values.test.ts
+  s_bd786b17aefd99::t_ccbd68d7dc4438 1-55
+src/agents/agent.ts
+  s_bd786b17aefd99::t_f6241ea6228a35 1-135
+src/agents/goals.ts
+  s_bd786b17aefd99::t_e47054d8ff8396 1-87
+src/agents/needs.ts
+  s_bd786b17aefd99::t_12b022bf8d7098 1-46
+src/agents/values.ts
+  s_bd786b17aefd99::t_ca4fc628eac787 1-71
+src/agents/vices.ts
+  s_bd786b17aefd99::t_b68cbc887a2070 1-89
+src/cognition/__tests__/reflection.test.ts
+  s_bd786b17aefd99::t_c11ba5f91aa81d 1-74
+src/cognition/provider.ts
+  s_bd786b17aefd99::t_417dd16706cc49 1-75
+src/cognition/reflection.ts
+  s_bd786b17aefd99::t_4a90a093a1d252 1-162
+src/dev/diary.ts
+  s_fce98cc2b17265::t_086977038c6ef4 1-141
+src/dev/memory-check.ts
+  s_bd786b17aefd99::t_97637e47db1502 1-36
+src/dev/persist-check.ts
+  s_fce98cc2b17265::t_e50155f5226381 1-97
+src/dev/roster.ts
+  s_bd786b17aefd99::t_e06449b40c1753 1-21
+src/dev/soak.ts
+  s_fce98cc2b17265::t_ad21b80dcbf1ac 1-115
+src/dev/watch.ts
+  s_fce98cc2b17265::t_3da517f6d50ffb 1-396
+src/engine/clock.ts
+  s_bd786b17aefd99::t_e46bbdf8897930 1-61
+src/memory/__tests__/dbrain-store.test.ts
+  s_bd786b17aefd99::t_ef597632bf2f0d 1-21
+src/memory/dbrain-store.ts
+  s_bd786b17aefd99::t_819fbb5fe1363f 1-160
+src/memory/in-memory-store.ts
+  s_bd786b17aefd99::t_bc513825496366 1-39
+src/memory/store.ts
+  s_bd786b17aefd99::t_5d0424d9bcc723 1-43
+src/persistence/db.ts
+  s_bd786b17aefd99::t_8fed8834e97902 1-45
+src/persistence/history-repo.ts
+  s_bd786b17aefd99::t_43e8975960e996 1-114
+src/persistence/job-repo.ts
+  s_bd786b17aefd99::t_761b99d45d7610 1-57
+src/persistence/migrations/001_initial.sql
+  s_bd786b17aefd99::t_420ad1d477a021 1-71
+src/persistence/migrations/002_history.sql
+  s_bd786b17aefd99::t_478d9c648529a1 1-51
+src/persistence/migrations/003_familiarity.sql
+  s_bd786b17aefd99::t_75e7c30a9bf410 1-3
+src/persistence/migrations/004_cognition_jobs.sql
+  s_bd786b17aefd99::t_82a611f5afb14c 1-12
+src/persistence/migrations/005_grievance.sql
+  s_bd786b17aefd99::t_3dbe95d45ac567 1-6
+src/persistence/world-repo.ts
+  s_bd786b17aefd99::t_0cc235cb975100 1-157
+src/replay/format.ts
+  s_bd786b17aefd99::t_f178902fc4cdbb 1-70
+src/replay/recorder.ts
+  s_fce98cc2b17265::t_8277fb5702c8d8 1-89
+src/replay/viewer-template.ts
+  s_bd786b17aefd99::t_d39fd374fc1f31 1-232
+src/server/cognition-worker.ts
+  s_bd786b17aefd99::t_df70e8836e3625 1-85
+src/viewer/main.ts
+  s_fce98cc2b17265::t_6a52c3cc4a8f3c 1-59
+src/viewer/public/assets/kenney/isometric-buildings/Donate.url
+  s_fce98cc2b17265::t_c4f0b7016912ab 1-2
+src/viewer/public/assets/kenney/isometric-buildings/Facebook.url
+  s_fce98cc2b17265::t_c11e49f6d28bbd 1-2
+src/viewer/public/assets/kenney/isometric-buildings/License.txt
+  s_fce98cc2b17265::t_93effc9a2ffb32 1-22
+src/viewer/public/assets/kenney/isometric-buildings/Spritesheet/buildingTiles_sheet.xml
+  s_fce98cc2b17265::t_046712ff1c5f82 1-131
+src/viewer/public/assets/kenney/isometric-city/Donate.url
+  s_fce98cc2b17265::t_e724dca442e998 1-2
+src/viewer/public/assets/kenney/isometric-city/Facebook.url
+  s_fce98cc2b17265::t_6aa69014921010 1-2
+src/viewer/public/assets/kenney/isometric-city/License.txt
+  s_fce98cc2b17265::t_1b4ae840c9fe3e 1-22
+src/viewer/public/assets/kenney/isometric-city/Spritesheet/cityDetails_sheet.xml
+  s_fce98cc2b17265::t_9060e34a80c2fe 1-13
+src/viewer/public/assets/kenney/isometric-city/Spritesheet/cityTiles_sheet.xml
+  s_fce98cc2b17265::t_06110246bd5e20 1-130
+src/viewer/public/assets/kenney/isometric-landscape/Donate.url
+  s_fce98cc2b17265::t_353922d4965372 1-2
+src/viewer/public/assets/kenney/isometric-landscape/Facebook.url
+  s_fce98cc2b17265::t_fde65c2bf59227 1-2
+src/viewer/public/assets/kenney/isometric-landscape/License.txt
+  s_fce98cc2b17265::t_f725c17abaa388 1-22
+src/viewer/public/assets/kenney/isometric-landscape/Spritesheet/landscapeTiles_sheet.xml
+  s_fce98cc2b17265::t_2e6ece2bda706d 1-130
+src/viewer/public/assets/kenney/isometric-roads-water/readme.txt
+  s_fce98cc2b17265::t_d28daf44f63c55 1-8
+src/viewer/public/assets/kenney/isometric-roads-water/roadTiles_water.ai
+  s_fce98cc2b17265::t_f8d9051c2c12fe 1-587
+src/viewer/public/assets/kenney/isometric-roads-water/roadTiles_water.svg
+  s_fce98cc2b17265::t_1b251a0719962d 1-350
+src/viewer/public/assets/kenney/isometric-roads/readme.txt
+  s_fce98cc2b17265::t_b0895a76cdca16 1-8
+src/viewer/public/assets/kenney/isometric-roads/roadTiles.ai
+  s_fce98cc2b17265::t_cfdde68cef0c30 1-923
+src/viewer/public/assets/kenney/isometric-roads/roadTiles.svg
+  s_fce98cc2b17265::t_2903106102016f 1-997
+src/viewer/public/assets/kenney/isometric-vehicles/Donate.url
+  s_fce98cc2b17265::t_7c964d76e37ad1 1-2
+src/viewer/public/assets/kenney/isometric-vehicles/Facebook.url
+  s_fce98cc2b17265::t_fb77a8fa1740bc 1-2
+src/viewer/public/assets/kenney/isometric-vehicles/License.txt
+  s_fce98cc2b17265::t_9eca313fc06b1c 1-22
+src/viewer/public/assets/kenney/isometric-vehicles/Spritesheet/sheet_allCars.xml
+  s_fce98cc2b17265::t_5627ff9754e9a6 1-546
+src/viewer/public/assets/kenney/isometric-vehicles/Spritesheet/sheet_black.xml
+  s_fce98cc2b17265::t_e72ff00d3e6902 1-98
+src/viewer/public/assets/kenney/isometric-vehicles/Spritesheet/sheet_blue.xml
+  s_fce98cc2b17265::t_bf01ab42f3c04d 1-98
+src/viewer/public/assets/kenney/isometric-vehicles/Spritesheet/sheet_green.xml
+  s_fce98cc2b17265::t_ebf51ea81962ef 1-98
+src/viewer/public/assets/kenney/isometric-vehicles/Spritesheet/sheet_red.xml
+  s_fce98cc2b17265::t_e7bc76a1a9e346 1-98
+src/viewer/public/assets/kenney/isometric-vehicles/Spritesheet/sheet_silver.xml
+  s_fce98cc2b17265::t_685ba345f88e48 1-98
+src/viewer/public/assets/kenney/isometric-vehicles/Spritesheet/sheet_utility.xml
+  s_fce98cc2b17265::t_d39070f21bb670 1-66
+src/world/generator.ts
+  s_fce98cc2b17265::t_e1a7ff641a85b2 1-128
+src/world/locations.ts
+  s_bd786b17aefd99::t_6ced89d08cb497 1-54
+src/world/occupations.ts
+  s_bd786b17aefd99::t_fed88e67045670 1-37
+src/world/rng.ts
+  s_bd786b17aefd99::t_5ed05512767008 1-20
+tools/render-characters/models/LICENSE.txt
+  s_fce98cc2b17265::t_011274e28e5e49 1-28
+tsconfig.json
+  s_bd786b17aefd99::t_eb85cda7007251 1-14
+.gitignore
+  s_e3e82c153bfdfd::t_10430311dfaf83 1-21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "18a3d9f59ea5b5b3c8fb3235eebc1cab0f1412b2",
+  "prompts": {},
+  "sessions": {
+    "s_bd786b17aefd99": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "10b9634d-0275-40a7-a18a-d2847993ce1a",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Iván Campillo <ivncmp@gmail.com>"
+    },
+    "s_e3e82c153bfdfd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0d3438be-0f0f-44b8-ab3c-4609198f39d2",
+        "model": "unknown"
+      },
+      "human_author": "Iván Campillo <ivncmp@gmail.com>"
+    },
+    "s_fce98cc2b17265": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "965cdc89-5200-4648-a1eb-cfb0a1f366e5",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Iván Campillo <ivncmp@gmail.com>"
+    }
+  }
+}
