@@ -1,0 +1,91 @@
+src/viewer/main.ts
+  s_efdeb896462bda::t_f49e37d46a6bd4 7-8,29,43-52,70
+.env.example
+  s_efdeb896462bda::t_365e79d04fd654 28-29
+src/agents/agent.ts
+  s_efdeb896462bda::t_2824bf0c505834 2,64-80,118-124
+src/agents/create.ts
+  s_efdeb896462bda::t_b0de400fc00ee4 100-102
+src/cognition/__tests__/crisis.test.ts
+  s_efdeb896462bda::t_30c6dc7c8933c1 1-77
+src/cognition/__tests__/deliberation.test.ts
+  s_bdcebaab098908::t_cafc2424c5237f 1-156
+src/cognition/__tests__/gate.test.ts
+  s_efdeb896462bda::t_a170afcf7d4fb6 35-36,74,78-79,173,180
+src/cognition/__tests__/reflection.test.ts
+  s_efdeb896462bda::t_f67999869f6f08 18
+src/cognition/__tests__/scene.test.ts
+  s_efdeb896462bda::t_345938de6d9f52 7,34-35,146-231
+src/cognition/crisis.ts
+  s_efdeb896462bda::t_eb5b848b41548c 1-71
+src/cognition/deliberation.ts
+  s_efdeb896462bda::t_ce6adbdee8c556 1-164
+src/cognition/gate.ts
+  s_c227485661eca7::t_ea8dfc39add039 44-46,113-124
+src/cognition/provider.ts
+  s_efdeb896462bda::t_7361051ff881b1 5
+src/cognition/scene.ts
+  s_615d559f381eac::t_24ca18780a1fee 1,34-37,85-91,101,120-138,146,174,178,189-204,211-212,251-252,270,272,297-302
+src/engine/__tests__/crisis-detect.test.ts
+  s_efdeb896462bda::t_d5b51acb4cbdac 1-95
+src/engine/__tests__/tick.test.ts
+  s_efdeb896462bda::t_0b8af2d922719b 3,39-40,380-422
+src/engine/actions.ts
+  s_c227485661eca7::t_1c29a05389f283 288-297
+src/engine/apply-deliberation.ts
+  s_efdeb896462bda::t_93716b4372a7a5 1-30
+src/engine/apply-scene.ts
+  s_efdeb896462bda::t_c8371cbcebfcbe 58-60
+src/engine/crisis-detect.ts
+  s_efdeb896462bda::t_565125bbeda9d2 1-74
+src/engine/tick.ts
+  s_efdeb896462bda::t_04d61f4d8582d3 13,60-61,91-98,446-480,562-563
+src/persistence/migrations/010_deliberation.sql
+  s_efdeb896462bda::t_5b5d87fecfb1c6 1-2
+src/persistence/migrations/011_crisis.sql
+  s_efdeb896462bda::t_f246acf7cf3b26 1
+src/persistence/world-repo.ts
+  s_efdeb896462bda::t_9bb077ccf24767 42-44,48-49,54-56,124-126
+src/server/cognition-worker.ts
+  s_efdeb896462bda::t_7b5a06524a5f35 7-8
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "cc0c908454c0958df9a8766635221f55ecfb8027",
+  "prompts": {},
+  "sessions": {
+    "s_615d559f381eac": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "agent-ab8a9b59f9b66a9fe",
+        "model": "unknown"
+      },
+      "human_author": "Iván Campillo <ivncmp@gmail.com>"
+    },
+    "s_bdcebaab098908": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "eed099af-9eb7-4097-8a52-d05b61ae7d32",
+        "model": "unknown"
+      },
+      "human_author": "Iván Campillo <ivncmp@gmail.com>"
+    },
+    "s_c227485661eca7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f2cb52d4-3a18-43b4-87ab-e65329c66171",
+        "model": "unknown"
+      },
+      "human_author": "Iván Campillo <ivncmp@gmail.com>"
+    },
+    "s_efdeb896462bda": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "202377dd-ee25-4b5d-94da-2bb938274857",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Iván Campillo <ivncmp@gmail.com>"
+    }
+  }
+}
