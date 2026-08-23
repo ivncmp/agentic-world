@@ -1,0 +1,151 @@
+.env.example
+  s_c227485661eca7::t_3986cb290a65c7 25-28,43-46
+CLAUDE.md
+  s_c227485661eca7::t_0300a3b63d2249 43,45-48,52-55,81,85,87,89-90,103,105,107,109,111,115,117,119,121,123,125,127-129,147,193,195,205,207,209,211-216,218,220,222,226,228-230,232,234,236,238,242,244,246,248-250
+_trash/roster.ts
+  s_6461cc6d91b341::t_71f07a89779ac9 6-7,9-10,12-13,15-16,18-19,21-22,24-25,27-28
+_trash/watch.ts
+  s_6461cc6d91b341::t_134e878ce280ae 82
+docker-compose.yml
+  s_c227485661eca7::t_be73ed01f1d8d6 42-43,51-61,114-115,121-136
+infra/engine/Dockerfile
+  s_c227485661eca7::t_b195c02f96f46f 19
+package.json
+  s_c227485661eca7::t_180f1d998dc004 6,14,30-31
+pnpm-lock.yaml
+  s_c227485661eca7::t_3005506a316971 11-16,57-64,221-226,230-239,526-540,545-552,557-564,573-600,614-617,622-640,644-647,653-655,659-662,666-673,678-693,706-717,723-777,781-786,863-874,878-885,894-923,975-978,999-1018,1029-1070,1085-1088,1120-1127,1136-1143,1260-1264,1270-1272,1289-1296,1301-1308,1387-1390,1393-1414,1622-1637,1640-1655,1658-1667,1678-1698,1705-1706,1709-1722,1725-1728,1758-1759,1764-1765,1768-1773,1776-1820,1827-1841,1845-1898,1901-1904,1960-1965,1968-1973,1978-1999,2047-2048,2065-2085,2139-2211,2220-2221,2245-2252,2257-2260,2348-2351,2357-2358,2362-2367
+src/agents/goals.ts
+  s_c227485661eca7::t_512b0ea0d5a7c7 62,70-77
+src/agents/needs.ts
+  s_c227485661eca7::t_1da76af4e52169 15
+src/dev/bake-cities.ts
+  s_0ae8cc41aef3be::t_92792b867b6edb 1-83
+src/engine/clock.ts
+  s_c227485661eca7::t_a6e85cd9f7d071 62-65
+src/memory/in-memory-store.ts
+  s_c227485661eca7::t_97616fe1efdef2 12
+src/viewer/agent-card.ts
+  s_c227485661eca7::t_68ebf250600fe3 9,25-26,32-35,39-41,70,149,155
+src/viewer/atlas.ts
+  s_c227485661eca7::t_caecf258204e06 108,113-115,169
+src/viewer/city-map.ts
+  s_c227485661eca7::t_43854ba60a7fe3 24-25,69,96
+src/viewer/iso.ts
+  s_c227485661eca7::t_c3f67463ddc737 50-54
+src/viewer/main.ts
+  s_c227485661eca7::t_d7392758a7be49 6,57
+src/viewer/world-scene.ts
+  s_c227485661eca7::t_74329ef2ebe6e7 6,23-24,28-44,65-76,98-115,138,143,158,160-163,167,172-175,180-181,188-189,191-196,198-252,266,268-270,272,274,276-280,282-314,316-455,466,474,482-483,486-487,507-520,534,604,673-674,677-684,693-694,706
+src/world/cities/newAgentown.json
+  s_0ae8cc41aef3be::t_b106724660ba25 1-732
+src/world/cities/saintSkill.json
+  s_0ae8cc41aef3be::t_6cf8775c60c4c6 1-406
+src/world/config.ts
+  s_c227485661eca7::t_ff8d1e324f7280 1,3-4,19-44,52,65-67
+src/world/generator.ts
+  s_c227485661eca7::t_a62d3a2bcae5e1 1,4,13,17-19,29,32-33,67-71,96,123-126,128-139,143-149,152,157-271
+src/world/locations.ts
+  s_c227485661eca7::t_1623cf5649c5bc 13-15,41-52,58
+src/world/occupations.ts
+  s_c227485661eca7::t_fd1fa4ce01fdf4 17-18,21-24,26-37
+README.md
+  s_1e7dde32d79dd2::t_1d5eb31c1904f4 1-56
+docker-compose.override.yml
+  s_1e7dde32d79dd2::t_b8dab934ce1685 1-15
+infra/mcp/Dockerfile
+  s_0ae8cc41aef3be::t_e5e78de00527f4 1-17
+infra/viewer/Dockerfile.dev
+  s_1e7dde32d79dd2::t_82746ee3a6ea94 1-11
+src/agents/identity.ts
+  s_c227485661eca7::t_c5bef716cf7aef 1-73
+src/dev/backfill-identity.ts
+  s_c227485661eca7::t_62de4143f7c8c3 1-95
+src/dev/check-identity.ts
+  s_c227485661eca7::t_467661ded6e37c 1-18
+src/dev/enrich-identity.ts
+  s_c227485661eca7::t_d724da0dfc78f0 1-37
+src/mcp/index.ts
+  s_9f634439d6a104::t_33a0335b22b44a 1-43
+src/mcp/server.ts
+  s_9f634439d6a104::t_92685a7752598c 1-272
+src/memory/dbrain-store.ts
+  s_c227485661eca7::t_83112335abd2d3 1-2,40,42-46,53-57,66-71,75,77,84,97,122
+src/persistence/migrations/006_interests.sql
+  s_45fad39f26151c::t_bc564420754648 1
+src/persistence/migrations/007_owners.sql
+  s_8eae05db1c15dc::t_a8bc8359c0c8f4 1-18
+src/persistence/migrations/008_arrived_tick.sql
+  s_9f634439d6a104::t_ba223048ac8795 1
+src/persistence/owner-repo.ts
+  s_8eae05db1c15dc::t_683c3959c65d64 1-48
+src/viewer/avatar.ts
+  s_9f634439d6a104::t_48beed8fb59c86 1-84
+src/viewer/public/favicon/site.webmanifest
+  s_1e7dde32d79dd2::t_762a5127b2bc35 1-21
+src/viewer/venue-card.ts
+  s_6461cc6d91b341::t_652050b3ddf73e 1-146
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "8c901fc704c5c3836e2d9b63e1b754f3b35fb923",
+  "prompts": {},
+  "sessions": {
+    "s_0ae8cc41aef3be": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0708e306-fe59-4064-bb7d-5574c4698492",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Iván Campillo <ivncmp@gmail.com>"
+    },
+    "s_1e7dde32d79dd2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b2fdf66a-ccf4-46be-8b15-76641ce0e640",
+        "model": "unknown"
+      },
+      "human_author": "Iván Campillo <ivncmp@gmail.com>"
+    },
+    "s_45fad39f26151c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d84ad1aa-6258-4ed8-9987-6209f57fe7c5",
+        "model": "unknown"
+      },
+      "human_author": "Iván Campillo <ivncmp@gmail.com>"
+    },
+    "s_6461cc6d91b341": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "e24422c7-fd01-46d0-917e-354fce508e8e",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Iván Campillo <ivncmp@gmail.com>"
+    },
+    "s_8eae05db1c15dc": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "eff64cf3-ac07-4e9c-a14a-fb2966ed386c",
+        "model": "unknown"
+      },
+      "human_author": "Iván Campillo <ivncmp@gmail.com>"
+    },
+    "s_9f634439d6a104": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "251ab7d3-644d-49c0-a19c-5eea4afab26c",
+        "model": "unknown"
+      },
+      "human_author": "Iván Campillo <ivncmp@gmail.com>"
+    },
+    "s_c227485661eca7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f2cb52d4-3a18-43b4-87ab-e65329c66171",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Iván Campillo <ivncmp@gmail.com>"
+    }
+  }
+}
