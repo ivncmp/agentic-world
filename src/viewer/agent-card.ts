@@ -6,6 +6,7 @@
  * is for the place, not for reading.
  */
 import type { EngineConnection, AgentDetail } from './connection.js'
+import { avatarImg } from './avatar.js'
 
 const NEED_LABEL: Record<string, string> = {
   hunger: 'hunger', energy: 'energy', social: 'social',
@@ -21,16 +22,23 @@ export function initAgentCard(conn: EngineConnection): void {
   el.hidden = true
   document.body.appendChild(el)
 
+  el.addEventListener('pointerdown', (ev) => ev.stopPropagation())
+  el.addEventListener('pointerup', (ev) => ev.stopPropagation())
   el.addEventListener('click', (ev) => {
     const t = ev.target as HTMLElement
     if (t.closest('[data-close]')) closeCard()
   })
   document.addEventListener('keydown', (ev) => {
-    if (ev.key === 'Escape') closeCard()
+    if (ev.key === 'Escape') {
+      closeCard()
+      window.dispatchEvent(new CustomEvent('aw:fit'))
+    }
   })
 
   window.addEventListener('aw:agent-click', (ev) => {
-    void openCard(conn, (ev as CustomEvent<{ id: string }>).detail.id)
+    const id = (ev as CustomEvent<{ id: string }>).detail.id
+    void openCard(conn, id)
+    window.dispatchEvent(new CustomEvent('aw:follow', { detail: { id } }))
   })
 }
 
@@ -59,7 +67,7 @@ function render(d: AgentDetail): string {
   return `
     <div class="card-head">
       <div>
-        <div class="card-name">${esc(d.name)}</div>
+        <div class="card-name">${avatarImg(d.id, 22)}${esc(d.name)}</div>
         <div class="card-sub">${esc(d.occupation)} · ${esc(d.activity)} at ${esc(d.location)}</div>
       </div>
       <button class="card-x" data-close>×</button>
@@ -138,13 +146,13 @@ function relationshipsBlock(d: AgentDetail): string {
   }
   const rows = d.relationships.map((r) => `
     <tr>
-      <td>${esc(r.name)}</td>
+      <td>${avatarImg(r.id)}${esc(r.name)}</td>
       <td class="num ${tone(r.affection)}">${fmt(r.affection)}</td>
       <td class="num ${tone(r.trust)}">${fmt(r.trust)}</td>
       <td class="num ${r.debt !== 0 ? 'warn' : 'dim'}">${r.debt !== 0 ? `${Math.round(r.debt)}c` : '·'}</td>
       <td class="num ${r.grievance > 0.05 ? 'bad' : 'dim'}">${r.grievance > 0.05 ? fmt(r.grievance) : '·'}</td>
     </tr>`)
-  return section('relationships <span class="hint">affection · trust · debt · grievance</span>',
+  return section('relationships',
     `<table class="rels"><tr class="th"><th></th><th>aff</th><th>trust</th><th>debt</th><th>griev</th></tr>${rows.join('')}</table>`)
 }
 

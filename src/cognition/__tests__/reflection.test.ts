@@ -12,8 +12,9 @@ const agent = (id: string): Agent => ({
   needs: { hunger: 0, energy: 0, social: 0, hygiene: 0, fun: 0 },
   money: 100, location: 'home-1', job: null,
   housing: { kind: 'none', due: 0, arrears: 0 },
+  arrivedTick: null,
   lastTheftTick: null,
-  lastReflectionDay: 0, activity: null, goals: [], constraints: [],
+  lastReflectionDay: 0, activity: null, goals: [], constraints: [], interests: [],
 })
 
 const world = (agents: Agent[]): WorldState => ({

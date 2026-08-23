@@ -20,6 +20,7 @@ export type CreateAgentInput = {
   base?: Partial<ValueVector>
   /** Exactly two — DESIGN.md's mandatory flaws. */
   vices: [ViceKind, ViceKind]
+  interests?: string[]
   constraints?: string[]
   startingMoney?: number
 }
@@ -31,7 +32,7 @@ export type CreatedAgent = {
 }
 
 export const STARTING_MONEY = 150
-export const RENT_DUE = 40
+export const RENT_DUE = 25
 
 const initialGoals = (vacancy: string | null, homeId: string): Goal[] => {
   const goals: Goal[] = [{ kind: 'buy_home', targetId: homeId, priority: 0.4 }]
@@ -74,6 +75,7 @@ export function createAgent(input: CreateAgentInput, city: GeneratedCity): Creat
       guidance: {},
     },
     vices: input.vices.map((kind) => ({ kind, urge: 0.1 })) as [ViceInstance, ViceInstance],
+    interests: input.interests ?? [],
     needs: { hunger: 0.2, energy: 0.2, social: 0.3, hygiene: 0.2, fun: 0.2 },
     money: input.startingMoney ?? STARTING_MONEY,
     location: home.id,
@@ -87,6 +89,7 @@ export function createAgent(input: CreateAgentInput, city: GeneratedCity): Creat
             shiftEnd: def.shiftEnd,
           },
     housing,
+    arrivedTick: null,
     lastTheftTick: null,
     lastReflectionDay: 0,
     activity: null,

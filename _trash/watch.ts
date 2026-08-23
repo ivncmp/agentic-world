@@ -79,6 +79,7 @@ const OUT = join('src/dev/executions', process.env.RUN ?? `run-seed${SEED}`)
 const GLYPH: Record<LocationKind, string> = {
   home: '⌂', bar: '♦', office: '■', shop: '▪', supermarket: '▦',
   clinic: '✚', school: '▲', gym: '●', park: '♣', garage: '✱',
+  cinema: '▸', bowling: '◎', cafe: '♠',
 }
 const C = {
   dim: '\x1b[2m', reset: '\x1b[0m', bold: '\x1b[1m',

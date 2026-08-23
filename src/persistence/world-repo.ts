@@ -38,18 +38,18 @@ export class WorldRepository {
 
       for (const a of state.agents) {
         await c.query(
-          `INSERT INTO agents (id,name,owner_id,occupation,money,location_id,last_theft_tick,
-             last_reflection_day,values_json,vices,needs,job,housing,activity,goals,constraints_json)
-           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
+          `INSERT INTO agents (id,name,owner_id,occupation,money,location_id,arrived_tick,last_theft_tick,
+             last_reflection_day,values_json,vices,needs,job,housing,activity,goals,constraints_json,interests)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
            ON CONFLICT (id) DO UPDATE SET
-             money=$5, location_id=$6, last_theft_tick=$7, last_reflection_day=$8,
-             values_json=$9, vices=$10, needs=$11, job=$12, housing=$13, activity=$14,
-             goals=$15, constraints_json=$16`,
-          [a.id, a.name, a.ownerId, a.occupation, a.money, a.location, a.lastTheftTick,
+             money=$5, location_id=$6, arrived_tick=$7, last_theft_tick=$8, last_reflection_day=$9,
+             values_json=$10, vices=$11, needs=$12, job=$13, housing=$14, activity=$15,
+             goals=$16, constraints_json=$17, interests=$18`,
+          [a.id, a.name, a.ownerId, a.occupation, a.money, a.location, a.arrivedTick, a.lastTheftTick,
            a.lastReflectionDay, JSON.stringify(a.values), JSON.stringify(a.vices),
            JSON.stringify(a.needs), a.job == null ? null : JSON.stringify(a.job),
            JSON.stringify(a.housing), a.activity == null ? null : JSON.stringify(a.activity),
-           JSON.stringify(a.goals), JSON.stringify(a.constraints)],
+           JSON.stringify(a.goals), JSON.stringify(a.constraints), JSON.stringify(a.interests)],
         )
       }
 
@@ -112,9 +112,11 @@ export class WorldRepository {
       values: a.values_json, vices: a.vices, needs: a.needs,
       money: Number(a.money), location: a.location_id,
       job: a.job, housing: a.housing, activity: a.activity,
+      arrivedTick: a.arrived_tick == null ? null : Number(a.arrived_tick),
       lastTheftTick: a.last_theft_tick == null ? null : Number(a.last_theft_tick),
       lastReflectionDay: a.last_reflection_day,
       goals: a.goals, constraints: a.constraints_json,
+      interests: a.interests ?? [],
     }))
 
     const rels = await this.pool.query('SELECT * FROM relationships')

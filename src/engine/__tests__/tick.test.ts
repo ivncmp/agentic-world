@@ -28,11 +28,13 @@ const agent = (id: string, over: Partial<Agent> = {}, base: Partial<ValueVector>
   location: 'bar-1',
   job: null,
   housing: { kind: 'none', due: 0, arrears: 0 },
+  arrivedTick: null,
   lastTheftTick: null,
   lastReflectionDay: 0,
   activity: null,
   goals: [],
   constraints: [],
+  interests: [],
   ...over,
 })
 
@@ -95,7 +97,7 @@ describe('tick', () => {
     expect(r.state.agents[0]!.activity?.kind).toBe('travel')
     expect(r.state.agents[0]!.activity?.from).toBe('bar-1')
 
-    for (let i = 0; i < 8; i++) r = tick(r.state, deps())
+    for (let i = 0; i < 14; i++) r = tick(r.state, deps())
     expect(r.state.agents[0]!.location).toBe('home-a')
   })
 })
@@ -182,30 +184,46 @@ describe('economy and cognition queueing', () => {
     expect(r.state.agents[0]!.housing.arrears).toBe(50)
   })
 
+  it('warns when arrears reach 2x rent', () => {
+    const behind = agent('a', { money: 0, housing: { kind: 'rent', due: 40, arrears: 40 } })
+    const r = tick(world([behind], { tick: 287 }), deps({ ticksPerDay: 288 }))
+    // Misses rent again: arrears 40 + 40 = 80 = 2x rent → warning
+    expect(r.events.some((e) => e.type === 'rent_warning')).toBe(true)
+    expect(r.state.agents[0]!.housing.arrears).toBe(80)
+  })
+
+  it('evicts when arrears reach 5x rent', () => {
+    const doomed = agent('a', { money: 0, housing: { kind: 'rent', due: 40, arrears: 160 } })
+    const r = tick(world([doomed], { tick: 287 }), deps({ ticksPerDay: 288 }))
+    // Misses rent again: 160 + 40 = 200 = 5x rent → eviction
+    expect(r.events.some((e) => e.type === 'evicted')).toBe(true)
+    expect(r.state.agents[0]!.housing.kind).toBe('none')
+    expect(r.state.agents[0]!.housing.arrears).toBe(0)
+  })
+
+  it('garnishes wages to pay down arrears at day rollover', () => {
+    const indebted = agent('a', {
+      money: 100,
+      housing: { kind: 'rent', due: 40, arrears: 80 },
+      job: { employerId: 'office-1', wage: 24, shiftStart: 9, shiftEnd: 18 },
+    })
+    const r = tick(world([indebted], { tick: 287 }), deps({ ticksPerDay: 288 }))
+    // Agent can pay rent (100 >= 40), so arrears stay at 80.
+    // Daily wage = 24 * 9h = 216; garnish = 216 * 0.25 = 54; min(54, 80) = 54
+    // Final arrears = 80 - 54 = 26
+    expect(r.events.some((e) => e.type === 'wage_garnished')).toBe(true)
+    expect(r.state.agents[0]!.housing.arrears).toBe(26)
+  })
+
   it('queues no reflection at all outside the day rollover', () => {
     expect(tick(world([agent('a')]), deps()).reflectionJobs).toHaveLength(0)
   })
 
-  it('does not reflect on a day where nothing happened', () => {
-    // Four of four diaries on a quiet day said "nothing happened" — four paid
-    // calls to confirm a void. Reflection is the one cost no gate can reduce,
-    // so it has to be earned.
+  it('reflects every agent at the day boundary regardless of activity', () => {
     const w = world([agent('a'), agent('b')], { tick: 287 })
-    expect(tick(w, deps({ ticksPerDay: 288 })).reflectionJobs).toHaveLength(0)
-  })
-
-  it('reflects on a day that contained something', () => {
-    const broke = agent('a', { money: 0, housing: { kind: 'rent', due: 50, arrears: 0 } })
-    const r = tick(world([broke], { tick: 287 }), deps({ ticksPerDay: 288 }))
-    expect(r.events.some((e) => e.type === 'rent_missed')).toBe(true)
-    expect(r.reflectionJobs).toEqual(['a'])
-  })
-
-  it('reflects on a quiet life eventually, so nobody goes months unexamined', () => {
-    const forgotten = agent('a', { lastReflectionDay: 0 })
-    // Day 4 rollover: three quiet days is the limit.
-    const r = tick(world([forgotten], { tick: 288 * 4 - 1 }), deps({ ticksPerDay: 288 }))
-    expect(r.reflectionJobs).toEqual(['a'])
+    const r = tick(w, deps({ ticksPerDay: 288 }))
+    expect(r.reflectionJobs).toContain('a')
+    expect(r.reflectionJobs).toContain('b')
   })
 
   it('never queues more scenes than the budget allows', () => {
@@ -220,7 +238,7 @@ describe('economy and cognition queueing', () => {
       ),
     )
     const r = tick(world(crowd, { relationships: rels }), deps())
-    expect(r.sceneJobs.length).toBeLessThanOrEqual(3)
+    expect(r.sceneJobs.length).toBeLessThanOrEqual(5)
     expect(r.sceneJobs.length).toBeGreaterThan(0)
   })
 })

@@ -27,6 +27,10 @@ export type SceneOutcome = {
    * they are born in life — you ask someone, and they say yes or no.
    */
   loan: number
+  /** What A thought but didn't say — inner life, saved as memory. */
+  thoughtA: string
+  /** What B thought but didn't say. */
+  thoughtB: string
 }
 
 const traitLine = (v: ValueVector): string =>
@@ -39,10 +43,16 @@ const memoryLines = (ms: readonly Memory[]): string =>
     ? '  (they have no particular history)'
     : ms.map((m) => `  - ${m.text}${m.secondHand === true ? ' (heard second-hand)' : ''}`).join('\n')
 
-const describe = (a: Agent, v: ValueVector): string =>
-  `${a.name}, ${occupationDef(a.occupation).label.toLowerCase()}. ` +
-  `Traits: ${traitLine(v)}. Vices: ${a.vices.map((x) => x.kind).join(' and ')}. ` +
-  `${Math.round(a.money)} credits${a.housing.arrears > 0 ? `, ${a.housing.arrears} behind on rent` : ''}.`
+const describe = (a: Agent, v: ValueVector): string => {
+  const parts = [
+    `${a.name}, ${occupationDef(a.occupation).label.toLowerCase()}.`,
+    `Personality: ${traitLine(v)}.`,
+  ]
+  if (a.interests.length > 0) parts.push(`Enjoys ${a.interests.join(', ')}.`)
+  parts.push(`Vices: ${a.vices.map((x) => x.kind).join(' and ')}.`)
+  if (a.housing.arrears > 0) parts.push(`${a.housing.arrears} behind on rent.`)
+  return parts.join(' ')
+}
 
 /**
  * Whether these two could plausibly lend to each other at all.
@@ -89,9 +99,12 @@ export function buildScenePrompt(input: {
     : rel.grievance > 0.5 ? '\nThere is real bad blood between them — one has wronged the other, and it has not been forgotten.'
     : '\nSomething sour sits between them from before.'
 
-  // JSON is requested in the prompt rather than enforced by a schema: dproxy
-  // wraps the CLI and does not pass output_config through. Measured reliable,
-  // but the caller still parses defensively.
+  const shared = a.interests.filter((i) => b.interests.includes(i))
+  const sharedLine =
+    shared.length > 0
+      ? `\nThey both enjoy ${shared.join(' and ')} — a natural topic of conversation.`
+      : ''
+
   return `Two people meet in a simulated town. Resolve the encounter.
 
 PLACE: ${input.place}, ${String(input.hour).padStart(2, '0')}:00
@@ -99,7 +112,7 @@ PLACE: ${input.place}, ${String(input.hour).padStart(2, '0')}:00
 A — ${describe(a, va)}
 B — ${describe(b, vb)}
 
-How A feels about B: affection ${rel.affection.toFixed(2)}, trust ${rel.trust.toFixed(2)}.${owed}${bad}
+How A feels about B: affection ${rel.affection.toFixed(2)}, trust ${rel.trust.toFixed(2)}.${owed}${bad}${sharedLine}
 
 What A remembers about B:
 ${memoryLines(input.aboutB)}
@@ -107,8 +120,12 @@ ${memoryLines(input.aboutB)}
 What B remembers about A:
 ${memoryLines(input.aboutA)}
 
-Write what actually happens — brief, in character, shaped by the history above.
-People with a grievance raise it. People who are broke show it.
+Write a vivid, naturalistic encounter shaped by their personalities, history and
+current circumstances. Let the conversation breathe — small talk, teasing,
+warmth, tension, vulnerability are all fair game. Not every encounter is about
+money; people talk about their day, their worries, things they enjoy, people
+they know. A grievance may surface if it is strong, but ordinary life is the
+default. Write 12–18 dialogue lines.
 
 Write in English. The world stores one canonical language; anything shown to a
 Spanish-speaking owner is translated at display time, and mixed-language
@@ -119,6 +136,8 @@ Respond with ONLY a JSON object, no prose, no markdown fences:
  "outcome":"one sentence, third person",
  "memoryA":"what ${a.name} will remember, first person, one sentence",
  "memoryB":"what ${b.name} will remember, first person, one sentence",
+ "thoughtA":"what ${a.name} thought but didn't say, first person, one sentence",
+ "thoughtB":"what ${b.name} thought but didn't say, first person, one sentence",
  "deltas":{"aToB":{"trust":0.0,"affection":0.0},"bToA":{"trust":0.0,"affection":0.0}},
  "transfer":0,
  "loan":0}
@@ -153,7 +172,7 @@ export function parseSceneOutcome(
         .filter((d): d is { speaker: string; line: string } =>
           typeof (d as { speaker?: unknown }).speaker === 'string' &&
           typeof (d as { line?: unknown }).line === 'string')
-        .slice(0, 12)
+        .slice(0, 16)
     : []
   const deltas = (o.deltas ?? {}) as Record<string, Record<string, unknown>>
 
@@ -162,6 +181,8 @@ export function parseSceneOutcome(
     outcome: typeof o.outcome === 'string' ? o.outcome : `${aName} and ${bName} spoke briefly.`,
     memoryA: typeof o.memoryA === 'string' ? o.memoryA : '',
     memoryB: typeof o.memoryB === 'string' ? o.memoryB : '',
+    thoughtA: typeof o.thoughtA === 'string' ? o.thoughtA : '',
+    thoughtB: typeof o.thoughtB === 'string' ? o.thoughtB : '',
     deltas: {
       aToB: {
         trust: clampDelta(deltas.aToB?.trust),
@@ -181,15 +202,27 @@ export function parseSceneOutcome(
   }
 }
 
+export type SceneResult = {
+  outcome: SceneOutcome
+  model: string
+  costUsd: number
+  durationMs: number
+  inputTokens: number
+  outputTokens: number
+}
+
 export async function resolveScene(
   input: Parameters<typeof buildScenePrompt>[0],
   provider: ModelProvider,
-): Promise<{ outcome: SceneOutcome; costUsd: number; durationMs: number }> {
+): Promise<SceneResult> {
   const res = await provider.complete({ prompt: buildScenePrompt(input), purpose: 'scene' })
   return {
     outcome: parseSceneOutcome(res.text, input.a.name, input.b.name, canLend(input.rel)),
+    model: res.model,
     costUsd: res.costUsd,
     durationMs: res.durationMs,
+    inputTokens: res.inputTokens,
+    outputTokens: res.outputTokens,
   }
 }
 
@@ -205,4 +238,8 @@ export async function persistScene(
     await store.remember({ agentId: a.id, kind: 'episodic', text: outcome.memoryA, tick, about: b.id })
   if (outcome.memoryB !== '')
     await store.remember({ agentId: b.id, kind: 'episodic', text: outcome.memoryB, tick, about: a.id })
+  if (outcome.thoughtA !== '')
+    await store.remember({ agentId: a.id, kind: 'episodic', text: `[thought] ${outcome.thoughtA}`, tick, about: b.id })
+  if (outcome.thoughtB !== '')
+    await store.remember({ agentId: b.id, kind: 'episodic', text: `[thought] ${outcome.thoughtB}`, tick, about: a.id })
 }

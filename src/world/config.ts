@@ -1,4 +1,7 @@
+import { readFileSync } from 'node:fs'
 import type { LocationKind } from './locations.js'
+import { LOCATION_KINDS } from './locations.js'
+import type { BlockRole } from './layout.js'
 
 /**
  * The city as data. Counts per kind, not hand-placed buildings — a city is
@@ -7,18 +10,36 @@ import type { LocationKind } from './locations.js'
  */
 export type CityConfig = {
   name: string
-  /**
-   * City blocks along one edge. The tile grid is derived from this and the
-   * street period, so streets and blocks can never disagree about the map.
-   * Odd numbers give the plaza a true centre.
-   */
   blocksPerSide: number
-  /** First entry is the central district; the rest are outer quarters. */
   districts: readonly string[]
-  /** How many of each public location kind to build. Homes are per-agent. */
   venues: Partial<Record<Exclude<LocationKind, 'home'>, number>>
-  /** Vacancies per workplace, before any agent is hired. */
   openingsPerWorkplace: number
+}
+
+// ---- JSON city template -----------------------------------------------------
+
+export type CityTemplate = {
+  name: string
+  grid: { width: number; height: number }
+  streetPeriod: number
+  districts: string[]
+  blocks: { bx: number; by: number; role: BlockRole }[]
+  venues: { kind: Exclude<LocationKind, 'home'>; name: string; x: number; y: number; district: string }[]
+  homePlots: { x: number; y: number; district: string }[]
+  openingsPerWorkplace: number
+}
+
+export function loadTemplate(path: string): CityTemplate {
+  const raw = JSON.parse(readFileSync(path, 'utf8')) as Record<string, unknown>
+  if (typeof raw.name !== 'string') throw new Error('template: missing name')
+  if (!Array.isArray(raw.venues) || raw.venues.length === 0) throw new Error('template: venues must be a non-empty array')
+  if (!Array.isArray(raw.blocks)) throw new Error('template: missing blocks')
+  if (!Array.isArray(raw.homePlots)) throw new Error('template: missing homePlots')
+  const validKinds = new Set<string>(LOCATION_KINDS.filter(k => k !== 'home'))
+  for (const v of raw.venues as { kind: string }[]) {
+    if (!validKinds.has(v.kind)) throw new Error(`template: unknown venue kind "${v.kind}"`)
+  }
+  return raw as unknown as CityTemplate
 }
 
 /**
@@ -28,7 +49,7 @@ export type CityConfig = {
  * lives intersect.
  */
 export const DEFAULT_CITY: CityConfig = {
-  name: 'Vallecar',
+  name: 'New Agentown',
   blocksPerSide: 5,
   districts: ['Centro', 'Ribera', 'Altos', 'Puerto', 'Norte'],
   venues: {
@@ -41,6 +62,9 @@ export const DEFAULT_CITY: CityConfig = {
     gym: 1,
     park: 2,
     garage: 1,
+    cinema: 1,
+    bowling: 1,
+    cafe: 1,
   },
   openingsPerWorkplace: 3,
 }

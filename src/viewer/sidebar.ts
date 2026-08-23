@@ -3,6 +3,7 @@
  * the Phaser scene uses — no separate WebSocket.
  */
 import type { EngineConnection, WorldInfo, StateMsg, FeedItem } from './connection.js'
+import { avatarImg, addToCache } from './avatar.js'
 
 const STATE_COLORS: Record<string, string> = {
   sleep: '#60a5fa', work: '#4ade80', travel: '#fbbf24', scene: '#e879f9',
@@ -19,6 +20,9 @@ export function initSidebar(conn: EngineConnection, world: WorldInfo): void {
   const tableEl = document.getElementById('agents-table')!
   const feedEl = document.getElementById('feed')!
   const cogEl = document.getElementById('cog')!
+
+  const cityNameEl = document.getElementById('city-name')
+  if (cityNameEl) cityNameEl.textContent = world.city.name
 
   const locMap = new Map(world.locations.map((l) => [l.id, l]))
 
@@ -37,40 +41,104 @@ export function initSidebar(conn: EngineConnection, world: WorldInfo): void {
     connEl.className = connected ? 'conn on' : 'conn off'
   })
 
-  conn.onState((s: StateMsg) => {
+  // Interpolate the clock second-by-second between ticks so it doesn't jump
+  // 5 minutes at a time. Each tick = 5 game-minutes arriving every ~TICK_MS
+  // real milliseconds. We lerp from the last-known game time to the next one.
+  const GAME_MINUTES_PER_TICK = 5
+  let lastTickEpoch = 0   // game epoch ms at last tick
+  let lastTickReal = 0    // performance.now() when we received it
+  let tickIntervalMs = 2000 // estimated real ms between ticks (adapts)
+
+  function displayTime(gameMs: number) {
+    const d = new Date(gameMs)
+    const h = d.getUTCHours()
+    const m = d.getUTCMinutes()
     clockEl.textContent =
-      String(s.hour).padStart(2, '0') + ':' + String(s.minute).padStart(2, '0')
-    dateEl.textContent = new Date(s.time).toDateString() + ` · day ${s.day}`
+      String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0')
+    const icon =
+      h >= 22 || h < 6 ? '🌙'
+        : h < 8 ? '🌅'
+          : h < 18 ? '☀️'
+            : h < 20 ? '🌅'
+              : '🌙'
     phaseEl.textContent =
-      s.hour >= 23 || s.hour < 7
-        ? 'night'
-        : s.hour < 9
-          ? 'morning'
-          : s.hour < 18
-            ? 'working hours'
-            : 'evening'
+      `${icon} ` + (
+        h >= 23 || h < 7
+          ? 'night'
+          : h < 9
+            ? 'morning'
+            : h < 18
+              ? 'working hours'
+              : 'evening'
+      )
+  }
+
+  let lastDisplayedMinute = -1
+  function tickClock() {
+    if (lastTickEpoch !== 0) {
+      const elapsed = performance.now() - lastTickReal
+      const frac = Math.min(elapsed / tickIntervalMs, 1)
+      const interpMs = lastTickEpoch + frac * GAME_MINUTES_PER_TICK * 60_000
+      const m = new Date(interpMs).getUTCMinutes()
+      if (m !== lastDisplayedMinute) {
+        displayTime(interpMs)
+        lastDisplayedMinute = m
+      }
+    }
+    requestAnimationFrame(tickClock)
+  }
+  requestAnimationFrame(tickClock)
+
+  const knownAgents = new Set<string>()
+
+  conn.onState((s: StateMsg) => {
+    for (const a of s.agents) {
+      if (!knownAgents.has(a.id)) {
+        knownAgents.add(a.id)
+        void addToCache(a.id)
+      }
+    }
+    const nowReal = performance.now()
+    const nowGame = new Date(s.time).getTime()
+    if (lastTickReal > 0) {
+      const gap = nowReal - lastTickReal
+      if (gap > 500) tickIntervalMs = gap
+    }
+    lastTickEpoch = nowGame
+    lastTickReal = nowReal
+
+    displayTime(nowGame)
+    dateEl.textContent = new Date(s.time).toDateString() + ` · day ${s.day}`
 
     const c = s.cognition
-    cogEl.textContent =
-      `cognition ${c.done} done · ${c.pending} pending` +
-      (c.dropped ? ` · ${c.dropped} dropped` : '') +
-      ` · $${c.spentUsd.toFixed(3)}`
+    const tk = (n: number) => n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : n >= 1_000 ? `${(n / 1_000).toFixed(1)}k` : String(n)
+    cogEl.innerHTML =
+      `<span class="cog-calls">${c.done} calls</span>` +
+      (c.pending ? ` · <span class="cog-pending">${c.pending} pending</span>` : '') +
+      (c.dropped ? ` · <span class="cog-dropped">${c.dropped} dropped</span>` : '') +
+      ` · <span class="cog-tokens">${tk(c.inputTokens)} in / ${tk(c.outputTokens)} out</span>` +
+      ` · <span class="cog-cost">$${c.spentUsd.toFixed(3)}</span>`
 
-    tableEl.innerHTML =
-      '<tr><th>who</th><th>doing</th><th>where</th><th style="text-align:right">money</th><th></th></tr>' +
-      s.agents
-        .map((a) => {
-          const col = STATE_COLORS[a.state] ?? '#94a3b8'
-          const loc = locMap.get(a.at)
-          return (
-            `<tr data-agent="${a.id}"><td><span class="dot" style="background:${col}"></span>${a.name}</td>` +
-            `<td style="color:${col}">${a.state}</td>` +
-            `<td style="color:var(--dim)">${loc?.name ?? a.at}</td>` +
-            `<td class="num">${a.money}c</td>` +
-            `<td class="num neg">${a.arrears > 0 ? '-' + a.arrears : ''}</td></tr>`
-          )
-        })
-        .join('')
+    tableEl.innerHTML = s.agents
+      .map((a) => {
+        const col = STATE_COLORS[a.state] ?? '#94a3b8'
+        const loc = locMap.get(a.at)
+        const money = a.arrears > 0
+          ? `${a.money}c <span class="neg">-${a.arrears}</span>`
+          : `${a.money}c`
+        return (
+          `<div class="agent-row" data-agent="${a.id}">` +
+          `<div class="agent-row-top">` +
+          `${avatarImg(a.id)}<span class="agent-row-name">${a.name}</span>` +
+          `<span class="agent-row-money">${money}</span>` +
+          `</div>` +
+          `<div class="agent-row-bottom">` +
+          `<span class="agent-row-state" style="color:${col}">${a.state}</span>` +
+          `<span class="agent-row-where">${loc?.name ?? a.at}</span>` +
+          `</div></div>`
+        )
+      })
+      .join('')
   })
 
   conn.onFeed((item: FeedItem) => {

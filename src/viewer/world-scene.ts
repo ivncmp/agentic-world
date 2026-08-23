@@ -3,9 +3,7 @@
  *
  * Three things change on three different clocks: the map never changes, agents
  * move every tick and are interpolated every frame, and conversations play back
- * at reading pace. The map being static is what pays for the whole thing — the
- * ground is flattened into one texture at boot instead of being 441 sprites the
- * renderer has to sort and swap textures for on every frame.
+ * at reading pace.
  */
 import Phaser from 'phaser'
 import {
@@ -22,9 +20,27 @@ import {
   type AnimName,
 } from './character.js'
 import { SpeechBubble, Conversation } from './bubble.js'
-import type { EngineConnection, WorldInfo, AgentSnapshot, StateMsg, FeedItem } from './connection.js'
+import { avatarDataUrl } from './avatar.js'
+import type { EngineConnection, WorldInfo, LocationInfo, AgentSnapshot, StateMsg, FeedItem } from './connection.js'
 
 type Point = { x: number; y: number }
+
+/** Location kinds that are enclosed buildings — characters go invisible inside. */
+const INDOOR_KINDS = new Set(['home', 'bar', 'office', 'shop', 'supermarket', 'clinic', 'school', 'gym', 'garage', 'cinema', 'bowling', 'cafe'])
+
+const STATE_LABEL: Record<string, string> = {
+  eat: 'eating', sleep: 'sleeping', work: 'working', socialize: 'chatting',
+  seek_job: 'job seeking', indulge_vice: 'indulging', steal: 'stealing',
+  relax: 'relaxing', exercise: 'exercising', browse: 'browsing', wash: 'washing',
+  idle: 'idle', scene: 'talking',
+}
+
+const ROLE_LABEL: Record<string, string> = {
+  residential: 'Residential', civic: 'Offices', plaza: 'Plaza', green: 'Park',
+}
+const ROLE_COLOR: Record<string, number> = {
+  residential: 0x94a3b8, civic: 0x60a5fa, plaza: 0xfbbf24, green: 0x4ade80,
+}
 
 type AgentView = {
   id: string
@@ -46,6 +62,18 @@ type AgentView = {
   dir: number
   state: string
   partner: string | null
+  /** Current location id from the engine. */
+  at: string
+}
+
+type VenueView = {
+  loc: LocationInfo
+  /** Screen position of the building's roof, for tooltip anchoring. */
+  px: number
+  py: number
+  rx: number
+  ry: number
+  roof: number
 }
 
 export class WorldScene extends Phaser.Scene {
@@ -61,16 +89,29 @@ export class WorldScene extends Phaser.Scene {
    */
   private readonly rot: Rot = 0
 
-  private labels: Phaser.GameObjects.Container[] = []
-  private nightVeil!: Phaser.GameObjects.Rectangle
-  private lastTextScale = -1
-  private veilW = -1
-  private veilH = -1
 
   private views = new Map<string, AgentView>()
   private bubbles = new Map<string, SpeechBubble>()
   private talk: Conversation | null = null
   private queue: Conversation[] = []
+
+  /** Location id → info, for resolving agent positions to kinds. */
+  private locById = new Map<string, LocationInfo>()
+  /** Venue views for hover tooltips and occupant indicators. */
+  private venueViews = new Map<string, VenueView>()
+  /** The shared hover tooltip — moves to whatever is under the pointer. */
+  private tooltip!: Phaser.GameObjects.Container
+  private tooltipText!: Phaser.GameObjects.Text
+  private tooltipBg!: Phaser.GameObjects.Graphics
+  /** Occupant indicators above buildings. */
+  private occupantBadges = new Map<string, Phaser.GameObjects.Container>()
+  /** Currently hovered target, to avoid rebuilding tooltip every frame. */
+  private hoveredId: string | null = null
+  /** Sprites of the currently tinted building, so we can clear the old one. */
+  private tintedSprites: Phaser.GameObjects.Image[] = []
+  private tooltipAvatars: Phaser.GameObjects.Image[] = []
+  private badgeOccupants = new Map<string, string>()
+  private pendingAvatars = new Set<string>()
 
   constructor() {
     super({ key: 'WorldScene' })
@@ -94,13 +135,13 @@ export class WorldScene extends Phaser.Scene {
   }
 
   create(): void {
+    for (const l of this.world.locations) this.locById.set(l.id, l)
     this.map = buildCityMap(this.world)
     this.drawGround()
     this.drawStructures()
-    this.drawLabels()
     this.createAgents()
+    this.createTooltip()
     this.setupCamera()
-    this.setupNight()
     this.listenToEngine()
     this.fitCamera()
   }
@@ -114,61 +155,103 @@ export class WorldScene extends Phaser.Scene {
   }
 
   /**
-   * Every ground slab, baked into one texture.
+   * Every ground slab as an individual sprite.
    *
-   * As individual sprites the ground was 441 of the 759 things on screen and,
-   * interleaved by depth with buildings and trees, it forced a texture swap on
-   * almost every draw — 642 of them a frame. Nothing ever walks *behind* the
-   * ground, so it loses nothing by being flat.
+   * Phaser 4's RenderTexture does not render its framebuffer content, so the
+   * bake-into-one-texture optimisation that worked in Phaser 3 is not viable.
+   * All ground sprites share the same depth layer so they never interleave
+   * with buildings — the texture-swap cost stays low.
    */
   private drawGround(): void {
-    const n = this.map.size
-    const pad = TILE_W
-    const left = -(n - 1) * (TILE_W / 2) - TILE_W / 2 - pad
-    const top = -GROUND_ANCHOR_Y - pad
-    const width = (n - 1) * TILE_W + TILE_W + pad * 2
-    const height = (n - 1) * TILE_H + TILE_H + GROUND_ANCHOR_Y + pad * 2
-
-    const rt = this.add
-      .renderTexture(left, top, width, height)
-      .setOrigin(0, 0)
-      .setDepth(-1_000_000)
-
-    // Stamped with the same origin the slabs used as sprites — top-centre, so
-    // the diamond's top face lands on the tile's own point.
-    const origin = { originX: 0.5, originY: 0 }
     for (const cell of this.map.cells) {
-      const { px, py } = this.project(cell.x, cell.y)
+      const { px, py, rx, ry } = this.project(cell.x, cell.y)
       const key =
         cell.ground === 'street'
           ? ROAD_BY_MASK[rotateMask(cell.mask, this.rot)] ?? 'road'
           : cell.ground
-      rt.stamp(key, undefined, px - left, py - GROUND_ANCHOR_Y - top, origin)
+      this.add
+        .image(px, py, key)
+        .setOrigin(0.5, GROUND_ANCHOR_Y / TILE_H)
+        .setDepth(depthAt(rx, ry, LAYER.ground))
     }
   }
 
   /**
-   * Buildings, trees and street furniture stay as sprites, because an agent has
-   * to be able to walk behind them. They go straight onto the scene's display
-   * list: inside a Container they would be depth-sorted only against each
-   * other, and every agent would float over the whole city.
+   * Buildings, trees and street furniture. Venue buildings get an interactive
+   * hit area so the tooltip can fire on hover.
    */
   private drawStructures(): void {
     for (const cell of this.map.cells) {
       const { px, py, rx, ry } = this.project(cell.x, cell.y)
 
       if (cell.building != null) {
+        const roof = cell.building.length * STOREY
+        const sprites: Phaser.GameObjects.Image[] = []
         cell.building.forEach((n, i) => {
-          this.add
-            .image(px, py + BASE_ANCHOR_Y - i * STOREY, buildingKey(n))
-            .setOrigin(0.5, 1)
-            .setDepth(depthAt(rx, ry, LAYER.building) + i * 0.01)
+          sprites.push(
+            this.add
+              .image(px, py + BASE_ANCHOR_Y - i * STOREY, buildingKey(n))
+              .setOrigin(0.5, 1)
+              .setDepth(depthAt(rx, ry, LAYER.building) + i * 0.01),
+          )
         })
+
+        // Every sprite in the stack is interactive. Hovering any one
+        // highlights the whole building and shows one tooltip; leaving the
+        // last sprite clears both. The tinted-sprites field ensures only
+        // one building is highlighted at a time.
+        const hoverIn = (id: string, kind: 'venue' | 'filler') => {
+          if (this.hoveredId === id) return
+          this.clearBuildingHover()
+          this.tintedSprites = sprites
+          for (const s of sprites) s.setTint(0xc8d8ff)
+          this.input.setDefaultCursor('pointer')
+          if (kind === 'venue') {
+            this.showTooltip(id, 'venue')
+          } else {
+            const label = ROLE_LABEL[cell.role] ?? 'Building'
+            const dot = ROLE_COLOR[cell.role] ?? 0x94a3b8
+            this.hoveredId = id
+            const scale = 1 / this.cameras.main.zoom
+            this.rebuildTooltip(label, dot)
+            this.tooltip.setPosition(px, py + BASE_ANCHOR_Y - roof - 18 * scale)
+            this.tooltip.setScale(scale)
+            this.tooltip.setDepth(depthAt(rx, ry, LAYER.label) + 4000)
+            this.tooltip.setVisible(true)
+          }
+        }
+        const hoverOut = (id: string) => {
+          if (this.hoveredId !== id) return
+          this.clearBuildingHover()
+        }
+
+        const hoverId = cell.venue?.id ?? `filler-${cell.x}-${cell.y}`
+        const hoverKind = cell.venue != null ? 'venue' as const : 'filler' as const
+
+        if (cell.venue != null) {
+          this.venueViews.set(cell.venue.id, { loc: cell.venue, px, py, rx, ry, roof })
+        }
+        for (const spr of sprites) {
+          spr.setInteractive({ cursor: 'pointer' })
+          spr.on('pointerover', () => hoverIn(hoverId, hoverKind))
+          spr.on('pointerout', () => hoverOut(hoverId))
+          spr.on('pointerup', (p: Phaser.Input.Pointer) => {
+            if (p.getDistance() > 6) return
+            if (this.isOverCard(p)) return
+            const cam = this.cameras.main
+            cam.pan(px, py, 400, 'Sine.easeInOut')
+            cam.zoomTo(Math.max(cam.zoom, 1), 400)
+            if (cell.venue != null) {
+              window.dispatchEvent(new CustomEvent('aw:venue-click', { detail: { id: cell.venue.id } }))
+            } else {
+              window.dispatchEvent(new CustomEvent('aw:venue-click', {
+                detail: { id: null, role: cell.role },
+              }))
+            }
+          })
+        }
       }
 
-      // Props touch the ground at the bottom of their own sprite, so they sit
-      // at the tile's centre. Offsetting them by BASE_ANCHOR_Y like a building
-      // planted every tree half a tile toward the viewer.
       for (const prop of cell.props) {
         const off = toScreen(prop.ox ?? 0, prop.oy ?? 0)
         const img = this.add
@@ -180,43 +263,196 @@ export class WorldScene extends Phaser.Scene {
     }
   }
 
-  /**
-   * Labels sit above the roof, not on the building. Painted text over a facade
-   * is unreadable at any font size — the plate is what makes it legible.
-   */
-  private drawLabels(): void {
-    for (const cell of this.map.venues) {
-      const v = cell.venue
-      if (v == null || v.kind === 'home') continue
-      const { px, py, rx, ry } = this.project(cell.x, cell.y)
-      const roof = (cell.building?.length ?? 1) * STOREY
-      const label = this.makeLabel(v.name, KIND_COLOR[v.kind] ?? 0x94a3b8)
-      label.setPosition(px, py + BASE_ANCHOR_Y - roof - 14)
-      label.setDepth(depthAt(rx, ry, LAYER.label) + 4000)
-      this.labels.push(label)
+  // ---- tooltip & hover -------------------------------------------------------
+
+  private createTooltip(): void {
+    this.tooltipBg = this.add.graphics()
+    this.tooltipText = this.add.text(0, 0, '', {
+      fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
+      fontSize: '11px',
+      color: '#e8edf5',
+      lineSpacing: 4,
+    })
+    this.tooltipText.setResolution(3)
+    this.tooltip = this.add.container(0, 0, [this.tooltipBg, this.tooltipText])
+    this.tooltip.setVisible(false)
+    this.tooltip.setDepth(2_000_000)
+  }
+
+  private showTooltip(id: string, kind: 'venue' | 'agent'): void {
+    this.hoveredId = id
+    const scale = 1 / this.cameras.main.zoom
+    if (kind === 'venue') {
+      const vv = this.venueViews.get(id)
+      if (vv == null) return
+      const occupants = this.getOccupants(id)
+      const dot = KIND_COLOR[vv.loc.kind] ?? 0x94a3b8
+      let label = vv.loc.name
+      const avLines: { id: string; line: number }[] = []
+      if (occupants.length > 0) {
+        label += '\n' + occupants.map((v, i) => {
+          this.ensureAvatarTexture(v.id)
+          avLines.push({ id: v.id, line: i + 1 })
+          return '     ' + v.name
+        }).join('\n')
+      }
+      this.rebuildTooltip(label, dot, avLines)
+      this.tooltip.setPosition(vv.px, vv.py + BASE_ANCHOR_Y - vv.roof - 18 * scale)
+      this.tooltip.setScale(scale)
+      this.tooltip.setDepth(depthAt(vv.rx, vv.ry, LAYER.label) + 4000)
+    } else {
+      const v = this.views.get(id)
+      if (v == null) return
+      this.ensureAvatarTexture(v.id)
+      this.rebuildTooltip(v.name, 0xffffff, [{ id: v.id, line: 0 }])
+      const { px, py, rx, ry } = this.project(v.x, v.y)
+      this.tooltip.setPosition(px, py - 42 * scale)
+      this.tooltip.setScale(scale)
+      this.tooltip.setDepth(depthAt(rx, ry, LAYER.label) + 4000)
+    }
+    this.tooltip.setVisible(true)
+  }
+
+  private hideTooltip(id: string): void {
+    if (this.hoveredId !== id) return
+    this.hoveredId = null
+    this.tooltip.setVisible(false)
+  }
+
+  private clearBuildingHover(): void {
+    for (const s of this.tintedSprites) s.clearTint()
+    this.tintedSprites = []
+    this.hoveredId = null
+    this.tooltip.setVisible(false)
+    this.input.setDefaultCursor('default')
+  }
+
+  private ensureAvatarTexture(agentId: string): void {
+    const key = `avatar-${agentId}`
+    if (this.textures.exists(key) || this.pendingAvatars.has(key)) return
+    const url = avatarDataUrl(agentId)
+    if (url) {
+      this.pendingAvatars.add(key)
+      this.textures.addBase64(key, url)
     }
   }
 
-  private makeLabel(text: string, dot: number): Phaser.GameObjects.Container {
-    const t = this.add.text(0, 0, text, {
-      fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
-      fontSize: '12px',
-      color: '#e8edf5',
-    })
-    t.setResolution(3) // canvas text is rasterised once; 1x goes to mush on zoom
-    const w = t.width + 26
-    const h = 20
-    t.setPosition(-w / 2 + 18, -t.height / 2)
+  private rebuildTooltip(text: string, dot: number, avatars?: { id: string; line: number }[]): void {
+    for (const img of this.tooltipAvatars) this.tooltip.remove(img, true)
+    this.tooltipAvatars = []
 
-    const g = this.add.graphics()
-    g.fillStyle(0x0b1220, 0.86)
-    g.lineStyle(1, 0x2b3a52, 1)
-    g.fillRoundedRect(-w / 2, -h / 2, w, h, 10)
-    g.strokeRoundedRect(-w / 2, -h / 2, w, h, 10)
-    g.fillStyle(dot, 1)
-    g.fillCircle(-w / 2 + 11, 0, 3.5)
+    this.tooltipText.setText(text)
+    const w = this.tooltipText.width + 26
+    const h = this.tooltipText.height + 10
+    this.tooltipText.setPosition(-w / 2 + 18, -h / 2 + 5)
+    this.tooltipBg.clear()
+    this.tooltipBg.fillStyle(0x0b1220, 0.9)
+    this.tooltipBg.lineStyle(1, 0x2b3a52, 1)
+    this.tooltipBg.fillRoundedRect(-w / 2, -h / 2, w, h, 10)
+    this.tooltipBg.strokeRoundedRect(-w / 2, -h / 2, w, h, 10)
 
-    return this.add.container(0, 0, [g, t])
+    const hasLine0Av = avatars?.some((a) => a.line === 0)
+    if (!hasLine0Av) {
+      this.tooltipBg.fillStyle(dot, 1)
+      this.tooltipBg.fillCircle(-w / 2 + 11, 0, 3.5)
+    }
+
+    if (avatars?.length) {
+      const nLines = text.split('\n').length
+      const lineH = this.tooltipText.height / nLines
+      const textY = -h / 2 + 5
+      for (const av of avatars) {
+        const key = `avatar-${av.id}`
+        if (!this.textures.exists(key)) continue
+        const y = textY + av.line * lineH + lineH / 2
+        const x = av.line === 0 ? -w / 2 + 11 : -w / 2 + 24
+        const sz = av.line === 0 ? 14 : 12
+        const img = this.add.image(x, y, key)
+        img.setDisplaySize(sz, sz)
+        this.tooltip.add(img)
+        this.tooltipAvatars.push(img)
+      }
+    }
+  }
+
+  private getOccupants(locationId: string): AgentView[] {
+    const result: AgentView[] = []
+    for (const v of this.views.values()) {
+      if (v.at === locationId && !v.travelling) result.push(v)
+    }
+    return result
+  }
+
+  private updateOccupantBadges(): void {
+    const scale = 1 / this.cameras.main.zoom
+    for (const [locId, vv] of this.venueViews) {
+      const occupants = this.getOccupants(locId)
+      let badge = this.occupantBadges.get(locId)
+      if (occupants.length === 0) {
+        if (badge != null) badge.setVisible(false)
+        this.badgeOccupants.delete(locId)
+        continue
+      }
+      const occKey = occupants.map(v => v.id).join(',')
+      const lines = occupants
+        .map(v => `     ${v.name} · ${STATE_LABEL[v.state] ?? v.state}`)
+        .join('\n')
+      if (badge == null) {
+        const t = this.add.text(0, 0, '', {
+          fontFamily: 'Inter, system-ui, sans-serif',
+          fontSize: '10px',
+          color: '#cbd5e1',
+          lineSpacing: 3,
+        })
+        t.setResolution(3)
+        const bg = this.add.graphics()
+        badge = this.add.container(0, 0, [bg, t])
+        this.occupantBadges.set(locId, badge)
+      }
+      const t = badge.list[1] as Phaser.GameObjects.Text
+      const bg = badge.list[0] as Phaser.GameObjects.Graphics
+      t.setText(lines)
+      const pad = 10
+      const w = t.width + pad * 2
+      const h = t.height + pad
+      const arrow = 6
+      t.setPosition(-w / 2 + pad, -h / 2 + pad / 2)
+      bg.clear()
+      bg.fillStyle(0x1e293b, 0.88)
+      bg.fillRoundedRect(-w / 2, -h / 2, w, h, 8)
+      bg.fillTriangle(-arrow, h / 2, arrow, h / 2, 0, h / 2 + arrow)
+
+      if (this.badgeOccupants.get(locId) !== occKey) {
+        this.badgeOccupants.set(locId, occKey)
+        while (badge.list.length > 2) badge.remove(badge.list[badge.list.length - 1]!, true)
+        let allLoaded = true
+        for (const v of occupants) {
+          this.ensureAvatarTexture(v.id)
+          const key = `avatar-${v.id}`
+          if (!this.textures.exists(key)) { allLoaded = false; continue }
+          const img = this.add.image(0, 0, key)
+          img.setDisplaySize(12, 12)
+          badge.add(img)
+        }
+        if (!allLoaded) this.badgeOccupants.delete(locId)
+      }
+
+      const nLines = occupants.length
+      const lineH = t.height / nLines
+      const textY = -h / 2 + pad / 2
+      let imgIdx = 2
+      for (let i = 0; i < nLines && imgIdx < badge.list.length; i++) {
+        const img = badge.list[imgIdx] as Phaser.GameObjects.Image
+        if (img == null) break
+        img.setPosition(-w / 2 + pad + 8, textY + i * lineH + lineH / 2)
+        imgIdx++
+      }
+
+      badge.setPosition(vv.px, vv.py + BASE_ANCHOR_Y - vv.roof - (arrow + 4) * scale)
+      badge.setScale(scale)
+      badge.setDepth(depthAt(vv.rx, vv.ry, LAYER.label) + 3000)
+      badge.setVisible(true)
+    }
   }
 
   // ---- people --------------------------------------------------------------
@@ -227,6 +463,7 @@ export class WorldScene extends Phaser.Scene {
       const start = { x: home?.x ?? this.map.size / 2, y: home?.y ?? this.map.size / 2 }
       const char = new Character(this, a.id)
       const badge = this.makeBadge(a.name)
+      badge.setVisible(false)
       this.views.set(a.id, {
         id: a.id, name: a.name, char, badge,
         x: start.x, y: start.y,
@@ -234,6 +471,7 @@ export class WorldScene extends Phaser.Scene {
         targetP: 1, p: 1, travelling: false,
         spread: { x: 0, y: 0 },
         dir: 1, state: 'idle', partner: null,
+        at: home?.id ?? '',
       })
 
       char.container.setInteractive(
@@ -241,9 +479,12 @@ export class WorldScene extends Phaser.Scene {
         Phaser.Geom.Rectangle.Contains,
       )
       char.container.on('pointerup', (p: Phaser.Input.Pointer) => {
-        if (p.getDistance() > 6) return // this click was a camera drag
+        if (p.getDistance() > 6) return
+        if (this.isOverCard(p)) return
         window.dispatchEvent(new CustomEvent('aw:agent-click', { detail: { id: a.id } }))
       })
+      char.container.on('pointerover', () => this.showTooltip(a.id, 'agent'))
+      char.container.on('pointerout', () => this.hideTooltip(a.id))
       this.bubbles.set(a.id, new SpeechBubble(this))
     }
   }
@@ -263,6 +504,20 @@ export class WorldScene extends Phaser.Scene {
     return this.add.container(0, 0, [g, t])
   }
 
+  private isOverCard(p: Phaser.Input.Pointer): boolean {
+    const ev = p.event
+    const cx = 'clientX' in ev ? ev.clientX : (ev as TouchEvent).touches?.[0]?.clientX ?? 0
+    const cy = 'clientY' in ev ? ev.clientY : (ev as TouchEvent).touches?.[0]?.clientY ?? 0
+    const el = document.elementFromPoint(cx, cy)
+    return el != null && (el.closest('#agent-card') != null || el.closest('#venue-card') != null || el.closest('#controls') != null)
+  }
+
+  private isIndoors(v: AgentView): boolean {
+    if (v.travelling) return false
+    const loc = this.locById.get(v.at)
+    return loc != null && INDOOR_KINDS.has(loc.kind)
+  }
+
   // ---- camera --------------------------------------------------------------
 
   private setupCamera(): void {
@@ -276,6 +531,7 @@ export class WorldScene extends Phaser.Scene {
     let lastX = 0
     let lastY = 0
     this.input.on('pointerdown', (p: Phaser.Input.Pointer) => {
+      if (this.isOverCard(p)) return
       dragging = true
       lastX = p.x
       lastY = p.y
@@ -314,59 +570,10 @@ export class WorldScene extends Phaser.Scene {
     cam.setZoom(Phaser.Math.Clamp(Math.min(cam.width / spanW, cam.height / spanH) * 0.95, 0.18, 2.4))
   }
 
-  // ---- time of day ---------------------------------------------------------
-
-  private setupNight(): void {
-    // Sized from the camera's world view rather than pinned with
-    // scrollFactor(0): a pinned object still scales with zoom, so it shrank to
-    // a dark rectangle in the middle of the map.
-    this.nightVeil = this.add
-      .rectangle(0, 0, 10, 10, 0xffffff, 1)
-      .setOrigin(0, 0)
-      .setDepth(1_000_000)
-      .setBlendMode(Phaser.BlendModes.MULTIPLY)
-  }
-
-  /**
-   * `setSize` rebuilds the rectangle's geometry, so only do it when the view
-   * actually changed — panning moves the veil, but a still camera should not
-   * be paying to rebuild a full-screen quad sixty times a second.
-   */
-  private coverViewWithVeil(): void {
-    const v = this.cameras.main.worldView
-    this.nightVeil.setPosition(v.x - 4, v.y - 4)
-    if (v.width !== this.veilW || v.height !== this.veilH) {
-      this.veilW = v.width
-      this.veilH = v.height
-      this.nightVeil.setSize(v.width + 8, v.height + 8)
-    }
-  }
-
-  /**
-   * A single tinted sheet over the whole view. Cheap, and it reads instantly —
-   * a glance at the map should tell you what time it is.
-   */
-  private applyDaylight(hour: number): void {
-    // Night is a cool cast, not a blackout. Multiplying down to a third of
-    // brightness made the map unreadable for a third of every day, and this
-    // view exists to be read — the clock in the sidebar already says the hour.
-    const night = { r: 0xa6, g: 0xb2, b: 0xe2 }
-    const dusk = { r: 0xe8, g: 0xc4, b: 0xac }
-    const day = { r: 0xff, g: 0xff, b: 0xff }
-    let c = day
-    if (hour >= 22 || hour < 5) c = night
-    else if (hour < 7) c = mix(night, dusk, (hour - 5) / 2)
-    else if (hour < 9) c = mix(dusk, day, (hour - 7) / 2)
-    else if (hour >= 20) c = mix(dusk, night, (hour - 20) / 2)
-    else if (hour >= 18) c = mix(day, dusk, (hour - 18) / 2)
-    this.nightVeil.fillColor = (c.r << 16) | (c.g << 8) | c.b
-  }
-
   // ---- engine --------------------------------------------------------------
 
   private listenToEngine(): void {
     this.conn.onState((s: StateMsg) => {
-      this.applyDaylight(s.hour)
       this.updateAgents(s.agents)
     })
     this.conn.onFeed((item: FeedItem) => {
@@ -394,12 +601,11 @@ export class WorldScene extends Phaser.Scene {
       if (v == null) continue
       v.state = a.state
       v.partner = a.partner
+      v.at = a.at
       v.travelling = a.state === 'travel' && a.progress < 1
       v.from = a.from
       v.to = a.to
       v.targetP = a.progress
-      // A fresh journey restarts the eased value, or the agent would appear to
-      // be most of the way along a walk it has not started.
       if (!v.travelling) v.p = 1
       else if (v.p > a.progress) v.p = a.progress
 
@@ -464,15 +670,18 @@ export class WorldScene extends Phaser.Scene {
 
   update(_time: number, delta: number): void {
     const cam = this.cameras.main
-    // Ease the *progress*, not the position, so an agent is always exactly on
-    // the route. Chasing a moving route point at a fixed speed let them fall
-    // behind and cut the corner straight across the blocks.
-    const ease = 1 - Math.exp(-delta / 170)
-    const textScale = 1 / cam.zoom
-    const showBadge = cam.zoom > 0.42
+    const TICK_MS = 2000
+    const posEase = 1 - Math.exp(-delta / 400)
 
     for (const v of this.views.values()) {
-      if (v.travelling) v.p += (v.targetP - v.p) * ease
+      if (v.travelling) {
+        const step = (delta / TICK_MS) * (v.targetP - v.p + 0.01)
+        v.p = Math.min(v.p + Math.abs(step), v.targetP)
+      }
+
+      const indoor = this.isIndoors(v)
+      v.char.container.setVisible(!indoor)
+      v.badge.setVisible(false)
 
       const goal = v.travelling ? this.routePoint(v, v.p) : { x: v.to.x, y: v.to.y }
       goal.x += v.spread.x
@@ -481,42 +690,21 @@ export class WorldScene extends Phaser.Scene {
       const dx = goal.x - v.x
       const dy = goal.y - v.y
       const moved = Math.hypot(dx, dy)
-      v.x += dx * ease
-      v.y += dy * ease
+      v.x += dx * posEase
+      v.y += dy * posEase
       if (moved > 0.004) v.dir = dirFor(dx, dy, v.dir)
 
       const { px, py, rx, ry } = this.project(v.x, v.y)
       v.char.container.setPosition(px, py)
       v.char.container.setDepth(depthAt(rx, ry, LAYER.agent))
 
-      // Someone who has arrived should stop marching on the spot, so a walk
-      // only plays while there is ground left to cover.
       const walking = v.travelling && moved > 0.01
       const anim: AnimName = walking ? 'walk' : animForState(v.state)
       v.char.update(delta, anim, v.dir)
-
-      v.badge.setVisible(showBadge)
-      if (showBadge) {
-        v.badge.setPosition(px, py - 40 * textScale - 4)
-        v.badge.setScale(textScale)
-        v.badge.setDepth(depthAt(rx, ry, LAYER.label) + 2000)
-      }
     }
 
-    this.rescaleText()
-    this.coverViewWithVeil()
+    this.updateOccupantBadges()
     this.stepConversation(delta)
-  }
-
-  /** Text is world-space so it sorts against buildings, but has to read at a
-   *  constant size — and re-scaling twenty containers every frame for a zoom
-   *  that rarely changes is pure waste. */
-  private rescaleText(): void {
-    const scale = 1 / this.cameras.main.zoom
-    if (scale === this.lastTextScale) return
-    this.lastTextScale = scale
-    const visible = this.cameras.main.zoom > 0.34
-    for (const l of this.labels) l.setScale(scale).setVisible(visible)
   }
 
   /**
@@ -572,13 +760,3 @@ export class WorldScene extends Phaser.Scene {
     }
   }
 }
-
-const mix = (
-  a: { r: number; g: number; b: number },
-  b: { r: number; g: number; b: number },
-  t: number,
-): { r: number; g: number; b: number } => ({
-  r: Math.round(a.r + (b.r - a.r) * t),
-  g: Math.round(a.g + (b.g - a.g) * t),
-  b: Math.round(a.b + (b.b - a.b) * t),
-})

@@ -37,13 +37,13 @@ export const GATE_WEIGHTS = {
  * nothing. Debt, strong feeling, goal conflict or a triggered vice must carry
  * the encounter; the incidental terms only break ties between real candidates.
  */
-export const MIN_SUBSTANCE = 1.0
+export const MIN_SUBSTANCE = 0.6
 
 export const GATE_DEFAULTS = {
   /** Rejects mere co-location. Volume is controlled by the budget, not here. */
   threshold: 2.0,
-  maxScenesPerTick: 3,
-  maxScenesPerAgentPerDay: 6,
+  maxScenesPerTick: 5,
+  maxScenesPerAgentPerDay: 10,
 } as const
 
 export type SceneBudget = {

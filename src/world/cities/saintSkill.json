@@ -1,0 +1,406 @@
+{
+  "name": "Saint Skill",
+  "grid": {
+    "width": 17,
+    "height": 17
+  },
+  "streetPeriod": 4,
+  "districts": [
+    "Old Quarter",
+    "Dockside",
+    "Hillcrest",
+    "Ironworks"
+  ],
+  "blocks": [
+    {
+      "bx": 0,
+      "by": 0,
+      "role": "residential"
+    },
+    {
+      "bx": 1,
+      "by": 0,
+      "role": "residential"
+    },
+    {
+      "bx": 2,
+      "by": 0,
+      "role": "green"
+    },
+    {
+      "bx": 3,
+      "by": 0,
+      "role": "residential"
+    },
+    {
+      "bx": 0,
+      "by": 1,
+      "role": "residential"
+    },
+    {
+      "bx": 1,
+      "by": 1,
+      "role": "civic"
+    },
+    {
+      "bx": 2,
+      "by": 1,
+      "role": "civic"
+    },
+    {
+      "bx": 3,
+      "by": 1,
+      "role": "civic"
+    },
+    {
+      "bx": 0,
+      "by": 2,
+      "role": "green"
+    },
+    {
+      "bx": 1,
+      "by": 2,
+      "role": "civic"
+    },
+    {
+      "bx": 2,
+      "by": 2,
+      "role": "plaza"
+    },
+    {
+      "bx": 3,
+      "by": 2,
+      "role": "civic"
+    },
+    {
+      "bx": 0,
+      "by": 3,
+      "role": "residential"
+    },
+    {
+      "bx": 1,
+      "by": 3,
+      "role": "civic"
+    },
+    {
+      "bx": 2,
+      "by": 3,
+      "role": "civic"
+    },
+    {
+      "bx": 3,
+      "by": 3,
+      "role": "civic"
+    }
+  ],
+  "venues": [
+    {
+      "kind": "bar",
+      "name": "The Rusty Nail",
+      "x": 13,
+      "y": 5,
+      "district": "Old Quarter"
+    },
+    {
+      "kind": "bar",
+      "name": "Dockside Tavern",
+      "x": 5,
+      "y": 9,
+      "district": "Old Quarter"
+    },
+    {
+      "kind": "bar",
+      "name": "The Forge",
+      "x": 13,
+      "y": 9,
+      "district": "Old Quarter"
+    },
+    {
+      "kind": "office",
+      "name": "Blackwell & Sons",
+      "x": 5,
+      "y": 13,
+      "district": "Old Quarter"
+    },
+    {
+      "kind": "shop",
+      "name": "Hillcrest Goods",
+      "x": 9,
+      "y": 13,
+      "district": "Old Quarter"
+    },
+    {
+      "kind": "shop",
+      "name": "The Iron Market",
+      "x": 13,
+      "y": 13,
+      "district": "Old Quarter"
+    },
+    {
+      "kind": "supermarket",
+      "name": "Harbour Fresh",
+      "x": 5,
+      "y": 5,
+      "district": "Old Quarter"
+    },
+    {
+      "kind": "clinic",
+      "name": "St. Skill Infirmary",
+      "x": 9,
+      "y": 5,
+      "district": "Old Quarter"
+    },
+    {
+      "kind": "school",
+      "name": "Ironworks Academy",
+      "x": 15,
+      "y": 7,
+      "district": "Old Quarter"
+    },
+    {
+      "kind": "gym",
+      "name": "The Furnace Gym",
+      "x": 7,
+      "y": 11,
+      "district": "Old Quarter"
+    },
+    {
+      "kind": "park",
+      "name": "Hilltop Gardens",
+      "x": 10,
+      "y": 2,
+      "district": "Hillcrest"
+    },
+    {
+      "kind": "garage",
+      "name": "Cranks & Bolts",
+      "x": 15,
+      "y": 11,
+      "district": "Old Quarter"
+    },
+    {
+      "kind": "cinema",
+      "name": "The Lantern Cinema",
+      "x": 7,
+      "y": 15,
+      "district": "Old Quarter"
+    },
+    {
+      "kind": "cafe",
+      "name": "Bean & Anvil",
+      "x": 11,
+      "y": 15,
+      "district": "Old Quarter"
+    },
+    {
+      "kind": "cafe",
+      "name": "The Morning Press",
+      "x": 15,
+      "y": 15,
+      "district": "Old Quarter"
+    }
+  ],
+  "homePlots": [
+    {
+      "x": 5,
+      "y": 1,
+      "district": "Dockside"
+    },
+    {
+      "x": 7,
+      "y": 3,
+      "district": "Dockside"
+    },
+    {
+      "x": 7,
+      "y": 1,
+      "district": "Dockside"
+    },
+    {
+      "x": 5,
+      "y": 3,
+      "district": "Dockside"
+    },
+    {
+      "x": 6,
+      "y": 1,
+      "district": "Dockside"
+    },
+    {
+      "x": 5,
+      "y": 2,
+      "district": "Dockside"
+    },
+    {
+      "x": 7,
+      "y": 2,
+      "district": "Dockside"
+    },
+    {
+      "x": 6,
+      "y": 3,
+      "district": "Dockside"
+    },
+    {
+      "x": 13,
+      "y": 1,
+      "district": "Hillcrest"
+    },
+    {
+      "x": 15,
+      "y": 3,
+      "district": "Hillcrest"
+    },
+    {
+      "x": 15,
+      "y": 1,
+      "district": "Hillcrest"
+    },
+    {
+      "x": 13,
+      "y": 3,
+      "district": "Hillcrest"
+    },
+    {
+      "x": 14,
+      "y": 1,
+      "district": "Hillcrest"
+    },
+    {
+      "x": 13,
+      "y": 2,
+      "district": "Hillcrest"
+    },
+    {
+      "x": 15,
+      "y": 2,
+      "district": "Hillcrest"
+    },
+    {
+      "x": 14,
+      "y": 3,
+      "district": "Hillcrest"
+    },
+    {
+      "x": 1,
+      "y": 5,
+      "district": "Dockside"
+    },
+    {
+      "x": 3,
+      "y": 7,
+      "district": "Dockside"
+    },
+    {
+      "x": 3,
+      "y": 5,
+      "district": "Dockside"
+    },
+    {
+      "x": 1,
+      "y": 7,
+      "district": "Dockside"
+    },
+    {
+      "x": 2,
+      "y": 5,
+      "district": "Dockside"
+    },
+    {
+      "x": 1,
+      "y": 6,
+      "district": "Dockside"
+    },
+    {
+      "x": 3,
+      "y": 6,
+      "district": "Dockside"
+    },
+    {
+      "x": 2,
+      "y": 7,
+      "district": "Dockside"
+    },
+    {
+      "x": 1,
+      "y": 13,
+      "district": "Ironworks"
+    },
+    {
+      "x": 3,
+      "y": 15,
+      "district": "Ironworks"
+    },
+    {
+      "x": 3,
+      "y": 13,
+      "district": "Ironworks"
+    },
+    {
+      "x": 1,
+      "y": 15,
+      "district": "Ironworks"
+    },
+    {
+      "x": 2,
+      "y": 13,
+      "district": "Ironworks"
+    },
+    {
+      "x": 1,
+      "y": 14,
+      "district": "Ironworks"
+    },
+    {
+      "x": 3,
+      "y": 14,
+      "district": "Ironworks"
+    },
+    {
+      "x": 2,
+      "y": 15,
+      "district": "Ironworks"
+    },
+    {
+      "x": 1,
+      "y": 1,
+      "district": "Dockside"
+    },
+    {
+      "x": 3,
+      "y": 3,
+      "district": "Dockside"
+    },
+    {
+      "x": 3,
+      "y": 1,
+      "district": "Dockside"
+    },
+    {
+      "x": 1,
+      "y": 3,
+      "district": "Dockside"
+    },
+    {
+      "x": 2,
+      "y": 1,
+      "district": "Dockside"
+    },
+    {
+      "x": 1,
+      "y": 2,
+      "district": "Dockside"
+    },
+    {
+      "x": 3,
+      "y": 2,
+      "district": "Dockside"
+    },
+    {
+      "x": 2,
+      "y": 3,
+      "district": "Dockside"
+    }
+  ],
+  "openingsPerWorkplace": 2
+}

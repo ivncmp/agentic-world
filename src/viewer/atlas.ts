@@ -105,11 +105,14 @@ export const RECIPES: Record<string, Recipe> = {
   bar:         { ground: [16, 23],             mid: [45, 49, 52],     floors: [0, 1], roof: FLAT_ROOF },
   office:      { ground: [0, 8],               mid: [50, 55, 56],     floors: [2, 3], roof: FLAT_ROOF },
   shop:        { ground: [7, 24],              mid: [48],             floors: [0, 0], roof: FLAT_ROOF },
-  supermarket: { ground: [15, 31],             mid: [],               floors: [0, 0], roof: FLAT_ROOF },
+  supermarket: { ground: [33, 35],             mid: [],               floors: [0, 0], roof: FLAT_ROOF },
   clinic:      { ground: [8],                  mid: [53, 55, 56],     floors: [1, 2], roof: FLAT_ROOF },
   school:      { ground: [31],                 mid: [44, 51],         floors: [1, 2], roof: FLAT_ROOF },
   gym:         { ground: [0],                  mid: [43, 47],         floors: [1, 1], roof: FLAT_ROOF },
   garage:      { ground: [7],                  mid: [38],             floors: [0, 0], roof: FLAT_ROOF },
+  cinema:      { ground: [36, 40],             mid: [49, 52],         floors: [0, 1], roof: FLAT_ROOF },
+  bowling:     { ground: [33, 41],             mid: [],               floors: [0, 0], roof: FLAT_ROOF },
+  cafe:        { ground: [42, 37],             mid: [53],             floors: [0, 0], roof: GABLE_ROOF },
   /** Scenery. Nobody lives here; it exists so the blocks are not half empty. */
   filler:      { ground: [0, 7, 8, 24, 39, 44, 48, 32], mid: [39, 48, 50, 55], floors: [0, 1], roof: [...GABLE_ROOF, ...FLAT_ROOF] },
   /** Taller scenery for the middle of town. */
@@ -163,4 +166,5 @@ export const KIND_COLOR: Record<string, number> = {
   home: 0x94a3b8, bar: 0xc084fc, office: 0x60a5fa, shop: 0xfbbf24,
   supermarket: 0x34d399, clinic: 0xf87171, school: 0x38bdf8,
   gym: 0xfb923c, park: 0x4ade80, garage: 0xa8a29e,
+  cinema: 0xe879f9, bowling: 0xf472b6, cafe: 0xfcd34d,
 }

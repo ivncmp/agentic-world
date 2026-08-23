@@ -3,13 +3,13 @@ import { decayNeeds, growViceUrges } from '../agents/needs.js'
 import { resolveValues } from '../agents/values.js'
 import { viceDef } from '../agents/vices.js'
 import type { Location, LocationId, LocationKind, Tile } from '../world/locations.js'
-import { travelTicks } from '../world/locations.js'
+import { travelTicks, MIN_STAY_TICKS } from '../world/locations.js'
 import { occupationDef } from '../world/occupations.js'
 import { deriveGoals, HOME_DEPOSIT } from '../agents/goals.js'
 import { scoreEncounter, selectScenes, GATE_DEFAULTS, type SceneCandidate, type SceneBudget } from '../cognition/gate.js'
-import { chooseAction, ACTION_TICKS, type Action } from './actions.js'
+import { chooseAction, ACTION_TICKS, type Action, type FriendLocation } from './actions.js'
 import { adjustFeeling, coolFeeling } from './relationship.js'
-import { hourOfDay, isDayBoundary, minutes, TICKS_PER_DAY, TICKS_PER_HOUR } from './clock.js'
+import { hourOfDay, isDayBoundary, dayOfWeek as dayOfWeekFn, minutes, TICKS_PER_DAY, TICKS_PER_HOUR } from './clock.js'
 
 export type WorldEvent =
   | { type: 'scene_started'; tick: number; a: AgentId; b: AgentId }
@@ -19,6 +19,9 @@ export type WorldEvent =
   | { type: 'action'; tick: number; agent: AgentId; action: Action }
   | { type: 'theft'; tick: number; thief: AgentId; victim: AgentId; amount: number }
   | { type: 'rent_missed'; tick: number; agent: AgentId; arrears: number }
+  | { type: 'rent_warning'; tick: number; agent: AgentId; arrears: number }
+  | { type: 'evicted'; tick: number; agent: AgentId; arrears: number }
+  | { type: 'wage_garnished'; tick: number; agent: AgentId; amount: number; remaining: number }
   | { type: 'hired'; tick: number; agent: AgentId }
 
 export type WorldState = {
@@ -82,20 +85,21 @@ export const GRIEVANCE_PER_THEFT = 0.35
  */
 export const GRIEVANCE_DAILY_DECAY = 0.95
 
-/**
- * A quiet life still gets looked at eventually, so an agent who never makes the
- * news does not go months without consolidating or drifting.
- */
-export const REFLECT_AT_LEAST_EVERY_DAYS = 3
+/** Arrears thresholds, in multiples of the agent's rent. */
+export const ARREARS_WARNING_FACTOR = 2
+export const ARREARS_EVICTION_FACTOR = 5
+/** Fraction of each wage tick diverted to pay down arrears. */
+export const GARNISHMENT_RATE = 0.25
 
-/** Events that make a day worth reflecting on. Routine — work, sleep, meals —
- *  does not: four of four diaries on a quiet day said "nothing happened", which
- *  is four paid calls to confirm a void. */
+/** Events worth tracking in the day's notable set. */
 const isNotable = (e: WorldEvent): AgentId[] => {
   switch (e.type) {
     case 'theft': return [e.thief, e.victim]
     case 'scene_started': return [e.a, e.b]
     case 'rent_missed':
+    case 'rent_warning':
+    case 'evicted':
+    case 'wage_garnished':
     case 'hired':
     case 'bought_home': return [e.agent]
     default: return []
@@ -132,6 +136,7 @@ export function tick(state: WorldState, deps: TickDeps): TickResult {
   const ticksPerDay = deps.ticksPerDay ?? TICKS_PER_DAY
   const nextTick = state.tick + 1
   const hour = hourOfDay(nextTick, ticksPerDay)
+  const dow = dayOfWeekFn(nextTick, ticksPerDay)
   const events: WorldEvent[] = []
 
   const openings = new Map(state.openings)
@@ -203,13 +208,34 @@ export function tick(state: WorldState, deps: TickDeps): TickResult {
         events.push({ type: 'scene_abandoned', tick: nextTick, a: current.id, b: act.with })
       }
       // A walk lands its agent at the destination.
-      current = { ...current, location: act.from != null ? act.at : current.location, activity: null }
+      const arrived = act.from != null
+      current = { ...current, location: arrived ? act.at : current.location, activity: null, arrivedTick: arrived ? nextTick : current.arrivedTick }
       draft.set(id, current)
+    }
+
+    // Minimum stay: an agent who just arrived must stay a while before leaving.
+    const locKind = kindOf.get(current.location)
+    const minStay = locKind != null ? (MIN_STAY_TICKS[locKind] ?? 0) : 0
+    if (minStay > 0 && current.arrivedTick != null && nextTick - current.arrivedTick < minStay) continue
+
+    // Build friend locations for this agent.
+    const friends: FriendLocation[] = []
+    for (const [key, rel] of relationships) {
+      if (rel.affection < 0.25) continue
+      const parts = key.split(':')
+      const otherId = parts[0] === current.id ? parts[1] : parts[1] === current.id ? parts[0] : null
+      if (otherId == null) continue
+      const other = draft.get(otherId)
+      if (other == null || other.activity?.kind === 'travel') continue
+      const otherKind = kindOf.get(other.location)
+      if (otherKind == null || otherKind === 'home') continue
+      friends.push({ friendId: otherId, affection: rel.affection, locationId: other.location, locationKind: otherKind })
     }
 
     const action = chooseAction(current, {
       tick: nextTick,
       hour,
+      dayOfWeek: dow,
       values: resolveValues(current.values, deps.now),
       locationKindOf: (l) => kindOf.get(l) ?? 'home',
       homeId: current.location.startsWith('home-') ? current.location : `home-${current.id}`,
@@ -217,6 +243,7 @@ export function tick(state: WorldState, deps: TickDeps): TickResult {
       findLocation: (k) => haunt(current.id, k),
       co: occupants(current.location, current.id),
       feelingToward: (other) => relationships.get(pairKey(current.id, other))?.affection ?? 0,
+      friendLocations: friends,
       random: deps.random,
     })
 
@@ -228,6 +255,7 @@ export function tick(state: WorldState, deps: TickDeps): TickResult {
       const ticks = here != null && there != null ? travelTicks(here, there) : 1
       draft.set(id, {
         ...current,
+        arrivedTick: null,
         activity: {
           kind: 'travel',
           at: action.at,
@@ -244,10 +272,7 @@ export function tick(state: WorldState, deps: TickDeps): TickResult {
     const duration = ACTION_TICKS[action.kind] ?? 1
     draft.set(id, {
       ...after,
-      activity:
-        duration <= 1
-          ? null
-          : { kind: action.kind, at: action.at, startedTick: nextTick, endsTick: nextTick + duration },
+      activity: { kind: action.kind, at: action.at, startedTick: nextTick, endsTick: nextTick + duration },
     })
     events.push({ type: 'action', tick: nextTick, agent: id, action })
   }
@@ -295,19 +320,46 @@ export function tick(state: WorldState, deps: TickDeps): TickResult {
           const arrears = a.housing.arrears + a.housing.due
           draft.set(id, { ...a, housing: { ...a.housing, arrears } })
           events.push({ type: 'rent_missed', tick: nextTick, agent: id, arrears })
-          // Emitted inside the rollover block, after the sweep that fills
-          // `notable` — so it has to mark itself, or it misses its own night.
           notable.add(id)
         }
       }
-      // Reflect only on a day that earned it — or when it has simply been too
-      // long. Reflection is the one cost no gate can reduce, so this is where
-      // the linear-in-agent-count growth gets bent.
-      const stale = today - a.lastReflectionDay >= REFLECT_AT_LEAST_EVERY_DAYS
-      if (notable.has(id) || stale) {
-        reflectionJobs.push(id)
-        draft.set(id, { ...(draft.get(id) ?? a), lastReflectionDay: today })
+
+      // Wage garnishment: working agents with arrears lose a cut of their
+      // daily earnings toward the debt. One event per day, not per tick.
+      const preGarnish = draft.get(id) ?? a
+      if (preGarnish.housing.arrears > 0 && preGarnish.job != null) {
+        const dailyWage = preGarnish.job.wage * (preGarnish.job.shiftEnd - preGarnish.job.shiftStart)
+        const garnish = Math.min(credits(dailyWage * GARNISHMENT_RATE), preGarnish.housing.arrears)
+        if (garnish > 0) {
+          const paid = { ...preGarnish, housing: { ...preGarnish.housing, arrears: credits(preGarnish.housing.arrears - garnish) } }
+          draft.set(id, paid)
+          events.push({ type: 'wage_garnished', tick: nextTick, agent: id, amount: credits(garnish), remaining: paid.housing.arrears })
+          notable.add(id)
+        }
       }
+
+      // Arrears consequences: escalating pressure that makes debt dramatic.
+      const current = draft.get(id) ?? a
+      if (current.housing.kind !== 'none' && current.housing.arrears > 0) {
+        const threshold = current.housing.due
+        if (current.housing.arrears >= threshold * ARREARS_EVICTION_FACTOR) {
+          // Eviction: lose the home, arrears wiped, becomes homeless.
+          const lostArrears = current.housing.arrears
+          draft.set(id, { ...current, housing: { kind: 'none', due: 0, arrears: 0 }, job: null })
+          if (current.job != null) {
+            const eid = current.job.employerId
+            openings.set(eid, (openings.get(eid) ?? 0) + 1)
+          }
+          events.push({ type: 'evicted', tick: nextTick, agent: id, arrears: lostArrears })
+          notable.add(id)
+        } else if (current.housing.arrears >= threshold * ARREARS_WARNING_FACTOR) {
+          events.push({ type: 'rent_warning', tick: nextTick, agent: id, arrears: current.housing.arrears })
+          notable.add(id)
+        }
+      }
+
+      reflectionJobs.push(id)
+      draft.set(id, { ...(draft.get(id) ?? a), lastReflectionDay: today })
     }
     notable.clear()
 
@@ -481,16 +533,20 @@ function applyAction(
     case 'sleep':
       return { ...agent, needs: { ...agent.needs, energy: clamp01(agent.needs.energy - 0.7) } }
 
-    case 'work':
-      return agent.job == null
-        ? agent
-        : {
-            ...agent,
-            // Wages are quoted per hour; a tick is five minutes. Paying the
-            // full wage per tick inflated income ~12x and drowned the economy.
-            money: credits(agent.money + agent.job.wage / TICKS_PER_HOUR),
-            needs: { ...agent.needs, energy: clamp01(agent.needs.energy + 0.04) },
-          }
+    case 'work': {
+      if (agent.job == null) return agent
+      const hasCoworkers = [...draft.values()].some((o) => o.id !== agent.id && o.location === agent.location)
+      return {
+        ...agent,
+        money: credits(agent.money + agent.job.wage / TICKS_PER_HOUR),
+        needs: {
+          ...agent.needs,
+          energy: clamp01(agent.needs.energy + 0.04),
+          fun: clamp01(agent.needs.fun + 0.015),
+          social: clamp01(agent.needs.social - (hasCoworkers ? 0.01 : 0)),
+        },
+      }
+    }
 
     case 'seek_job': {
       if (deps.random() > 0.06) return agent
@@ -513,10 +569,13 @@ function applyAction(
       }
     }
 
-    case 'relax':
-      return { ...agent, needs: { ...agent.needs, fun: clamp01(agent.needs.fun - 0.5) } }
+    case 'relax': {
+      const coLocated = [...draft.values()].some((o) => o.id !== agent.id && o.location === agent.location)
+      return { ...agent, needs: { ...agent.needs, fun: clamp01(agent.needs.fun - 0.5), social: clamp01(agent.needs.social - (coLocated ? 0.1 : 0)) } }
+    }
 
-    case 'exercise':
+    case 'exercise': {
+      const coLocated = [...draft.values()].some((o) => o.id !== agent.id && o.location === agent.location)
       return {
         ...agent,
         money: agent.money - 10,
@@ -524,21 +583,25 @@ function applyAction(
           ...agent.needs,
           fun: clamp01(agent.needs.fun - 0.45),
           hygiene: clamp01(agent.needs.hygiene + 0.2),
+          social: clamp01(agent.needs.social - (coLocated ? 0.1 : 0)),
         },
       }
+    }
 
-    case 'browse':
+    case 'browse': {
+      const coLocated = [...draft.values()].some((o) => o.id !== agent.id && o.location === agent.location)
       return {
         ...agent,
         money: agent.money - 25,
-        needs: { ...agent.needs, fun: clamp01(agent.needs.fun - 0.6) },
+        needs: { ...agent.needs, fun: clamp01(agent.needs.fun - 0.6), social: clamp01(agent.needs.social - (coLocated ? 0.1 : 0)) },
       }
+    }
 
     case 'wash':
       return { ...agent, needs: { ...agent.needs, hygiene: clamp01(agent.needs.hygiene - 0.8) } }
 
     case 'socialize':
-      return { ...agent, needs: { ...agent.needs, social: clamp01(agent.needs.social - 0.5) } }
+      return { ...agent, needs: { ...agent.needs, social: clamp01(agent.needs.social - 0.3), fun: clamp01(agent.needs.fun - 0.15) } }
 
     case 'indulge_vice': {
       // targetAgent carries the vice kind for this action — see scoreActions.

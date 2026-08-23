@@ -5,6 +5,12 @@ export type Job =
   | { kind: 'scene'; a: AgentId; b: AgentId; tension: number; tick: number }
   | { kind: 'reflection'; agent: AgentId; tick: number }
 
+export type CallResult = {
+  costUsd: number
+  inputTokens: number
+  outputTokens: number
+}
+
 /**
  * Runs cognition *beside* the tick loop, never inside it.
  *
@@ -20,12 +26,14 @@ export class CognitionWorker {
   private stopped = false
 
   spent = 0
+  inputTokens = 0
+  outputTokens = 0
   completed = 0
   dropped = 0
 
   constructor(
     private readonly provider: ModelProvider,
-    private readonly handler: (job: Job) => Promise<number>,
+    private readonly handler: (job: Job) => Promise<CallResult>,
     private readonly opts: {
       concurrency?: number
       maxQueue?: number
@@ -56,8 +64,10 @@ export class CognitionWorker {
       if (entry == null) return
       this.running++
       void this.handler(entry.job)
-        .then(async (cost) => {
-          this.spent += cost
+        .then(async (result) => {
+          this.spent += result.costUsd
+          this.inputTokens += result.inputTokens
+          this.outputTokens += result.outputTokens
           this.completed++
           if (entry.id > 0) await this.opts.onDone?.(entry.id)
         })

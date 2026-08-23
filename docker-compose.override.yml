@@ -1,0 +1,15 @@
+# Development overrides — loaded automatically by `docker compose up`.
+# The viewer runs Vite dev server with HMR instead of serving a static build.
+# Delete or rename this file to use the production nginx-based viewer.
+
+services:
+  viewer:
+    build:
+      context: .
+      dockerfile: infra/viewer/Dockerfile.dev
+    volumes:
+      - ./src:/app/src
+      - ./vite.config.ts:/app/vite.config.ts
+      - ./tsconfig.viewer.json:/app/tsconfig.viewer.json
+    environment:
+      ENGINE_URL: http://engine:7070

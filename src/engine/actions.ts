@@ -33,9 +33,18 @@ export type Action = {
   targetAgent?: AgentId
 }
 
+export type FriendLocation = {
+  friendId: AgentId
+  affection: number
+  locationId: LocationId
+  locationKind: LocationKind
+}
+
 export type ActionContext = {
   tick: number
   hour: number
+  /** 0 = Sunday, 6 = Saturday. */
+  dayOfWeek: number
   /** Resolved personality — base + drift + decayed guidance. */
   values: ValueVector
   locationKindOf: (id: LocationId) => LocationKind
@@ -52,6 +61,8 @@ export type ActionContext = {
    * so the relationship map never has to be walked on an ordinary tick.
    */
   feelingToward: (other: AgentId) => number
+  /** Friends (affection >= 0.25) currently at public locations. */
+  friendLocations: readonly FriendLocation[]
   random: () => number
 }
 
@@ -67,8 +78,9 @@ export function sleepPull(hour: number): number {
   return -0.8 // any waking hour: resist. Evenings are for living, not napping.
 }
 
-const onShift = (a: Agent, hour: number): boolean =>
-  a.job != null && hour >= a.job.shiftStart && hour < a.job.shiftEnd
+const onShift = (a: Agent, hour: number, dow: number): boolean =>
+  a.job != null && hour >= a.job.shiftStart && hour < a.job.shiftEnd &&
+  occupationDef(a.occupation).workDays.includes(dow)
 
 /**
  * How badly the agent is short of what they owe. Drives work, job-seeking and —
@@ -129,7 +141,7 @@ export const VICE_URGE_THRESHOLD = 0.5
 export const NEED_THRESHOLD = {
   hunger: 0.45,
   energy: 0.5,
-  social: 0.35,
+  social: 0.2,
   hygiene: 0.5,
   fun: 0.4,
 } as const
@@ -153,12 +165,13 @@ export function scoreActions(agent: Agent, ctx: ActionContext): ScoredAction[] {
   }
 
   const home = ctx.homeId
-  const food = ctx.findLocation('supermarket') ?? ctx.findLocation('bar')
 
   // Survival drives, largely value-independent.
   const EAT_COST = 8
   if (agent.needs.hunger >= NEED_THRESHOLD.hunger && agent.money >= EAT_COST) {
-    push('eat', food ?? home, agent.needs.hunger * 1.2)
+    push('eat', ctx.findLocation('supermarket'), agent.needs.hunger * 1.2)
+    push('eat', ctx.findLocation('bar'), agent.needs.hunger * (0.9 + v.sociability * 0.4))
+    push('eat', ctx.findLocation('cafe'), agent.needs.hunger * (0.9 + v.sociability * 0.35))
   }
   // Tiredness *and* the hour. Either can carry it: an exhausted agent sleeps in
   // the afternoon, a rested one still turns in at night.
@@ -169,8 +182,8 @@ export function scoreActions(agent: Agent, ctx: ActionContext): ScoredAction[] {
 
   // Work: industriousness decides whether the shift is honoured; money need
   // can drag even the lazy in.
-  if (onShift(agent, ctx.hour) && ctx.workplaceId != null) {
-    push('work', ctx.workplaceId, 0.6 + v.industriousness * 0.5 + pressure * 0.6 + saving * 0.7)
+  if (onShift(agent, ctx.hour, ctx.dayOfWeek) && ctx.workplaceId != null) {
+    push('work', ctx.workplaceId, Math.max(0.8, 0.6 + v.industriousness * 0.5 + pressure * 0.6 + saving * 0.7))
   }
   if (agent.job == null) {
     const hiringHall = ctx.findLocation(occupationDef(agent.occupation).worksAt)
@@ -182,7 +195,7 @@ export function scoreActions(agent: Agent, ctx: ActionContext): ScoredAction[] {
     push(
       'socialize',
       agent.location,
-      agent.needs.social * (0.5 + v.sociability * 0.5) + seeking * 0.5 - v.pride * pressure * 0.3,
+      0.3 + agent.needs.social * (0.6 + v.sociability * 0.4) + seeking * 0.5 - v.pride * pressure * 0.2,
     )
   }
 
@@ -234,13 +247,28 @@ export function scoreActions(agent: Agent, ctx: ActionContext): ScoredAction[] {
     }
   }
 
+  // Friends: go where a friend is. Earned through prior co-location and scenes
+  // (affection >= 0.25), so strangers never trigger this.
+  for (const fl of ctx.friendLocations) {
+    if (fl.locationId === agent.location) continue
+    const score = 0.3 + fl.affection * 0.5 + seeking * 0.4 + v.sociability * 0.2
+    push('socialize', fl.locationId, score)
+  }
+
   // Leisure. The city has ten kinds of place and the engine used four; these
   // give the other half a purpose and, more importantly, give off-shift hours
   // somewhere to go. Which one an agent picks falls out of thrift and sociability.
   if (agent.needs.fun >= NEED_THRESHOLD.fun) {
     push('relax', ctx.findLocation('park'), agent.needs.fun * (0.8 + v.thrift * 0.3))
+    if (agent.money >= 5) {
+      push('relax', ctx.findLocation('cafe'), agent.needs.fun * (0.7 + v.sociability * 0.2))
+    }
     if (agent.money >= 10) {
       push('exercise', ctx.findLocation('gym'), agent.needs.fun * (0.6 - v.thrift * 0.2))
+      push('exercise', ctx.findLocation('bowling'), agent.needs.fun * (0.65 + v.sociability * 0.15))
+    }
+    if (agent.money >= 15) {
+      push('browse', ctx.findLocation('cinema'), agent.needs.fun * (0.7 - v.thrift * 0.2))
     }
     if (agent.money >= 25) {
       push('browse', ctx.findLocation('shop'), agent.needs.fun * (0.7 - v.thrift * 0.5))
@@ -254,7 +282,7 @@ export function scoreActions(agent: Agent, ctx: ActionContext): ScoredAction[] {
   // drifts somewhere public instead, and sociability picks where. This is the
   // cheapest way to turn dead time into co-location, which is what feeds scenes.
   // At night, boredom sends you home, not to the bar.
-  const haunt = pull >= 0.4 ? home : v.sociability > 0 ? (ctx.findLocation('bar') ?? home) : (ctx.findLocation('park') ?? home)
+  const haunt = pull >= 0.4 ? home : v.sociability > 0 ? (ctx.findLocation('cafe') ?? ctx.findLocation('bar') ?? home) : (ctx.findLocation('park') ?? home)
   push('idle', haunt, 0.05 + ctx.random() * 0.05 + Math.max(0, v.sociability) * 0.06)
   push('idle', agent.location, 0.05 + ctx.random() * 0.04)
   return out

@@ -1,0 +1,21 @@
+{
+  "name": "Agentic World",
+  "short_name": "Agentic World",
+  "icons": [
+    {
+      "src": "/favicon/web-app-manifest-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/favicon/web-app-manifest-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "theme_color": "#0a0e17",
+  "background_color": "#0a0e17",
+  "display": "standalone"
+}

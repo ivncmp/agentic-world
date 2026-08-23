@@ -57,7 +57,7 @@ export type StateMsg = {
   hour: number
   minute: number
   agents: AgentSnapshot[]
-  cognition: { pending: number; done: number; dropped: number; spentUsd: number }
+  cognition: { pending: number; done: number; dropped: number; spentUsd: number; inputTokens: number; outputTokens: number }
 }
 
 export type FeedItem = {

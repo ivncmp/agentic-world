@@ -83,6 +83,60 @@ export class HistoryRepository {
     )
   }
 
+  async recordCall(input: {
+    tick: number
+    agentId: AgentId
+    purpose: string
+    provider: string
+    model: string
+    inputTokens: number
+    outputTokens: number
+    costUsd: number
+    durationMs: number
+  }): Promise<void> {
+    await this.pool.query(
+      `INSERT INTO llm_calls (tick, day, agent_id, purpose, provider, model, input_tokens, output_tokens, cost_usd, duration_ms)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+      [input.tick, HistoryRepository.day(input.tick), input.agentId, input.purpose,
+       input.provider, input.model, input.inputTokens, input.outputTokens,
+       input.costUsd, input.durationMs],
+    )
+  }
+
+  async meteringSummary(): Promise<{
+    total: { calls: number; inputTokens: number; outputTokens: number; costUsd: number }
+    byAgent: { agentId: string; calls: number; inputTokens: number; outputTokens: number; costUsd: number }[]
+    byPurpose: { purpose: string; calls: number; inputTokens: number; outputTokens: number; costUsd: number }[]
+    byDay: { day: number; calls: number; costUsd: number }[]
+  }> {
+    const total = await this.pool.query<{ calls: string; input_tokens: string; output_tokens: string; cost: string }>(
+      `SELECT count(*) AS calls, coalesce(sum(input_tokens),0) AS input_tokens,
+              coalesce(sum(output_tokens),0) AS output_tokens, coalesce(sum(cost_usd),0) AS cost
+       FROM llm_calls`)
+    const byAgent = await this.pool.query<{ agent_id: string; calls: string; input_tokens: string; output_tokens: string; cost: string }>(
+      `SELECT agent_id, count(*) AS calls, sum(input_tokens) AS input_tokens,
+              sum(output_tokens) AS output_tokens, sum(cost_usd) AS cost
+       FROM llm_calls GROUP BY agent_id ORDER BY cost DESC`)
+    const byPurpose = await this.pool.query<{ purpose: string; calls: string; input_tokens: string; output_tokens: string; cost: string }>(
+      `SELECT purpose, count(*) AS calls, sum(input_tokens) AS input_tokens,
+              sum(output_tokens) AS output_tokens, sum(cost_usd) AS cost
+       FROM llm_calls GROUP BY purpose ORDER BY cost DESC`)
+    const byDay = await this.pool.query<{ day: string; calls: string; cost: string }>(
+      `SELECT day, count(*) AS calls, sum(cost_usd) AS cost
+       FROM llm_calls GROUP BY day ORDER BY day`)
+
+    const num = (s: string) => Number(s)
+    return {
+      total: { calls: num(total.rows[0]!.calls), inputTokens: num(total.rows[0]!.input_tokens),
+               outputTokens: num(total.rows[0]!.output_tokens), costUsd: num(total.rows[0]!.cost) },
+      byAgent: byAgent.rows.map((r) => ({ agentId: r.agent_id, calls: num(r.calls),
+        inputTokens: num(r.input_tokens), outputTokens: num(r.output_tokens), costUsd: num(r.cost) })),
+      byPurpose: byPurpose.rows.map((r) => ({ purpose: r.purpose, calls: num(r.calls),
+        inputTokens: num(r.input_tokens), outputTokens: num(r.output_tokens), costUsd: num(r.cost) })),
+      byDay: byDay.rows.map((r) => ({ day: num(r.day), calls: num(r.calls), costUsd: num(r.cost) })),
+    }
+  }
+
   // ---- reads: what the owner-facing MCP server will be built on ----
 
   async diary(agentId: AgentId, day: number): Promise<{ text: string; drift: unknown } | null> {

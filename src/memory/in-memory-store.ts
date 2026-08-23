@@ -9,7 +9,7 @@ export class InMemoryStore implements MemoryStore {
     this.memories.push(m)
   }
 
-  async recall(who: AgentId, about: AgentId, limit = 6): Promise<Memory[]> {
+  async recall(who: AgentId, about: AgentId, limit = 10): Promise<Memory[]> {
     return this.memories
       .filter((m) => m.agentId === who && m.about === about)
       .sort((a, b) => b.tick - a.tick)

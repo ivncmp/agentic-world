@@ -1,0 +1,732 @@
+{
+  "name": "New Agentown",
+  "grid": {
+    "width": 21,
+    "height": 21
+  },
+  "streetPeriod": 4,
+  "districts": [
+    "Centro",
+    "Ribera",
+    "Altos",
+    "Puerto",
+    "Norte"
+  ],
+  "blocks": [
+    {
+      "bx": 0,
+      "by": 0,
+      "role": "residential"
+    },
+    {
+      "bx": 1,
+      "by": 0,
+      "role": "residential"
+    },
+    {
+      "bx": 2,
+      "by": 0,
+      "role": "green"
+    },
+    {
+      "bx": 3,
+      "by": 0,
+      "role": "residential"
+    },
+    {
+      "bx": 4,
+      "by": 0,
+      "role": "residential"
+    },
+    {
+      "bx": 0,
+      "by": 1,
+      "role": "residential"
+    },
+    {
+      "bx": 1,
+      "by": 1,
+      "role": "civic"
+    },
+    {
+      "bx": 2,
+      "by": 1,
+      "role": "civic"
+    },
+    {
+      "bx": 3,
+      "by": 1,
+      "role": "civic"
+    },
+    {
+      "bx": 4,
+      "by": 1,
+      "role": "residential"
+    },
+    {
+      "bx": 0,
+      "by": 2,
+      "role": "green"
+    },
+    {
+      "bx": 1,
+      "by": 2,
+      "role": "civic"
+    },
+    {
+      "bx": 2,
+      "by": 2,
+      "role": "plaza"
+    },
+    {
+      "bx": 3,
+      "by": 2,
+      "role": "civic"
+    },
+    {
+      "bx": 4,
+      "by": 2,
+      "role": "green"
+    },
+    {
+      "bx": 0,
+      "by": 3,
+      "role": "residential"
+    },
+    {
+      "bx": 1,
+      "by": 3,
+      "role": "civic"
+    },
+    {
+      "bx": 2,
+      "by": 3,
+      "role": "civic"
+    },
+    {
+      "bx": 3,
+      "by": 3,
+      "role": "civic"
+    },
+    {
+      "bx": 4,
+      "by": 3,
+      "role": "residential"
+    },
+    {
+      "bx": 0,
+      "by": 4,
+      "role": "residential"
+    },
+    {
+      "bx": 1,
+      "by": 4,
+      "role": "residential"
+    },
+    {
+      "bx": 2,
+      "by": 4,
+      "role": "green"
+    },
+    {
+      "bx": 3,
+      "by": 4,
+      "role": "residential"
+    },
+    {
+      "bx": 4,
+      "by": 4,
+      "role": "residential"
+    }
+  ],
+  "venues": [
+    {
+      "kind": "bar",
+      "name": "The Anchor",
+      "x": 13,
+      "y": 5,
+      "district": "Centro"
+    },
+    {
+      "kind": "bar",
+      "name": "La Tasca",
+      "x": 5,
+      "y": 9,
+      "district": "Centro"
+    },
+    {
+      "kind": "office",
+      "name": "Nortec",
+      "x": 13,
+      "y": 9,
+      "district": "Centro"
+    },
+    {
+      "kind": "office",
+      "name": "Delgado & Co",
+      "x": 5,
+      "y": 13,
+      "district": "Centro"
+    },
+    {
+      "kind": "shop",
+      "name": "La Esquina",
+      "x": 9,
+      "y": 13,
+      "district": "Centro"
+    },
+    {
+      "kind": "supermarket",
+      "name": "MercaVall",
+      "x": 13,
+      "y": 13,
+      "district": "Centro"
+    },
+    {
+      "kind": "clinic",
+      "name": "Clínica Santa Rosa",
+      "x": 5,
+      "y": 5,
+      "district": "Centro"
+    },
+    {
+      "kind": "school",
+      "name": "IES New Agentown",
+      "x": 9,
+      "y": 5,
+      "district": "Centro"
+    },
+    {
+      "kind": "gym",
+      "name": "Gimnasio Titán",
+      "x": 15,
+      "y": 7,
+      "district": "Centro"
+    },
+    {
+      "kind": "park",
+      "name": "Parque del Puerto",
+      "x": 10,
+      "y": 2,
+      "district": "Ribera"
+    },
+    {
+      "kind": "park",
+      "name": "Jardines Ribera",
+      "x": 2,
+      "y": 10,
+      "district": "Ribera"
+    },
+    {
+      "kind": "garage",
+      "name": "Talleres Ruiz",
+      "x": 7,
+      "y": 11,
+      "district": "Centro"
+    },
+    {
+      "kind": "cinema",
+      "name": "Cines New Agentown",
+      "x": 15,
+      "y": 11,
+      "district": "Centro"
+    },
+    {
+      "kind": "bowling",
+      "name": "Bolera Strike",
+      "x": 7,
+      "y": 15,
+      "district": "Centro"
+    },
+    {
+      "kind": "cafe",
+      "name": "Café Rincón",
+      "x": 11,
+      "y": 15,
+      "district": "Centro"
+    }
+  ],
+  "homePlots": [
+    {
+      "x": 17,
+      "y": 1,
+      "district": "Altos"
+    },
+    {
+      "x": 19,
+      "y": 3,
+      "district": "Altos"
+    },
+    {
+      "x": 19,
+      "y": 1,
+      "district": "Altos"
+    },
+    {
+      "x": 17,
+      "y": 3,
+      "district": "Altos"
+    },
+    {
+      "x": 18,
+      "y": 1,
+      "district": "Altos"
+    },
+    {
+      "x": 17,
+      "y": 2,
+      "district": "Altos"
+    },
+    {
+      "x": 19,
+      "y": 2,
+      "district": "Altos"
+    },
+    {
+      "x": 18,
+      "y": 3,
+      "district": "Altos"
+    },
+    {
+      "x": 1,
+      "y": 5,
+      "district": "Ribera"
+    },
+    {
+      "x": 3,
+      "y": 7,
+      "district": "Ribera"
+    },
+    {
+      "x": 3,
+      "y": 5,
+      "district": "Ribera"
+    },
+    {
+      "x": 1,
+      "y": 7,
+      "district": "Ribera"
+    },
+    {
+      "x": 2,
+      "y": 5,
+      "district": "Ribera"
+    },
+    {
+      "x": 1,
+      "y": 6,
+      "district": "Ribera"
+    },
+    {
+      "x": 3,
+      "y": 6,
+      "district": "Ribera"
+    },
+    {
+      "x": 2,
+      "y": 7,
+      "district": "Ribera"
+    },
+    {
+      "x": 17,
+      "y": 5,
+      "district": "Altos"
+    },
+    {
+      "x": 19,
+      "y": 7,
+      "district": "Altos"
+    },
+    {
+      "x": 19,
+      "y": 5,
+      "district": "Altos"
+    },
+    {
+      "x": 17,
+      "y": 7,
+      "district": "Altos"
+    },
+    {
+      "x": 18,
+      "y": 5,
+      "district": "Altos"
+    },
+    {
+      "x": 17,
+      "y": 6,
+      "district": "Altos"
+    },
+    {
+      "x": 19,
+      "y": 6,
+      "district": "Altos"
+    },
+    {
+      "x": 18,
+      "y": 7,
+      "district": "Altos"
+    },
+    {
+      "x": 1,
+      "y": 13,
+      "district": "Puerto"
+    },
+    {
+      "x": 3,
+      "y": 15,
+      "district": "Puerto"
+    },
+    {
+      "x": 3,
+      "y": 13,
+      "district": "Puerto"
+    },
+    {
+      "x": 1,
+      "y": 15,
+      "district": "Puerto"
+    },
+    {
+      "x": 2,
+      "y": 13,
+      "district": "Puerto"
+    },
+    {
+      "x": 1,
+      "y": 14,
+      "district": "Puerto"
+    },
+    {
+      "x": 3,
+      "y": 14,
+      "district": "Puerto"
+    },
+    {
+      "x": 2,
+      "y": 15,
+      "district": "Puerto"
+    },
+    {
+      "x": 17,
+      "y": 13,
+      "district": "Norte"
+    },
+    {
+      "x": 19,
+      "y": 15,
+      "district": "Norte"
+    },
+    {
+      "x": 19,
+      "y": 13,
+      "district": "Norte"
+    },
+    {
+      "x": 17,
+      "y": 15,
+      "district": "Norte"
+    },
+    {
+      "x": 18,
+      "y": 13,
+      "district": "Norte"
+    },
+    {
+      "x": 17,
+      "y": 14,
+      "district": "Norte"
+    },
+    {
+      "x": 19,
+      "y": 14,
+      "district": "Norte"
+    },
+    {
+      "x": 18,
+      "y": 15,
+      "district": "Norte"
+    },
+    {
+      "x": 1,
+      "y": 17,
+      "district": "Puerto"
+    },
+    {
+      "x": 3,
+      "y": 19,
+      "district": "Puerto"
+    },
+    {
+      "x": 3,
+      "y": 17,
+      "district": "Puerto"
+    },
+    {
+      "x": 1,
+      "y": 19,
+      "district": "Puerto"
+    },
+    {
+      "x": 2,
+      "y": 17,
+      "district": "Puerto"
+    },
+    {
+      "x": 1,
+      "y": 18,
+      "district": "Puerto"
+    },
+    {
+      "x": 3,
+      "y": 18,
+      "district": "Puerto"
+    },
+    {
+      "x": 2,
+      "y": 19,
+      "district": "Puerto"
+    },
+    {
+      "x": 5,
+      "y": 17,
+      "district": "Puerto"
+    },
+    {
+      "x": 7,
+      "y": 19,
+      "district": "Puerto"
+    },
+    {
+      "x": 7,
+      "y": 17,
+      "district": "Puerto"
+    },
+    {
+      "x": 5,
+      "y": 19,
+      "district": "Puerto"
+    },
+    {
+      "x": 6,
+      "y": 17,
+      "district": "Puerto"
+    },
+    {
+      "x": 5,
+      "y": 18,
+      "district": "Puerto"
+    },
+    {
+      "x": 7,
+      "y": 18,
+      "district": "Puerto"
+    },
+    {
+      "x": 6,
+      "y": 19,
+      "district": "Puerto"
+    },
+    {
+      "x": 13,
+      "y": 17,
+      "district": "Norte"
+    },
+    {
+      "x": 15,
+      "y": 19,
+      "district": "Norte"
+    },
+    {
+      "x": 15,
+      "y": 17,
+      "district": "Norte"
+    },
+    {
+      "x": 13,
+      "y": 19,
+      "district": "Norte"
+    },
+    {
+      "x": 14,
+      "y": 17,
+      "district": "Norte"
+    },
+    {
+      "x": 13,
+      "y": 18,
+      "district": "Norte"
+    },
+    {
+      "x": 15,
+      "y": 18,
+      "district": "Norte"
+    },
+    {
+      "x": 14,
+      "y": 19,
+      "district": "Norte"
+    },
+    {
+      "x": 17,
+      "y": 17,
+      "district": "Norte"
+    },
+    {
+      "x": 19,
+      "y": 19,
+      "district": "Norte"
+    },
+    {
+      "x": 19,
+      "y": 17,
+      "district": "Norte"
+    },
+    {
+      "x": 17,
+      "y": 19,
+      "district": "Norte"
+    },
+    {
+      "x": 18,
+      "y": 17,
+      "district": "Norte"
+    },
+    {
+      "x": 17,
+      "y": 18,
+      "district": "Norte"
+    },
+    {
+      "x": 19,
+      "y": 18,
+      "district": "Norte"
+    },
+    {
+      "x": 18,
+      "y": 19,
+      "district": "Norte"
+    },
+    {
+      "x": 1,
+      "y": 1,
+      "district": "Ribera"
+    },
+    {
+      "x": 3,
+      "y": 3,
+      "district": "Ribera"
+    },
+    {
+      "x": 3,
+      "y": 1,
+      "district": "Ribera"
+    },
+    {
+      "x": 1,
+      "y": 3,
+      "district": "Ribera"
+    },
+    {
+      "x": 2,
+      "y": 1,
+      "district": "Ribera"
+    },
+    {
+      "x": 1,
+      "y": 2,
+      "district": "Ribera"
+    },
+    {
+      "x": 3,
+      "y": 2,
+      "district": "Ribera"
+    },
+    {
+      "x": 2,
+      "y": 3,
+      "district": "Ribera"
+    },
+    {
+      "x": 5,
+      "y": 1,
+      "district": "Ribera"
+    },
+    {
+      "x": 7,
+      "y": 3,
+      "district": "Ribera"
+    },
+    {
+      "x": 7,
+      "y": 1,
+      "district": "Ribera"
+    },
+    {
+      "x": 5,
+      "y": 3,
+      "district": "Ribera"
+    },
+    {
+      "x": 6,
+      "y": 1,
+      "district": "Ribera"
+    },
+    {
+      "x": 5,
+      "y": 2,
+      "district": "Ribera"
+    },
+    {
+      "x": 7,
+      "y": 2,
+      "district": "Ribera"
+    },
+    {
+      "x": 6,
+      "y": 3,
+      "district": "Ribera"
+    },
+    {
+      "x": 13,
+      "y": 1,
+      "district": "Altos"
+    },
+    {
+      "x": 15,
+      "y": 3,
+      "district": "Altos"
+    },
+    {
+      "x": 15,
+      "y": 1,
+      "district": "Altos"
+    },
+    {
+      "x": 13,
+      "y": 3,
+      "district": "Altos"
+    },
+    {
+      "x": 14,
+      "y": 1,
+      "district": "Altos"
+    },
+    {
+      "x": 13,
+      "y": 2,
+      "district": "Altos"
+    },
+    {
+      "x": 15,
+      "y": 2,
+      "district": "Altos"
+    },
+    {
+      "x": 14,
+      "y": 3,
+      "district": "Altos"
+    }
+  ],
+  "openingsPerWorkplace": 3
+}

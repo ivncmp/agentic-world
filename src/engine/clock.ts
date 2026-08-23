@@ -59,3 +59,7 @@ export const dayOf = (tick: number, ticksPerDay = TICKS_PER_DAY): number =>
  */
 export const isDayBoundary = (tick: number, ticksPerDay = TICKS_PER_DAY): boolean =>
   tick % ticksPerDay === 0
+
+/** 0 = Sunday, 6 = Saturday. Derived from the epoch (Thu Dec 13, 1984). */
+export const dayOfWeek = (tick: number, ticksPerDay = TICKS_PER_DAY): number =>
+  worldTime(Math.floor(tick / ticksPerDay) * ticksPerDay).getUTCDay()

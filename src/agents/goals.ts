@@ -59,11 +59,19 @@ export function deriveGoals(agent: Agent, ctx: GoalContext): Goal[] {
     goals.push({ kind: 'start_business', targetId: undefined, priority: 0.3 + v.riskTolerance * 0.5 })
   }
 
-  if (ctx.acquaintances < 3 && ctx.strangerId != null && v.sociability > -0.3) {
+  if (ctx.acquaintances < 5 && ctx.strangerId != null && v.sociability > -0.3) {
     goals.push({
       kind: 'befriend',
       targetId: ctx.strangerId,
       priority: 0.3 + Math.max(0, v.sociability) * 0.5,
+    })
+  }
+
+  if (v.sociability > 0) {
+    goals.push({
+      kind: 'befriend',
+      targetId: undefined,
+      priority: 0.15 + v.sociability * 0.25,
     })
   }
 

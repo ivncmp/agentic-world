@@ -21,6 +21,8 @@ export type Cell = {
   venue: LocationInfo | null
   /** Sprite numbers bottom-to-top, for a venue or for pure scenery. */
   building: number[] | null
+  /** Block role, for labelling filler buildings. */
+  role: BlockInfo['role']
   props: Prop[]
 }
 
@@ -64,7 +66,7 @@ export function buildCityMap(world: WorldInfo): CityMap {
         for (const d of Object.values(DIR)) {
           if (inGrid(x + d.dx, y + d.dy) && isStreet(x + d.dx, y + d.dy)) mask |= d.bit
         }
-        const cell: Cell = { x, y, ground: 'street', mask, venue: null, building: null, props: [] }
+        const cell: Cell = { x, y, ground: 'street', mask, venue: null, building: null, role: 'residential', props: [] }
         // A lamp on every fourth corner: enough to line the streets at night,
         // sparse enough not to turn the map into a forest of poles.
         const junction = x % period === 0 && y % period === 0
@@ -91,6 +93,7 @@ export function buildCityMap(world: WorldInfo): CityMap {
         mask: 0,
         venue,
         building: null,
+        role,
         props: [],
       }
 

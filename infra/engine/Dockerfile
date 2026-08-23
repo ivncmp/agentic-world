@@ -16,6 +16,7 @@ RUN corepack enable
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile --prod --ignore-scripts
 COPY --from=build /app/dist ./dist
+COPY src/world/cities ./cities
 EXPOSE 7070
 # The world keeps its own clock; the container only has to stay alive.
 CMD ["node", "dist/server/engine.js"]

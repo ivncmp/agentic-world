@@ -23,11 +23,13 @@ const agent = (id: string, over: Partial<Agent> = {}): Agent => ({
   location: 'bar-1',
   job: null,
   housing: { kind: 'rent', due: 40, arrears: 0 },
+  arrivedTick: null,
   lastTheftTick: null,
   lastReflectionDay: 0,
   activity: null,
   goals: [],
   constraints: [],
+  interests: [],
   ...over,
 })
 
@@ -109,5 +111,33 @@ describe('scene prompt', () => {
 
   it('reports a debt when there is one', () => {
     expect(prompt(rel({ debt: 90 }))).toContain('owes 90 credits')
+  })
+
+  it('highlights shared interests between agents', () => {
+    const p = buildScenePrompt({
+      a: agent('Marta', { interests: ['football', 'cooking'] }),
+      b: agent('Juan', { interests: ['football', 'cars'] }),
+      rel: rel(),
+      aboutB: [],
+      aboutA: [],
+      place: 'The Anchor',
+      hour: 20,
+      now: 1_755_000_000_000,
+    })
+    expect(p).toContain('They both enjoy football')
+  })
+
+  it('omits shared interests line when none overlap', () => {
+    const p = buildScenePrompt({
+      a: agent('Marta', { interests: ['cooking'] }),
+      b: agent('Juan', { interests: ['cars'] }),
+      rel: rel(),
+      aboutB: [],
+      aboutA: [],
+      place: 'The Anchor',
+      hour: 20,
+      now: 1_755_000_000_000,
+    })
+    expect(p).not.toContain('They both enjoy')
   })
 })

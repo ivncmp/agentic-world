@@ -12,7 +12,7 @@ import { VICE_URGE_THRESHOLD } from '../engine/actions.js'
 export const NEED_PER_DAY: Needs = {
   hunger: 1.73,
   energy: 1.44,
-  social: 1.15,
+  social: 1.73,
   hygiene: 0.86,
   fun: 1.44,
 }

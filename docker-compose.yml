@@ -39,6 +39,8 @@ services:
         DBRAIN_VERSION: ${DBRAIN_VERSION:-1.0.1}
     container_name: aw-dbrain
     restart: unless-stopped
+    environment:
+      DBRAIN_TOKEN: ${DBRAIN_TOKEN:-}
     ports:
       # Non-default host ports, to avoid colliding with a workstation dbrain.
       # This is a dedicated, clean brain for the simulation — never share it.
@@ -46,6 +48,17 @@ services:
       - "${DBRAIN_DASHBOARD_PORT:-7979}:7879"
     volumes:
       - dbraindata:/data
+    command: >
+      sh -c "dbrain init --non-interactive /data &&
+             if [ -n \"$$DBRAIN_TOKEN\" ]; then
+               node -e \"
+                 const fs = require('fs');
+                 const c = JSON.parse(fs.readFileSync('/data/config.json','utf8'));
+                 c.token = process.env.DBRAIN_TOKEN;
+                 fs.writeFileSync('/data/config.json', JSON.stringify(c, null, 2));
+               \";
+             fi &&
+             dbrain start /data"
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:7878/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
       interval: 10s
@@ -98,10 +111,28 @@ services:
       # and needs the subscriber's own credentials.
       DPROXY_URL: ${DPROXY_URL:-http://host.docker.internal:7880}
       DPROXY_API_KEY: ${DPROXY_API_KEY:-}
+      CITY_TEMPLATE: ${CITY_TEMPLATE:-}
+      ADMIN_SECRET: ${ADMIN_SECRET:?set ADMIN_SECRET in .env}
     ports:
       - "${ENGINE_PORT:-7070}:7070"
     extra_hosts:
       - "host.docker.internal:host-gateway"
+
+  # MCP server for the owner loop. Owners connect from their own Claude to
+  # create agents, check briefings, and submit guidance. Talks to the engine
+  # over the internal Docker network via HTTP.
+  mcp:
+    build:
+      context: .
+      dockerfile: infra/mcp/Dockerfile
+    container_name: aw-mcp
+    restart: unless-stopped
+    depends_on: [engine]
+    environment:
+      ENGINE_URL: http://engine:7070
+      MCP_PORT: 7071
+    ports:
+      - "${MCP_PORT:-7071}:7071"
 
   # The isometric viewer. nginx serves the built bundle and proxies /world,
   # /agent, /state and the /live WebSocket to the engine, so the browser talks

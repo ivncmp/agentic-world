@@ -25,11 +25,13 @@ const agent = (id: string, over: Partial<Agent> = {}): Agent => ({
   location: 'bar-1',
   job: null,
   housing: { kind: 'rent', due: 50, arrears: 0 },
+  arrivedTick: null,
   lastTheftTick: null,
   lastReflectionDay: 0,
   activity: null,
   goals: [],
   constraints: [],
+  interests: [],
   ...over,
 })
 

@@ -1,0 +1,1 @@
+ALTER TABLE agents ADD COLUMN IF NOT EXISTS interests JSONB NOT NULL DEFAULT '[]'::jsonb;

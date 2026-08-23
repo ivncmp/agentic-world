@@ -47,8 +47,11 @@ export function toScreen(x: number, y: number): { px: number; py: number } {
  * bubble above their heads.
  */
 export const LAYER = {
-  ground: 0,
-  decal: 1,
+  // Ground and decals are flat — they never occlude 3D objects above them.
+  // The large negative offset guarantees they sort behind buildings/props/agents
+  // even when an agent's fractional position dips below a tile's integer coords.
+  ground: -1300,
+  decal: -1299,
   building: 2,
   prop: 3,
   agent: 4,

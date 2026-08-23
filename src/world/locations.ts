@@ -10,6 +10,9 @@ export const LOCATION_KINDS = [
   'gym',
   'park',
   'garage',
+  'cinema',
+  'bowling',
+  'cafe',
 ] as const
 
 export type LocationKind = (typeof LOCATION_KINDS)[number]
@@ -35,12 +38,24 @@ export type Location = {
   residentId?: string
 }
 
+/** Minimum time an agent stays at a location before choosing to leave. */
+export const MIN_STAY_TICKS: Partial<Record<LocationKind, number>> = {
+  bar: Math.round(0.5 * TICKS_PER_HOUR),
+  cafe: Math.round(0.25 * TICKS_PER_HOUR),
+  gym: TICKS_PER_HOUR,
+  cinema: Math.round(1.5 * TICKS_PER_HOUR),
+  supermarket: Math.round(0.25 * TICKS_PER_HOUR),
+  shop: Math.round(0.25 * TICKS_PER_HOUR),
+  park: Math.round(0.25 * TICKS_PER_HOUR),
+  bowling: Math.round(0.75 * TICKS_PER_HOUR),
+}
+
 /** Grid is walked in 8 directions, so diagonals cost the same as orthogonals. */
 export const tileDistance = (a: Tile, b: Tile): number =>
   Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y))
 
 /** Walking pace, in tiles per world hour. A tile is roughly a city block. */
-export const TILES_PER_HOUR = 36
+export const TILES_PER_HOUR = 12
 
 export const travelTicks = (from: Tile, to: Tile): number => {
   const tilesPerTick = TILES_PER_HOUR / TICKS_PER_HOUR

@@ -69,6 +69,8 @@ export type Agent = {
   values: PersonalityValues
   /** Exactly two, chosen at creation. Non-negotiable: friction by design. */
   vices: [ViceInstance, ViceInstance]
+  /** Hobbies and interests — conversation material beyond work and money. */
+  interests: string[]
 
   needs: Needs
   money: number
@@ -76,6 +78,8 @@ export type Agent = {
   job: Job | null
   housing: Housing
 
+  /** Tick when the agent arrived at their current location (for minimum stay). */
+  arrivedTick: number | null
   /** Cooldown anchor: you cannot rob the neighbourhood every five minutes. */
   lastTheftTick: number | null
 

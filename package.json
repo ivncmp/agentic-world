@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@10.24.0",
   "engines": {
     "node": ">=22"
   },
@@ -10,9 +11,7 @@
     "build": "tsc -p tsconfig.json && mkdir -p dist/persistence/migrations && cp src/persistence/migrations/*.sql dist/persistence/migrations/",
     "test": "vitest run",
     "check": "tsc --noEmit && vitest run",
-    "soak": "tsc -p tsconfig.json && node dist/dev/soak.js",
-    "watch": "tsc -p tsconfig.json && node dist/dev/watch.js",
-    "diary": "tsc -p tsconfig.json && node dist/dev/diary.js",
+    "mcp": "tsc -p tsconfig.json && node dist/mcp/index.js",
     "viewer": "vite",
     "viewer:build": "vite build"
   },
@@ -28,6 +27,8 @@
     "vitest": "^3.0.0"
   },
   "dependencies": {
+    "@dtoolkit/sdk": "^1.0.0",
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "pg": "^8.23.0",
     "ws": "^8.21.3"
   }

@@ -3,6 +3,7 @@ import { EngineConnection } from './connection.js'
 import { WorldScene } from './world-scene.js'
 import { initSidebar } from './sidebar.js'
 import { initAgentCard } from './agent-card.js'
+import { initVenueCard } from './venue-card.js'
 
 const engineUrl =
   new URLSearchParams(location.search).get('engine') ?? location.origin
@@ -53,6 +54,7 @@ async function boot(): Promise<void> {
 
   initSidebar(conn, world)
   initAgentCard(conn)
+  initVenueCard(conn, world)
   conn.connect()
 }
 
