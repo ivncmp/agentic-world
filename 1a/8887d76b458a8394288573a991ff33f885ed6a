@@ -1,0 +1,19 @@
+README.md
+  s_c227485661eca7::t_40ed51479d59e3 43
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "1a8887d76b458a8394288573a991ff33f885ed6a",
+  "prompts": {},
+  "sessions": {
+    "s_c227485661eca7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "f2cb52d4-3a18-43b4-87ab-e65329c66171",
+        "model": "unknown"
+      },
+      "human_author": "Iván Campillo <ivncmp@gmail.com>"
+    }
+  }
+}
