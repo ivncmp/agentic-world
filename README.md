@@ -40,7 +40,7 @@ pnpm check                     # tsc + eslint + prettier + tests
 
 ## Architecture
 
-Characters are data, cognition is a service. Agents are not processes — a character is a row in Postgres plus a memory graph in [dbrain](https://github.com/nicholasgasior/dtoolkit).
+Characters are data, cognition is a service. Agents are not processes — a character is a row in Postgres plus a memory graph in [dbrain](https://dtoolkit.vercel.app/).
 
 | Store | What |
 |-------|------|
