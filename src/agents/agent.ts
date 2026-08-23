@@ -1,4 +1,5 @@
 import type { PersonalityValues } from './values.js'
+import type { ActionKind } from '../engine/actions.js'
 import type { ViceInstance } from './vices.js'
 import type { LocationId } from '../world/locations.js'
 import type { Occupation } from '../world/occupations.js'
@@ -60,6 +61,23 @@ export type Housing = {
   arrears: number // unpaid — the drama generator
 }
 
+export type ActionBias = {
+  action: ActionKind
+  bias: number // -1.0..+1.0, additive to scoreActions
+}
+
+export type SeekScene = {
+  target: AgentId
+  reason: string
+}
+
+export type Deliberation = {
+  setTick: number
+  biases: ActionBias[]
+  seekScene: SeekScene[]
+  conversationSeed: string | null
+}
+
 export type Agent = {
   id: AgentId
   name: string
@@ -97,6 +115,13 @@ export type Agent = {
   goals: Goal[]
   /** Hard limits set by the owner, e.g. "no_theft". Honoured by the reflex layer. */
   constraints: string[]
+
+  /** Layer 1.5 output. Expires after DELIBERATION_TTL ticks. Null = no active plan. */
+  deliberation: Deliberation | null
+  lastDeliberationTick: number
+
+  /** Cooldown anchor for crisis monologue (reactive micro-cognition). */
+  lastCrisisTick: number
 }
 
 /**

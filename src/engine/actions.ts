@@ -285,6 +285,16 @@ export function scoreActions(agent: Agent, ctx: ActionContext): ScoredAction[] {
   const haunt = pull >= 0.4 ? home : v.sociability > 0 ? (ctx.findLocation('cafe') ?? ctx.findLocation('bar') ?? home) : (ctx.findLocation('park') ?? home)
   push('idle', haunt, 0.05 + ctx.random() * 0.05 + Math.max(0, v.sociability) * 0.06)
   push('idle', agent.location, 0.05 + ctx.random() * 0.04)
+
+  // Layer 1.5: deliberation biases shift action scores for the next ~12 hours.
+  if (agent.deliberation != null) {
+    for (const b of agent.deliberation.biases) {
+      for (const s of out) {
+        if (s.action.kind === b.action) s.score += b.bias
+      }
+    }
+  }
+
   return out
 }
 

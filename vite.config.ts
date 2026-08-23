@@ -21,6 +21,7 @@ export default defineConfig({
     proxy: {
       '^/world$': engine,
       '^/agent(\\?.*)?$': engine,
+      '^/rel-graph$': engine,
       '^/state$': engine,
       '^/health$': engine,
       '^/live$': { target: engine, ws: true },

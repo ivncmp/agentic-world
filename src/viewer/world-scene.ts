@@ -22,6 +22,7 @@ import {
 import { SpeechBubble, Conversation } from './bubble.js'
 import { avatarDataUrl } from './avatar.js'
 import type { EngineConnection, WorldInfo, LocationInfo, AgentSnapshot, StateMsg, FeedItem } from './connection.js'
+import { cssHex } from './theme.js'
 
 type Point = { x: number; y: number }
 
@@ -270,7 +271,7 @@ export class WorldScene extends Phaser.Scene {
     this.tooltipText = this.add.text(0, 0, '', {
       fontFamily: 'Inter, system-ui, -apple-system, sans-serif',
       fontSize: '11px',
-      color: '#e8edf5',
+      color: getComputedStyle(document.documentElement).getPropertyValue('--tooltip-fg').trim(),
       lineSpacing: 4,
     })
     this.tooltipText.setResolution(3)
@@ -346,8 +347,8 @@ export class WorldScene extends Phaser.Scene {
     const h = this.tooltipText.height + 10
     this.tooltipText.setPosition(-w / 2 + 18, -h / 2 + 5)
     this.tooltipBg.clear()
-    this.tooltipBg.fillStyle(0x0b1220, 0.9)
-    this.tooltipBg.lineStyle(1, 0x2b3a52, 1)
+    this.tooltipBg.fillStyle(cssHex('--tooltip-bg'), 0.9)
+    this.tooltipBg.lineStyle(1, cssHex('--tooltip-border'), 1)
     this.tooltipBg.fillRoundedRect(-w / 2, -h / 2, w, h, 10)
     this.tooltipBg.strokeRoundedRect(-w / 2, -h / 2, w, h, 10)
 
@@ -401,7 +402,7 @@ export class WorldScene extends Phaser.Scene {
         const t = this.add.text(0, 0, '', {
           fontFamily: 'Inter, system-ui, sans-serif',
           fontSize: '10px',
-          color: '#cbd5e1',
+          color: getComputedStyle(document.documentElement).getPropertyValue('--tooltip-fg').trim(),
           lineSpacing: 3,
         })
         t.setResolution(3)
@@ -418,7 +419,7 @@ export class WorldScene extends Phaser.Scene {
       const arrow = 6
       t.setPosition(-w / 2 + pad, -h / 2 + pad / 2)
       bg.clear()
-      bg.fillStyle(0x1e293b, 0.88)
+      bg.fillStyle(cssHex('--badge-bg'), 0.88)
       bg.fillRoundedRect(-w / 2, -h / 2, w, h, 8)
       bg.fillTriangle(-arrow, h / 2, arrow, h / 2, 0, h / 2 + arrow)
 
@@ -493,15 +494,34 @@ export class WorldScene extends Phaser.Scene {
     const t = this.add.text(0, 0, name, {
       fontFamily: 'Inter, system-ui, sans-serif',
       fontSize: '11px',
-      color: '#ffffff',
+      color: getComputedStyle(document.documentElement).getPropertyValue('--badge-fg').trim(),
     })
     t.setResolution(3)
     const w = t.width + 12
     t.setPosition(-t.width / 2, -t.height / 2)
     const g = this.add.graphics()
-    g.fillStyle(0x000000, 0.55)
+    g.fillStyle(cssHex('--badge-bg'), 0.55)
     g.fillRoundedRect(-w / 2, -9, w, 18, 9)
     return this.add.container(0, 0, [g, t])
+  }
+
+  applyTheme(): void {
+    const fg = getComputedStyle(document.documentElement).getPropertyValue('--tooltip-fg').trim()
+    const badgeFg = getComputedStyle(document.documentElement).getPropertyValue('--badge-fg').trim()
+    this.tooltipText.setColor(fg)
+    for (const badge of this.occupantBadges.values()) {
+      const t = badge.list[1] as Phaser.GameObjects.Text
+      t.setColor(fg)
+    }
+    for (const v of this.views.values()) {
+      const t = v.badge.list[1] as Phaser.GameObjects.Text
+      t.setColor(badgeFg)
+      const g = v.badge.list[0] as Phaser.GameObjects.Graphics
+      g.clear()
+      const w = t.width + 12
+      g.fillStyle(cssHex('--badge-bg'), 0.55)
+      g.fillRoundedRect(-w / 2, -9, w, 18, 9)
+    }
   }
 
   private isOverCard(p: Phaser.Input.Pointer): boolean {

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { tick, pairKey, type WorldState } from '../tick.js'
+import { scoreActions } from '../actions.js'
 import { zeroVector, type ValueVector } from '../../agents/values.js'
 import type { Agent } from '../../agents/agent.js'
 import type { Location } from '../../world/locations.js'
@@ -35,6 +36,8 @@ const agent = (id: string, over: Partial<Agent> = {}, base: Partial<ValueVector>
   goals: [],
   constraints: [],
   interests: [],
+  deliberation: null,
+  lastDeliberationTick: 0, lastCrisisTick: 0,
   ...over,
 })
 
@@ -372,5 +375,48 @@ describe('scene patience', () => {
     for (let i = 0; i < 10; i++) r = tick(r.state, deps({ scenePatienceTicks: 60 }))
     expect(r.events.some((e) => e.type === 'scene_abandoned')).toBe(false)
     expect(r.state.agents.every((x) => x.activity?.kind === 'scene')).toBe(true)
+  })
+})
+
+describe('deliberation (Layer 1.5)', () => {
+  it('queues deliberation at the correct interval', () => {
+    // Agent id 'x' has hash 120, offset 0 → fires when nextTick % 144 === 0.
+    // Start at tick 143 so nextTick=144 is noon (hour 12) and not sleeping.
+    const a = agent('x', { lastDeliberationTick: 0 })
+    const w = world([a], { tick: 143 })
+    const r = tick(w, deps())
+    expect(r.deliberationJobs).toContain('x')
+  })
+
+  it('expires deliberation after TTL', () => {
+    const a = agent('a', {
+      deliberation: { setTick: 10, biases: [{ action: 'eat', bias: 0.8 }], seekScene: [], conversationSeed: null },
+      lastDeliberationTick: 10,
+    })
+    // tick at 10 + 144 = 154 should expire it
+    const w = world([a], { tick: 153 })
+    const r = tick(w, deps())
+    expect(r.state.agents[0]!.deliberation).toBeNull()
+  })
+
+  it('biases modify action scores', () => {
+    // A bias of +0.8 on eat should make a hungry agent eat.
+    const a = agent('a', {
+      needs: { hunger: 0.5, energy: 0.2, social: 0.2, hygiene: 0.2, fun: 0.2 },
+      money: 50,
+      deliberation: { setTick: 100, biases: [{ action: 'eat', bias: 0.8 }], seekScene: [], conversationSeed: null },
+      lastDeliberationTick: 100,
+    })
+    const scores = scoreActions(a, {
+      tick: 101, hour: 14, dayOfWeek: 2,
+      values: { honesty: 0, industriousness: 0, thrift: 0, sociability: 0, riskTolerance: 0, loyalty: 0, pride: 0 },
+      locationKindOf: () => 'bar',
+      homeId: 'home-a', workplaceId: null,
+      findLocation: (k) => k === 'supermarket' ? 'shop-1' : k === 'bar' ? 'bar-1' : null,
+      co: [], feelingToward: () => 0, friendLocations: [], random: () => 0.5,
+    })
+    const eatScores = scores.filter((s) => s.action.kind === 'eat')
+    // Without the bias eat would score ~0.6; with +0.8 it should be ~1.4
+    expect(eatScores.some((s) => s.score > 1.2)).toBe(true)
   })
 })

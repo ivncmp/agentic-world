@@ -97,6 +97,9 @@ export function createAgent(input: CreateAgentInput, city: GeneratedCity): Creat
     // day rollover; refreshed from the world every night thereafter.
     goals: initialGoals(vacancy?.id ?? null, home.id),
     constraints: input.constraints ?? [],
+    deliberation: null,
+    lastDeliberationTick: 0,
+    lastCrisisTick: 0,
   }
 
   return { agent, home }

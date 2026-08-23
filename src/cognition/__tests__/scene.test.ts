@@ -4,6 +4,7 @@ import {
   parseSceneOutcome,
   canLend,
   LEND_MIN_ENCOUNTERS,
+  type ThirdParty,
 } from '../scene.js'
 import type { Agent, Relationship } from '../../agents/agent.js'
 import { zeroVector } from '../../agents/values.js'
@@ -30,6 +31,8 @@ const agent = (id: string, over: Partial<Agent> = {}): Agent => ({
   goals: [],
   constraints: [],
   interests: [],
+  deliberation: null,
+  lastDeliberationTick: 0, lastCrisisTick: 0,
   ...over,
 })
 
@@ -139,5 +142,91 @@ describe('scene prompt', () => {
       now: 1_755_000_000_000,
     })
     expect(p).not.toContain('They both enjoy')
+  })
+
+  it('lists third parties both agents know', () => {
+    const thirds: ThirdParty[] = [{
+      id: 'elena-1', name: 'Elena',
+      fromA: rel({ affection: 0.3, trust: -0.1, encounters: 10 }),
+      fromB: rel({ affection: 0.6, trust: 0.5, encounters: 20 }),
+    }]
+    const p = buildScenePrompt({
+      a: agent('Marta'), b: agent('Juan'), rel: rel(),
+      aboutB: [], aboutA: [], place: 'The Anchor', hour: 20,
+      now: 1_755_000_000_000, knownInCommon: thirds,
+    })
+    expect(p).toContain('People they both know')
+    expect(p).toContain('Elena')
+    expect(p).toContain('gossipA')
+  })
+
+  it('omits gossip fields when no third parties exist', () => {
+    const p = prompt(rel())
+    expect(p).not.toContain('gossipA')
+    expect(p).not.toContain('People they both know')
+  })
+})
+
+describe('gossip parsing', () => {
+  const validIds = new Set(['elena-1', 'pedro-1'])
+
+  const sceneWith = (gossipA: unknown[], gossipB: unknown[] = []) =>
+    JSON.stringify({
+      dialogue: [{ speaker: 'Marta', line: 'Hey.' }],
+      outcome: 'They spoke.', memoryA: 'mem', memoryB: 'mem',
+      thoughtA: '', thoughtB: '',
+      deltas: { aToB: { trust: 0, affection: 0 }, bToA: { trust: 0, affection: 0 } },
+      transfer: 0, loan: 0,
+      gossipA, gossipB,
+    })
+
+  it('parses valid gossip entries', () => {
+    const result = parseSceneOutcome(
+      sceneWith([{ about: 'elena-1', text: 'Elena stole from Pedro last week.' }]),
+      'Marta', 'Juan', true, validIds,
+    )
+    expect(result.gossipA).toHaveLength(1)
+    expect(result.gossipA[0]).toEqual({ about: 'elena-1', text: 'Elena stole from Pedro last week.' })
+    expect(result.gossipB).toHaveLength(0)
+  })
+
+  it('discards gossip about unknown agents', () => {
+    const result = parseSceneOutcome(
+      sceneWith([{ about: 'nobody-99', text: 'Some random person.' }]),
+      'Marta', 'Juan', true, validIds,
+    )
+    expect(result.gossipA).toHaveLength(0)
+  })
+
+  it('caps gossip at 2 entries per side', () => {
+    const result = parseSceneOutcome(
+      sceneWith([
+        { about: 'elena-1', text: 'First.' },
+        { about: 'pedro-1', text: 'Second.' },
+        { about: 'elena-1', text: 'Third — should be dropped.' },
+      ]),
+      'Marta', 'Juan', true, validIds,
+    )
+    expect(result.gossipA).toHaveLength(2)
+  })
+
+  it('returns empty arrays when gossip fields are missing', () => {
+    const json = JSON.stringify({
+      dialogue: [], outcome: 'ok', memoryA: '', memoryB: '',
+      thoughtA: '', thoughtB: '',
+      deltas: { aToB: { trust: 0, affection: 0 }, bToA: { trust: 0, affection: 0 } },
+      transfer: 0, loan: 0,
+    })
+    const result = parseSceneOutcome(json, 'A', 'B')
+    expect(result.gossipA).toEqual([])
+    expect(result.gossipB).toEqual([])
+  })
+
+  it('handles malformed gossip entries gracefully', () => {
+    const result = parseSceneOutcome(
+      sceneWith([42, null, { about: 'elena-1' }, { text: 'no about' }, { about: 'elena-1', text: 'ok' }]),
+      'Marta', 'Juan', true, validIds,
+    )
+    expect(result.gossipA).toEqual([{ about: 'elena-1', text: 'ok' }])
   })
 })

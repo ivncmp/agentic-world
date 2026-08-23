@@ -1,35 +1,24 @@
 /**
- * The spectator's window into one life: who the owner wrote, what living has
- * done to them since, who they know and what they wrote in their diary.
- *
- * DOM rather than Phaser on purpose — this is prose and tables, and the canvas
- * is for the place, not for reading.
+ * Agent detail panel — renders into the sidebar's Agent tab when an agent is
+ * clicked in the roster or on the map. No longer a floating card.
  */
 import type { EngineConnection, AgentDetail } from './connection.js'
 import { avatarImg } from './avatar.js'
+import { switchTab } from './sidebar.js'
 
 const NEED_LABEL: Record<string, string> = {
   hunger: 'hunger', energy: 'energy', social: 'social',
   hygiene: 'hygiene', fun: 'fun',
 }
 
-let el: HTMLElement | null = null
+let containerEl: HTMLElement | null = null
 let openId: string | null = null
 
 export function initAgentCard(conn: EngineConnection): void {
-  el = document.createElement('div')
-  el.id = 'agent-card'
-  el.hidden = true
-  document.body.appendChild(el)
+  containerEl = document.getElementById('agent-detail')
 
-  el.addEventListener('pointerdown', (ev) => ev.stopPropagation())
-  el.addEventListener('pointerup', (ev) => ev.stopPropagation())
-  el.addEventListener('click', (ev) => {
-    const t = ev.target as HTMLElement
-    if (t.closest('[data-close]')) closeCard()
-  })
   document.addEventListener('keydown', (ev) => {
-    if (ev.key === 'Escape') {
+    if (ev.key === 'Escape' && openId) {
       closeCard()
       window.dispatchEvent(new CustomEvent('aw:fit'))
     }
@@ -44,33 +33,32 @@ export function initAgentCard(conn: EngineConnection): void {
 
 function closeCard(): void {
   openId = null
-  if (el != null) el.hidden = true
+  if (containerEl) {
+    containerEl.innerHTML = '<div class="agent-tab-empty">Click an agent to inspect</div>'
+  }
+  switchTab('town')
 }
 
 async function openCard(conn: EngineConnection, id: string): Promise<void> {
-  if (el == null) return
+  if (containerEl == null) return
   if (openId === id) { closeCard(); return }
   openId = id
-  el.hidden = false
-  el.innerHTML = '<div class="card-loading">loading…</div>'
+  containerEl.innerHTML = '<div class="agent-tab-empty">loading...</div>'
   try {
     const d = await conn.fetchAgent(id)
-    // A second click may have landed while this was in flight.
     if (openId !== id) return
-    el.innerHTML = render(d)
+    containerEl.innerHTML = render(d)
+    containerEl.querySelector('[data-back]')?.addEventListener('click', () => closeCard())
   } catch (err) {
-    el.innerHTML = `<div class="card-loading">could not load agent: ${String(err)}</div>`
+    containerEl.innerHTML = `<div class="agent-tab-empty">could not load: ${String(err)}</div>`
   }
 }
 
 function render(d: AgentDetail): string {
   return `
-    <div class="card-head">
-      <div>
-        <div class="card-name">${avatarImg(d.id, 22)}${esc(d.name)}</div>
-        <div class="card-sub">${esc(d.occupation)} · ${esc(d.activity)} at ${esc(d.location)}</div>
-      </div>
-      <button class="card-x" data-close>×</button>
+    <div class="agent-tab-back">
+      <button data-back>←</button>
+      <span class="agent-tab-title">${avatarImg(d.id, 18)} ${esc(d.name)}</span>
     </div>
     <div class="card-body">
       ${moneyBlock(d)}
@@ -96,10 +84,6 @@ function moneyBlock(d: AgentDetail): string {
     `<table class="kv">${rows.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('')}</table>`)
 }
 
-/**
- * Three strata in one row so the story is legible at a glance: what the owner
- * wrote, what life added, and the number the reflex layer actually reads.
- */
 function valuesBlock(d: AgentDetail): string {
   const rows = d.values.map((v) => {
     const drifted = Math.abs(v.drift) >= 0.01
@@ -165,8 +149,6 @@ function diariesBlock(d: AgentDetail): string {
   return section('diary', entries.join(''))
 }
 
-// ---- small helpers ---------------------------------------------------------
-
 const section = (title: string, body: string): string =>
   `<section><h3>${title}</h3>${body}</section>`
 
@@ -174,14 +156,12 @@ const fmt = (n: number): string => n.toFixed(2).replace(/^0\./, '.').replace(/^-
 
 const tone = (n: number): string => (n > 0.05 ? 'up' : n < -0.05 ? 'down' : 'dim')
 
-/** Signed bar for a −1..+1 axis: centre line, fill grows either way. */
 function bar(v: number): string {
   const pct = Math.min(50, Math.abs(v) * 50)
   const side = v >= 0 ? `left:50%;width:${pct}%` : `right:50%;width:${pct}%`
   return `<span class="track"><span class="fill ${v >= 0 ? 'pos' : 'neg'}" style="${side}"></span></span>`
 }
 
-/** Unsigned 0..1 meter, used for needs and vice urges. */
 function meter(v: number): string {
   const pct = Math.max(0, Math.min(1, v)) * 100
   return `<span class="track"><span class="fill pos" style="left:0;width:${pct}%"></span></span>`

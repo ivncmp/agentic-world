@@ -4,6 +4,8 @@ import type { ModelProvider } from '../cognition/provider.js'
 export type Job =
   | { kind: 'scene'; a: AgentId; b: AgentId; tension: number; tick: number }
   | { kind: 'reflection'; agent: AgentId; tick: number }
+  | { kind: 'deliberation'; agent: AgentId; tick: number }
+  | { kind: 'crisis'; agent: AgentId; crisisKind: string; context: string; tick: number }
 
 export type CallResult = {
   costUsd: number

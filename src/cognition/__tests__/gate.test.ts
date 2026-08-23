@@ -32,6 +32,8 @@ const agent = (id: string, over: Partial<Agent> = {}): Agent => ({
   goals: [],
   constraints: [],
   interests: [],
+  deliberation: null,
+  lastDeliberationTick: 0, lastCrisisTick: 0,
   ...over,
 })
 
@@ -69,12 +71,12 @@ describe('scene gate', () => {
    * a little is now a contributing reason, not a sufficient one.
    */
   it('does not spend a call on a modest debt alone', () => {
-    expect(shouldTriggerScene(agent('a'), agent('b'), rel({ debt: 50 }), ctx())).toBe(false)
+    expect(shouldTriggerScene(agent('a'), agent('b'), rel({ debt: 30 }), ctx())).toBe(false)
   })
 
   it('lets a modest debt tip the balance once there is a relationship too', () => {
-    const strangers = rel({ debt: 50 })
-    const neighbours = rel({ debt: 50, encounters: 400, affection: 0.4 })
+    const strangers = rel({ debt: 30 })
+    const neighbours = rel({ debt: 30, encounters: 400, affection: 0.4 })
     expect(shouldTriggerScene(agent('a'), agent('b'), strangers, ctx())).toBe(false)
     expect(shouldTriggerScene(agent('a'), agent('b'), neighbours, ctx())).toBe(true)
   })
@@ -168,14 +170,14 @@ describe('a scene needs a reason, not just a score', () => {
    * clears the bar comfortably.
    */
   it('treats a bare debt as substance, but not enough on its own', () => {
-    const owed = rel({ debt: 200, lastInteractionTick: 99 })
+    const owed = rel({ debt: 60, lastInteractionTick: 99 })
     const score = scoreEncounter(agent('a'), agent('b'), owed, ctx())
     expect(score).toBeGreaterThan(0)
     expect(score).toBeLessThan(GATE_DEFAULTS.threshold)
   })
 
   it('fires when a debt sits between two people who know each other', () => {
-    const owed = rel({ debt: 200, encounters: 300, affection: -0.3, lastInteractionTick: 99 })
+    const owed = rel({ debt: 60, encounters: 300, affection: -0.3, lastInteractionTick: 99 })
     expect(scoreEncounter(agent('a'), agent('b'), owed, ctx())).toBeGreaterThan(
       GATE_DEFAULTS.threshold,
     )

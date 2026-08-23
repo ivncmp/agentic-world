@@ -1,4 +1,4 @@
-import type { Agent, Relationship } from '../agents/agent.js'
+import type { Agent, AgentId, Relationship } from '../agents/agent.js'
 import type { Memory, MemoryStore } from '../memory/store.js'
 import { resolveValues, VALUE_AXES, type ValueVector } from '../agents/values.js'
 import { occupationDef } from '../world/occupations.js'
@@ -31,6 +31,10 @@ export type SceneOutcome = {
   thoughtA: string
   /** What B thought but didn't say. */
   thoughtB: string
+  /** Things A told B about third parties — second-hand memory transfer. */
+  gossipA: { about: AgentId; text: string }[]
+  /** Things B told A about third parties. */
+  gossipB: { about: AgentId; text: string }[]
 }
 
 const traitLine = (v: ValueVector): string =>
@@ -78,6 +82,13 @@ function lendingRule(a: Agent, b: Agent, rel: Relationship): string {
   return `credits *lent* from ${a.name} to ${b.name} (negative reverses), creating a debt to be repaid later. These two know and trust each other enough that a loan is possible — but only if one actually asks and the other agrees. Usually 0.`
 }
 
+export type ThirdParty = {
+  id: AgentId
+  name: string
+  fromA: Relationship
+  fromB: Relationship
+}
+
 export function buildScenePrompt(input: {
   a: Agent
   b: Agent
@@ -87,6 +98,7 @@ export function buildScenePrompt(input: {
   place: string
   hour: number
   now: number
+  knownInCommon?: readonly ThirdParty[]
 }): string {
   const { a, b, rel } = input
   const va = resolveValues(a.values, input.now)
@@ -105,6 +117,25 @@ export function buildScenePrompt(input: {
       ? `\nThey both enjoy ${shared.join(' and ')} — a natural topic of conversation.`
       : ''
 
+  const seedA = a.deliberation?.conversationSeed
+  const seedB = b.deliberation?.conversationSeed
+  const seedLine = seedA || seedB
+    ? `\nOn ${seedA ? a.name : b.name}'s mind lately: "${seedA || seedB}"`
+    : ''
+
+  const thirds = input.knownInCommon ?? []
+  const thirdLines = thirds.length === 0
+    ? ''
+    : `\n\nPeople they both know:\n` +
+      thirds.map((t) =>
+        `  - ${t.name} (id ${t.id}): A feels aff ${t.fromA.affection.toFixed(1)} trust ${t.fromA.trust.toFixed(1)} / B feels aff ${t.fromB.affection.toFixed(1)} trust ${t.fromB.trust.toFixed(1)}`,
+      ).join('\n')
+
+  const gossipIds = thirds.length > 0
+    ? `\ngossipA: things ${a.name} shares with ${b.name} about someone in "People they both know". Usually []. Only when the conversation naturally mentions a third person — a rumour, a complaint, praise. Max 2 items. Use their id from the list above.
+gossipB: same, from ${b.name}'s side.`
+    : ''
+
   return `Two people meet in a simulated town. Resolve the encounter.
 
 PLACE: ${input.place}, ${String(input.hour).padStart(2, '0')}:00
@@ -112,7 +143,7 @@ PLACE: ${input.place}, ${String(input.hour).padStart(2, '0')}:00
 A — ${describe(a, va)}
 B — ${describe(b, vb)}
 
-How A feels about B: affection ${rel.affection.toFixed(2)}, trust ${rel.trust.toFixed(2)}.${owed}${bad}${sharedLine}
+How A feels about B: affection ${rel.affection.toFixed(2)}, trust ${rel.trust.toFixed(2)}.${owed}${bad}${sharedLine}${seedLine}${thirdLines}
 
 What A remembers about B:
 ${memoryLines(input.aboutB)}
@@ -140,11 +171,11 @@ Respond with ONLY a JSON object, no prose, no markdown fences:
  "thoughtB":"what ${b.name} thought but didn't say, first person, one sentence",
  "deltas":{"aToB":{"trust":0.0,"affection":0.0},"bToA":{"trust":0.0,"affection":0.0}},
  "transfer":0,
- "loan":0}
+ "loan":0${thirds.length > 0 ? ',\n "gossipA":[],"gossipB":[]' : ''}}
 
 Deltas are between -0.5 and 0.5.
 transfer: credits changing hands from ${a.name} to ${b.name} (negative reverses) — a payment, a purchase, settling up. 0 unless money genuinely moves.
-loan: ${lendingRule(a, b, rel)}`
+loan: ${lendingRule(a, b, rel)}${gossipIds}`
 }
 
 const clampDelta = (n: unknown): number =>
@@ -155,12 +186,30 @@ const clampDelta = (n: unknown): number =>
  * well-behaved model, so anything malformed must fail loudly rather than
  * corrupt the world.
  */
+const MAX_GOSSIP = 2
+
+function parseGossip(
+  raw: unknown,
+  validIds: ReadonlySet<string>,
+): { about: AgentId; text: string }[] {
+  if (!Array.isArray(raw)) return []
+  return raw
+    .filter((g): g is { about: string; text: string } =>
+      g != null && typeof g === 'object' &&
+      typeof (g as { about?: unknown }).about === 'string' &&
+      typeof (g as { text?: unknown }).text === 'string' &&
+      validIds.has((g as { about: string }).about))
+    .slice(0, MAX_GOSSIP)
+}
+
 export function parseSceneOutcome(
   text: string,
   aName: string,
   bName: string,
   /** When false, any loan the model invents is discarded — see `lendingRule`. */
   lendingAllowed = true,
+  /** Valid third-party ids — gossip mentioning anyone else is discarded. */
+  thirdPartyIds: ReadonlySet<string> = new Set(),
 ): SceneOutcome {
   const raw = text.trim()
   const json = raw.startsWith('{') ? raw : (raw.match(/\{[\s\S]*\}/)?.[0] ?? '')
@@ -199,6 +248,8 @@ export function parseSceneOutcome(
     loan: lendingAllowed && typeof o.loan === 'number' && Number.isFinite(o.loan)
       ? Math.round(o.loan)
       : 0,
+    gossipA: parseGossip(o.gossipA, thirdPartyIds),
+    gossipB: parseGossip(o.gossipB, thirdPartyIds),
   }
 }
 
@@ -216,8 +267,9 @@ export async function resolveScene(
   provider: ModelProvider,
 ): Promise<SceneResult> {
   const res = await provider.complete({ prompt: buildScenePrompt(input), purpose: 'scene' })
+  const thirdPartyIds = new Set((input.knownInCommon ?? []).map((t) => t.id))
   return {
-    outcome: parseSceneOutcome(res.text, input.a.name, input.b.name, canLend(input.rel)),
+    outcome: parseSceneOutcome(res.text, input.a.name, input.b.name, canLend(input.rel), thirdPartyIds),
     model: res.model,
     costUsd: res.costUsd,
     durationMs: res.durationMs,
@@ -242,4 +294,10 @@ export async function persistScene(
     await store.remember({ agentId: a.id, kind: 'episodic', text: `[thought] ${outcome.thoughtA}`, tick, about: b.id })
   if (outcome.thoughtB !== '')
     await store.remember({ agentId: b.id, kind: 'episodic', text: `[thought] ${outcome.thoughtB}`, tick, about: a.id })
+  // Gossip: A told B about C → B gets a second-hand memory about C
+  for (const g of outcome.gossipA)
+    await store.remember({ agentId: b.id, kind: 'episodic', text: g.text, tick, about: g.about, secondHand: true })
+  // Gossip: B told A about C → A gets a second-hand memory about C
+  for (const g of outcome.gossipB)
+    await store.remember({ agentId: a.id, kind: 'episodic', text: g.text, tick, about: g.about, secondHand: true })
 }

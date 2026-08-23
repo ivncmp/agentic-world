@@ -10,6 +10,7 @@ import { scoreEncounter, selectScenes, GATE_DEFAULTS, type SceneCandidate, type 
 import { chooseAction, ACTION_TICKS, type Action, type FriendLocation } from './actions.js'
 import { adjustFeeling, coolFeeling } from './relationship.js'
 import { hourOfDay, isDayBoundary, dayOfWeek as dayOfWeekFn, minutes, TICKS_PER_DAY, TICKS_PER_HOUR } from './clock.js'
+import { detectCrisis, type CrisisJob } from './crisis-detect.js'
 
 export type WorldEvent =
   | { type: 'scene_started'; tick: number; a: AgentId; b: AgentId }
@@ -56,6 +57,8 @@ export type TickResult = {
   /** Queued for the cognition worker. The tick itself never waits on these. */
   sceneJobs: SceneCandidate[]
   reflectionJobs: AgentId[]
+  deliberationJobs: AgentId[]
+  crisisJobs: CrisisJob[]
 }
 
 /**
@@ -84,6 +87,14 @@ export const GRIEVANCE_PER_THEFT = 0.35
  * poisoned by one bad night.
  */
 export const GRIEVANCE_DAILY_DECAY = 0.95
+
+/** Layer 1.5: deliberation fires every 12 game-hours. */
+export const DELIBERATION_INTERVAL = 144
+/** Deliberation results expire after 12 game-hours. */
+export const DELIBERATION_TTL = 144
+
+/** Crisis monologue cooldown: 4 game-hours between inner thoughts. */
+export const CRISIS_COOLDOWN = 48
 
 /** Arrears thresholds, in multiples of the agent's rent. */
 export const ARREARS_WARNING_FACTOR = 2
@@ -432,6 +443,41 @@ export function tick(state: WorldState, deps: TickDeps): TickResult {
     }
   }
 
+  // Layer 1.5: expire stale deliberations and queue new ones.
+  const deliberationJobs: AgentId[] = []
+  for (const [id, a] of draft) {
+    if (a.deliberation != null && nextTick - a.deliberation.setTick >= DELIBERATION_TTL) {
+      draft.set(id, { ...a, deliberation: null })
+    }
+  }
+  for (const [id, a] of draft) {
+    if (nextTick - a.lastDeliberationTick < DELIBERATION_INTERVAL) continue
+    if (a.activity != null && UNINTERRUPTIBLE.has(a.activity.kind)) continue
+    // Stagger so all agents don't deliberate on the same tick.
+    let h = 0
+    for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0
+    const offset = (h % 12) * TICKS_PER_HOUR
+    if ((nextTick + offset) % DELIBERATION_INTERVAL !== 0) continue
+    deliberationJobs.push(id)
+    draft.set(id, { ...(draft.get(id) ?? a), lastDeliberationTick: nextTick })
+  }
+
+  // Layer 1.5r: detect crisis moments worth an inner thought.
+  const crisisJobs: CrisisJob[] = []
+  for (const [id, a] of draft) {
+    if (nextTick - a.lastCrisisTick < CRISIS_COOLDOWN) continue
+    if (a.activity != null && UNINTERRUPTIBLE.has(a.activity.kind)) continue
+    const crisis = detectCrisis(a, {
+      hour,
+      coLocated: [...draft.values()].filter((o) => o.id !== id && o.location === a.location),
+      scenesToday: scenesToday.get(id) ?? 0,
+    })
+    if (crisis != null) {
+      crisisJobs.push({ agent: id, kind: crisis.kind, context: crisis.context, tick: nextTick })
+      draft.set(id, { ...a, lastCrisisTick: nextTick })
+    }
+  }
+
   // Gate every co-located pair, then let the budget decide what we pay for.
   const agents = [...draft.values()]
   const candidates: SceneCandidate[] = []
@@ -513,6 +559,8 @@ export function tick(state: WorldState, deps: TickDeps): TickResult {
     events,
     sceneJobs,
     reflectionJobs,
+    deliberationJobs,
+    crisisJobs,
   }
 }
 

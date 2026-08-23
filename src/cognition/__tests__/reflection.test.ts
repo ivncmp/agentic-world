@@ -15,6 +15,7 @@ const agent = (id: string): Agent => ({
   arrivedTick: null,
   lastTheftTick: null,
   lastReflectionDay: 0, activity: null, goals: [], constraints: [], interests: [],
+  deliberation: null, lastDeliberationTick: 0, lastCrisisTick: 0,
 })
 
 const world = (agents: Agent[]): WorldState => ({

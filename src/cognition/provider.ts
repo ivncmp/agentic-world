@@ -2,7 +2,7 @@ import { DProxyClient, type AskOptions, type AskResponse } from '@dtoolkit/sdk'
 
 export type CompletionRequest = {
   prompt: string
-  purpose: 'scene' | 'reflection'
+  purpose: 'scene' | 'reflection' | 'deliberation' | 'crisis'
 }
 
 export type CompletionResult = {

@@ -41,9 +41,9 @@ export const MIN_SUBSTANCE = 0.6
 
 export const GATE_DEFAULTS = {
   /** Rejects mere co-location. Volume is controlled by the budget, not here. */
-  threshold: 2.0,
-  maxScenesPerTick: 5,
-  maxScenesPerAgentPerDay: 10,
+  threshold: 1.4,
+  maxScenesPerTick: 6,
+  maxScenesPerAgentPerDay: 14,
 } as const
 
 export type SceneBudget = {
@@ -110,6 +110,18 @@ export function scoreEncounter(
   ctx: GateContext,
 ): number {
   const w = GATE_WEIGHTS
+
+  // Layer 1.5: seekScene bypasses the substance check entirely.
+  const aSeeking = a.deliberation?.seekScene.some(s => s.target === b.id) ?? false
+  const bSeeking = b.deliberation?.seekScene.some(s => s.target === a.id) ?? false
+  if (aSeeking || bSeeking) {
+    const apart = rel.lastInteractionTick == null
+      ? 1
+      : Math.min(1, (ctx.tick - rel.lastInteractionTick) / ctx.ticksPerDay)
+    return 3.0 + apart * w.timeApart + ctx.random() * w.noise +
+      ctx.interactionsToday * w.alreadySpokeToday
+  }
+
   const substance = encounterSubstance(a, b, rel, ctx.locationKind)
   if (substance < MIN_SUBSTANCE) return 0
 

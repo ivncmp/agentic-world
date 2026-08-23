@@ -66,7 +66,6 @@ export type FeedItem = {
   kind: string
   text: string
   detail?: {
-    /** Scene participants, by id — the viewer hangs bubbles off their sprites. */
     a?: string
     b?: string
     dialogue?: { speaker: string; line: string }[]
@@ -74,6 +73,13 @@ export type FeedItem = {
     transfer?: { amount: number; from: string; to: string }
     text?: string
     drift?: Record<string, number>
+    thought?: string
+    crisisKind?: string
+    biases?: { action: string; bias: number }[]
+    seekScene?: { target: string }[]
+    seed?: string
+    gossip?: string
+    [key: string]: unknown
   }
 }
 

@@ -20,8 +20,11 @@ import { resolveValues, VALUE_AXES, type ValueAxis } from '../agents/values.js'
 import { viceDef, VICE_CATALOG, type ViceKind } from '../agents/vices.js'
 import { buildFoundingIdentity } from '../agents/identity.js'
 import { DproxyProvider } from '../cognition/provider.js'
-import { resolveScene, persistScene } from '../cognition/scene.js'
+import { resolveScene, persistScene, type ThirdParty } from '../cognition/scene.js'
 import { reflect, persistReflection } from '../cognition/reflection.js'
+import { deliberate } from '../cognition/deliberation.js'
+import { resolveCrisis } from '../cognition/crisis.js'
+import { applyDeliberation } from '../engine/apply-deliberation.js'
 import { DbrainStore } from '../memory/dbrain-store.js'
 import { InMemoryStore } from '../memory/in-memory-store.js'
 import type { MemoryStore } from '../memory/store.js'
@@ -58,6 +61,8 @@ const provider = new DproxyProvider({
   models: {
     scene: process.env.SCENE_MODEL,
     reflection: process.env.REFLECTION_MODEL,
+    deliberation: process.env.DELIBERATION_MODEL,
+    crisis: process.env.CRISIS_MODEL,
   },
 })
 
@@ -223,9 +228,19 @@ const worker = new CognitionWorker(provider, async (job: Job): Promise<CallResul
       affection: 0, trust: 0, debt: 0, grievance: 0, encounters: 0, lastInteractionTick: null,
     }
     try {
+      const GOSSIP_MIN_ENCOUNTERS = 5
+      const knownInCommon: ThirdParty[] = state.agents
+        .filter((c) => c.id !== a.id && c.id !== b.id)
+        .flatMap((c) => {
+          const relAC = state.relationships.get(pairKey(a.id, c.id))
+          const relBC = state.relationships.get(pairKey(b.id, c.id))
+          if (relAC == null || relBC == null) return []
+          if (relAC.encounters < GOSSIP_MIN_ENCOUNTERS || relBC.encounters < GOSSIP_MIN_ENCOUNTERS) return []
+          return [{ id: c.id, name: c.name, fromA: relAC, fromB: relBC }]
+        })
       const res = await resolveScene(
         { a, b, rel, aboutB: await store.recall(a.id, b.id), aboutA: await store.recall(b.id, a.id),
-          place: placeOf(a.location), hour: hourOfDay(job.tick), now: NOW },
+          place: placeOf(a.location), hour: hourOfDay(job.tick), now: NOW, knownInCommon },
         provider,
       )
       await persistScene(store, a, b, res.outcome, job.tick)
@@ -237,9 +252,8 @@ const worker = new CognitionWorker(provider, async (job: Job): Promise<CallResul
         costUsd: res.costUsd / 2, durationMs: res.durationMs }
       await history?.recordCall({ ...callBase, agentId: a.id })
       await history?.recordCall({ ...callBase, agentId: b.id })
+      const gossipCount = res.outcome.gossipA.length + res.outcome.gossipB.length
       publish('scene', `${a.name} × ${b.name} · ${placeOf(a.location)}`, {
-        // Ids as well as names: the viewer hangs the speech bubbles off the two
-        // sprites, and names are not addresses.
         a: a.id, b: b.id,
         dialogue: res.outcome.dialogue, outcome: res.outcome.outcome,
         transfer: res.outcome.transfer === 0 ? null : {
@@ -247,11 +261,82 @@ const worker = new CognitionWorker(provider, async (job: Job): Promise<CallResul
           from: res.outcome.transfer > 0 ? a.name : b.name,
           to: res.outcome.transfer > 0 ? b.name : a.name,
         },
+        ...(gossipCount > 0 ? {
+          gossip: [
+            ...res.outcome.gossipA.map((g) => ({ from: a.name, about: nameOf(g.about), text: g.text })),
+            ...res.outcome.gossipB.map((g) => ({ from: b.name, about: nameOf(g.about), text: g.text })),
+          ],
+        } : {}),
       })
       return { costUsd: res.costUsd, inputTokens: res.inputTokens, outputTokens: res.outputTokens }
     } catch (err) {
       state = abandonScene(state, a.id, b.id)
       publish('error', `scene ${a.name} × ${b.name} failed: ${String(err).slice(0, 60)}`)
+      return ZERO_RESULT
+    }
+  }
+
+  if (job.kind === 'deliberation') {
+    const a = state.agents.find((x) => x.id === job.agent)
+    if (a == null) return ZERO_RESULT
+    const known = [...state.relationships.entries()]
+      .filter(([k]) => k.split(':').includes(a.id))
+      .map(([k, rel]) => {
+        const other = k.split(':').find((x) => x !== a.id) ?? ''
+        return { id: other, name: nameOf(other), rel }
+      })
+      .filter((x) => x.id !== '')
+    try {
+      const validIds = new Set(state.agents.map((x) => x.id))
+      const res = await deliberate(
+        { agent: a, values: resolveValues(a.values, NOW), hour: hourOfDay(job.tick),
+          recentMemories: await store.since(a.id, job.tick - Math.floor(TICKS_PER_DAY / 2)),
+          relationships: known,
+          allAgentNames: state.agents.map((x) => ({ id: x.id, name: x.name })) },
+        provider,
+        validIds,
+      )
+      if (res.outcome.thought !== '') {
+        await store.remember({ agentId: a.id, kind: 'episodic',
+          text: `[deliberation] ${res.outcome.thought}`, tick: job.tick })
+      }
+      state = applyDeliberation(state, a.id, res.outcome, job.tick)
+      await history?.recordCall({ tick: job.tick, agentId: a.id, purpose: 'deliberation',
+        provider: provider.name, model: res.model, inputTokens: res.inputTokens,
+        outputTokens: res.outputTokens, costUsd: res.costUsd, durationMs: res.durationMs })
+      publish('deliberation', `${a.name} — thinking`, {
+        biases: res.outcome.biases,
+        seekScene: res.outcome.seekScene.map((s) => ({ target: nameOf(s.target), reason: s.reason })),
+        seed: res.outcome.conversationSeed,
+      })
+      return { costUsd: res.costUsd, inputTokens: res.inputTokens, outputTokens: res.outputTokens }
+    } catch (err) {
+      publish('error', `deliberation ${a.name} failed: ${String(err).slice(0, 60)}`)
+      return ZERO_RESULT
+    }
+  }
+
+  if (job.kind === 'crisis') {
+    const a = state.agents.find((x) => x.id === job.agent)
+    if (a == null) return ZERO_RESULT
+    try {
+      const res = await resolveCrisis(
+        { agent: a, values: resolveValues(a.values, NOW), kind: job.crisisKind as 'vice_temptation', context: job.context },
+        provider,
+      )
+      if (res.thought !== '') {
+        await store.remember({ agentId: a.id, kind: 'episodic',
+          text: `[crisis] ${res.thought}`, tick: job.tick })
+      }
+      await history?.recordCall({ tick: job.tick, agentId: a.id, purpose: 'crisis',
+        provider: provider.name, model: res.model, inputTokens: res.inputTokens,
+        outputTokens: res.outputTokens, costUsd: res.costUsd, durationMs: res.durationMs })
+      publish('crisis', `${a.name} — inner voice (${job.crisisKind.replace('_', ' ')})`, {
+        thought: res.thought, crisisKind: job.crisisKind,
+      })
+      return { costUsd: res.costUsd, inputTokens: res.inputTokens, outputTokens: res.outputTokens }
+    } catch (err) {
+      publish('error', `crisis ${a.name} failed: ${String(err).slice(0, 60)}`)
       return ZERO_RESULT
     }
   }
@@ -329,6 +414,8 @@ async function step(): Promise<void> {
     if (USE_LLM) {
       for (const s of r.sceneJobs) await submit({ kind: 'scene', a: s.a, b: s.b, tension: s.score, tick: state.tick })
       for (const id of r.reflectionJobs) await submit({ kind: 'reflection', agent: id, tick: state.tick })
+      for (const id of r.deliberationJobs) await submit({ kind: 'deliberation', agent: id, tick: state.tick })
+      for (const c of r.crisisJobs) await submit({ kind: 'crisis', agent: c.agent, crisisKind: c.kind, context: c.context, tick: state.tick })
     }
 
     // Save every world hour, not only at the day rollover. A daily save leaves
@@ -837,6 +924,22 @@ const http = createServer((req, res) => {
       })),
       agents: state.agents.map((a) => ({ id: a.id, name: a.name, occupation: occupationDef(a.occupation).label })),
     }))
+    return
+  }
+  if (req.url === '/rel-graph') {
+    const nodes = state.agents.map((a) => ({ id: a.id, name: a.name }))
+    const edges: { source: string; target: string; affection: number; trust: number; grievance: number; encounters: number }[] = []
+    for (const [key, rel] of state.relationships) {
+      if (rel.encounters === 0) continue
+      const parts = key.split(':')
+      edges.push({
+        source: parts[0]!, target: parts[1]!,
+        affection: round2(rel.affection), trust: round2(rel.trust),
+        grievance: round2(rel.grievance), encounters: rel.encounters,
+      })
+    }
+    res.writeHead(200, { 'Content-Type': 'application/json' })
+    res.end(JSON.stringify({ nodes, edges }))
     return
   }
   if (req.url === '/state') {

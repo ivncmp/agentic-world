@@ -4,6 +4,8 @@ import { WorldScene } from './world-scene.js'
 import { initSidebar } from './sidebar.js'
 import { initAgentCard } from './agent-card.js'
 import { initVenueCard } from './venue-card.js'
+import { initGraph } from './graph.js'
+import { onThemeChange, cssHex } from './theme.js'
 
 const engineUrl =
   new URLSearchParams(location.search).get('engine') ?? location.origin
@@ -24,7 +26,7 @@ async function boot(): Promise<void> {
     parent: container,
     width: container.clientWidth,
     height: container.clientHeight,
-    backgroundColor: '#0f172a',
+    backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--canvas-bg').trim(),
     scale: { mode: Phaser.Scale.RESIZE },
     input: { mouse: { preventDefaultWheel: true } },
     render: { antialias: true },
@@ -37,6 +39,16 @@ async function boot(): Promise<void> {
 
   game.scene.add('WorldScene', WorldScene, true, { connection: conn, world })
   console.log('[aw] scene started')
+
+  onThemeChange(() => {
+    const hex = getComputedStyle(document.documentElement).getPropertyValue('--canvas-bg').trim()
+    const c = Phaser.Display.Color.HexStringToColor(hex)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const bg = (game.renderer as any).config?.backgroundColor as Phaser.Display.Color | undefined
+    bg?.setFromRGB({ r: c.red, g: c.green, b: c.blue })
+    const ws = game.scene.getScene('WorldScene') as WorldScene
+    ws.applyTheme()
+  })
 
   // A canvas shows you nothing when it goes wrong, so keep a handle to poke at
   // from the console. A debugging aid, not an API — nothing may depend on it.
@@ -55,6 +67,7 @@ async function boot(): Promise<void> {
   initSidebar(conn, world)
   initAgentCard(conn)
   initVenueCard(conn, world)
+  initGraph()
   conn.connect()
 }
 

@@ -55,6 +55,9 @@ export function applySceneOutcome(
 
   a.activity = null
   b.activity = null
+  // Consume conversationSeed — the topic was used in this scene.
+  if (a.deliberation?.conversationSeed) a.deliberation = { ...a.deliberation, conversationSeed: null }
+  if (b.deliberation?.conversationSeed) b.deliberation = { ...b.deliberation, conversationSeed: null }
   return { ...state, agents, relationships }
 }
 

@@ -1,6 +1,6 @@
 /**
- * DOM sidebar: agent table + live feed. Driven by the same EngineConnection
- * the Phaser scene uses — no separate WebSocket.
+ * Tab-based sidebar: Town (roster), Feed (rich events), Agent (detail panel).
+ * Driven by the same EngineConnection the Phaser scene uses.
  */
 import type { EngineConnection, WorldInfo, StateMsg, FeedItem } from './connection.js'
 import { avatarImg, addToCache } from './avatar.js'
@@ -10,6 +10,26 @@ const STATE_COLORS: Record<string, string> = {
   steal: '#f87171', indulge_vice: '#fb923c', socialize: '#a78bfa',
   eat: '#facc15', relax: '#34d399', idle: '#94a3b8', exercise: '#38bdf8',
   seek_job: '#fb7185', browse: '#a78bfa', wash: '#67e8f9',
+}
+
+type Tab = 'town' | 'feed' | 'agent' | 'graph'
+
+let activeTab: Tab = 'town'
+let feedUnread = false
+
+function switchTab(tab: Tab): void {
+  activeTab = tab
+  document.querySelectorAll<HTMLElement>('.tab-btn').forEach((btn) => {
+    btn.classList.toggle('active', btn.dataset.tab === tab)
+  })
+  document.querySelectorAll<HTMLElement>('.tab-pane').forEach((pane) => {
+    pane.classList.toggle('active', pane.id === `tab-${tab}`)
+  })
+  if (tab === 'feed') {
+    feedUnread = false
+    const badge = document.getElementById('feed-badge')
+    if (badge) badge.hidden = true
+  }
 }
 
 export function initSidebar(conn: EngineConnection, world: WorldInfo): void {
@@ -26,8 +46,15 @@ export function initSidebar(conn: EngineConnection, world: WorldInfo): void {
 
   const locMap = new Map(world.locations.map((l) => [l.id, l]))
 
-  // Delegated: the table is re-rendered every tick, so per-row handlers would
-  // be rebound 288 times a game day.
+  // Tab switching
+  document.querySelectorAll<HTMLElement>('.tab-btn').forEach((btn) => {
+    btn.addEventListener('click', () => switchTab(btn.dataset.tab as Tab))
+  })
+
+  // Agent click: switch to agent tab
+  window.addEventListener('aw:agent-click', () => switchTab('agent'))
+
+  // Delegated click on roster rows
   tableEl.addEventListener('click', (ev) => {
     const row = (ev.target as HTMLElement).closest('[data-agent]')
     const id = row?.getAttribute('data-agent')
@@ -41,13 +68,11 @@ export function initSidebar(conn: EngineConnection, world: WorldInfo): void {
     connEl.className = connected ? 'conn on' : 'conn off'
   })
 
-  // Interpolate the clock second-by-second between ticks so it doesn't jump
-  // 5 minutes at a time. Each tick = 5 game-minutes arriving every ~TICK_MS
-  // real milliseconds. We lerp from the last-known game time to the next one.
+  // --- Clock interpolation (same as before) ---
   const GAME_MINUTES_PER_TICK = 5
-  let lastTickEpoch = 0   // game epoch ms at last tick
-  let lastTickReal = 0    // performance.now() when we received it
-  let tickIntervalMs = 2000 // estimated real ms between ticks (adapts)
+  let lastTickEpoch = 0
+  let lastTickReal = 0
+  let tickIntervalMs = 2000
 
   function displayTime(gameMs: number) {
     const d = new Date(gameMs)
@@ -56,11 +81,11 @@ export function initSidebar(conn: EngineConnection, world: WorldInfo): void {
     clockEl.textContent =
       String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0')
     const icon =
-      h >= 22 || h < 6 ? '🌙'
-        : h < 8 ? '🌅'
+      h >= 22 || h < 6 ? '\u{1F319}'
+        : h < 8 ? '\u{1F305}'
           : h < 18 ? '☀️'
-            : h < 20 ? '🌅'
-              : '🌙'
+            : h < 20 ? '\u{1F305}'
+              : '\u{1F319}'
     phaseEl.textContent =
       `${icon} ` + (
         h >= 23 || h < 7
@@ -89,6 +114,7 @@ export function initSidebar(conn: EngineConnection, world: WorldInfo): void {
   }
   requestAnimationFrame(tickClock)
 
+  // --- State (agent roster + header) ---
   const knownAgents = new Set<string>()
 
   conn.onState((s: StateMsg) => {
@@ -141,36 +167,103 @@ export function initSidebar(conn: EngineConnection, world: WorldInfo): void {
       .join('')
   })
 
+  // --- Feed (rich rendering per event kind) ---
   conn.onFeed((item: FeedItem) => {
+    if (activeTab !== 'feed') {
+      feedUnread = true
+      const badge = document.getElementById('feed-badge')
+      if (badge) badge.hidden = false
+    }
+
     const t = new Date(item.time)
     const when = `${String(t.getUTCHours()).padStart(2, '0')}:${String(t.getUTCMinutes()).padStart(2, '0')}`
-    const d = item.detail
+    const d = item.detail as Record<string, unknown> | undefined
+
     let html = `<div class="when">${when}</div>`
 
     if (item.kind === 'scene' && d?.dialogue) {
+      const dialogue = d.dialogue as { speaker: string; line: string }[]
+      const outcome = d.outcome as string | undefined
+      const transfer = d.transfer as { amount: number; from: string; to: string } | undefined
+      const gossip = d.gossip as string | undefined
       html +=
-        `<div class="head">${item.text}</div>` +
-        d.dialogue.map((x) => `<div class="line"><b>${x.speaker}:</b> ${x.line}</div>`).join('') +
-        (d.outcome ? `<div class="outcome">${d.outcome}</div>` : '') +
-        (d.transfer
-          ? `<div class="xfer">${d.transfer.amount}c · ${d.transfer.from} → ${d.transfer.to}</div>`
-          : '')
+        `<div class="head">${esc(item.text)}</div>` +
+        (outcome ? `<div class="outcome">${esc(outcome)}</div>` : '') +
+        (transfer ? `<div class="xfer">\u{1F4B0} ${transfer.amount}c · ${esc(transfer.from)} → ${esc(transfer.to)}</div>` : '') +
+        (gossip ? `<div class="gossip-line">\u{1F5E3}️ ${esc(gossip)}</div>` : '') +
+        `<button class="expand-btn">▸ dialogue (${dialogue.length})</button>` +
+        `<div class="dialogue">${dialogue.map((x) => `<div class="line"><b>${esc(x.speaker)}:</b> ${esc(x.line)}</div>`).join('')}</div>`
+    } else if (item.kind === 'crisis' && d) {
+      const thought = (d.thought ?? d.text ?? '') as string
+      const crisisKind = (d.crisisKind ?? '') as string
+      html +=
+        `<div class="head">\u{1F4AD} ${esc(item.text)}</div>` +
+        (thought ? `<div class="thought">${esc(thought)}</div>` : '') +
+        (crisisKind ? `<span class="tag">${esc(crisisKind.replace(/_/g, ' '))}</span>` : '')
+    } else if (item.kind === 'deliberation' && d) {
+      const biases = d.biases as { action: string; bias: number }[] | undefined
+      const seekScene = d.seekScene as { target: string }[] | undefined
+      const seed = d.seed as string | undefined
+      const thought = (d.thought ?? d.text ?? '') as string
+      html += `<div class="head">\u{1F9E0} ${esc(item.text)}</div>`
+      if (thought) html += `<div class="thought">${esc(thought)}</div>`
+      if (biases?.length || seekScene?.length || seed) {
+        html += '<div class="delib-detail">'
+        if (biases?.length) html += `<span>${biases.map((b) => `${b.action}${b.bias > 0 ? '+' : ''}${b.bias.toFixed(1)}`).join(', ')}</span> `
+        if (seekScene?.length) html += `<span>seek: ${seekScene.map((s) => esc(s.target)).join(', ')}</span> `
+        if (seed) html += `<span>topic: ${esc(seed)}</span>`
+        html += '</div>'
+      }
     } else if (item.kind === 'diary' && d?.text) {
+      const text = d.text as string
+      const drift = d.drift as Record<string, number> | undefined
       html +=
-        `<div class="head">${item.text}</div><div class="line">${d.text}</div>` +
-        (d.drift && Object.keys(d.drift).length
-          ? `<div class="xfer">changed: ${Object.entries(d.drift)
-              .map(([k, v]) => `${k} ${v > 0 ? '+' : ''}${v}`)
+        `<div class="head">\u{1F4D3} ${esc(item.text)}</div>` +
+        `<div class="thought">${esc(text)}</div>` +
+        (drift && Object.keys(drift).length
+          ? `<div class="drift-line">Δ ${Object.entries(drift)
+              .map(([k, v]) => `${k} ${v > 0 ? '+' : ''}${(v as number).toFixed(2)}`)
               .join(', ')}</div>`
           : '')
+    } else if (item.kind === 'theft') {
+      html += `<div class="head">\u{1F3AD} ${esc(item.text)}</div>`
+      if (d?.outcome) html += `<div class="outcome">${esc(d.outcome as string)}</div>`
+      if (d?.transfer) {
+        const tr = d.transfer as { amount: number; from: string; to: string }
+        html += `<div class="xfer">\u{1F4B0} ${tr.amount}c · ${esc(tr.from)} → ${esc(tr.to)}</div>`
+      }
+    } else if (item.kind === 'error') {
+      html += `<div class="head">⚠️ ${esc(item.text)}</div>`
     } else {
-      html += `<div class="plain">${item.text}</div>`
+      html += `<div class="plain">${esc(item.text)}</div>`
     }
 
     const el = document.createElement('div')
     el.className = 'ev ' + item.kind
     el.innerHTML = html
     feedEl.prepend(el)
-    while (feedEl.children.length > 120) feedEl.lastChild?.remove()
+
+    // Wire up dialogue expand button
+    const expandBtn = el.querySelector('.expand-btn')
+    if (expandBtn) {
+      expandBtn.addEventListener('click', () => {
+        const dial = el.querySelector('.dialogue')
+        if (dial) {
+          dial.classList.toggle('open')
+          expandBtn.textContent = dial.classList.contains('open')
+            ? `▾ hide dialogue`
+            : `▸ dialogue (${el.querySelectorAll('.line').length})`
+        }
+      })
+    }
+
+    while (feedEl.children.length > 200) feedEl.lastChild?.remove()
   })
+}
+
+export { switchTab }
+
+function esc(s: string): string {
+  return s.replace(/[&<>"]/g, (c) =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] ?? c)
 }
