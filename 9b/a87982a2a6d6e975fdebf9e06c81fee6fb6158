@@ -1,0 +1,61 @@
+package.json
+  s_862acc7be3c379::t_7b20dbe87b2f03 32-33
+pnpm-lock.yaml
+  s_862acc7be3c379::t_b67e07be675223 17-22,233-235,249-278,588-605,630-633,658-661,679-682,830-833,933-936,966-972,982-988,1106-1109,1131-1135,1185-1187,1227-1229,1497-1498,1523-1540,1780-1790,1815-1816,1832-1835,1848-1849,2034-2044,2112-2113,2134-2149,2156-2162,2265-2266,2334-2335,2405-2406,2434-2435
+.gitignore
+  s_862acc7be3c379::t_d9b5185f53528f 22
+docker-compose.yml
+  s_862acc7be3c379::t_fbbd2ee888051f 35-48,112-113,128-129,134-135,172
+scripts/migrate-jobs-to-redis.ts
+  s_862acc7be3c379::t_b3c55aa0fe2ea4 1-52
+src/cognition/crisis.ts
+  s_862acc7be3c379::t_c6cf1e11b39b6d 16-17,67-68
+src/cognition/deliberation.ts
+  s_862acc7be3c379::t_b101381a62d101 25-26,160-161
+src/cognition/reflection.ts
+  s_862acc7be3c379::t_0121aabe6419d0 128-129,141-142,145-146
+src/cognition/scene.ts
+  s_862acc7be3c379::t_802b004152c4d0 258-259,271-272,276-277
+src/persistence/history-repo.ts
+  s_862acc7be3c379::t_e9f14b4b614eae 161-175
+src/persistence/migrations/007_drop_cognition_jobs.sql
+  s_862acc7be3c379::t_dbce05ac76436d 1
+src/server/cognition-worker.ts
+  s_862acc7be3c379::t_3c39413e89269a 1-2,17-29,31-32,35-39,48-53,55-83,86-95,97-101,104-107,109-123,128,133-135
+src/server/engine.ts
+  s_862acc7be3c379::t_4334e6d311ccbf 35-36,208-209,222-224,257-260,313-316,344-347,381-384,392,396,399-411,417-420,434-438,994
+src/server/llm-logger.ts
+  s_862acc7be3c379::t_7005e40c1abacc 1-31
+src/viewer/connection.ts
+  s_862acc7be3c379::t_c5674d402904ac 60-63
+src/viewer/index.html
+  s_862acc7be3c379::t_cae8bece179e2f 421,427-434
+src/viewer/sidebar.ts
+  s_862acc7be3c379::t_5a0273c61ef5f6 141-152,158-159
+src/viewer/world-scene.ts
+  s_9983799eb4a913::t_b97807ef99e67b 355-358,362
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "9ba87982a2a6d6e975fdebf9e06c81fee6fb6158",
+  "prompts": {},
+  "sessions": {
+    "s_862acc7be3c379": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "986233a2-5d86-4117-8aec-1ebe2a22382d",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Iván Campillo <ivncmp@gmail.com>"
+    },
+    "s_9983799eb4a913": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "50f7c3fb-4904-47ec-962f-b954d76cc422",
+        "model": "unknown"
+      },
+      "human_author": "Iván Campillo <ivncmp@gmail.com>"
+    }
+  }
+}
