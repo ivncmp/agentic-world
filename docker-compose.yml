@@ -32,6 +32,20 @@ services:
       timeout: 5s
       retries: 10
 
+  redis:
+    image: redis:7-alpine
+    container_name: aw-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6479}:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
   dbrain:
     build:
       context: ./infra/dbrain
@@ -95,6 +109,8 @@ services:
         condition: service_healthy
       dbrain:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
       TICK_MS: ${TICK_MS:-2000}
       SEED: ${SEED:-42}
@@ -109,10 +125,14 @@ services:
       DBRAIN_TOKEN: ${DBRAIN_TOKEN:-}
       # dproxy lives on the host, not in here — it shells out to the Claude CLI
       # and needs the subscriber's own credentials.
+      REDIS_URL: redis://redis:6379
+      LOG_DIR: /app/logs
       DPROXY_URL: ${DPROXY_URL:-http://host.docker.internal:7880}
       DPROXY_API_KEY: ${DPROXY_API_KEY:-}
       CITY_TEMPLATE: ${CITY_TEMPLATE:-}
       ADMIN_SECRET: ${ADMIN_SECRET:?set ADMIN_SECRET in .env}
+    volumes:
+      - ./logs:/app/logs
     ports:
       - "${ENGINE_PORT:-7070}:7070"
     extra_hosts:
@@ -149,4 +169,5 @@ services:
 
 volumes:
   pgdata:
+  redisdata:
   dbraindata:

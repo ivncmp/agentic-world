@@ -418,12 +418,20 @@
 
   /* ---- cognition stats ---- */
 
-  .cog-stats { color: var(--dim); font-size: 11px; padding: 6px 16px; border-top: 1px solid var(--line); flex-shrink: 0 }
+  .cog-stats { color: var(--dim); font-size: 11px; padding: 6px 16px; border-top: 1px solid var(--line); flex-shrink: 0; position: relative; cursor: default }
   .cog-calls { color: var(--cog-calls) }
   .cog-pending { color: var(--cog-pending) }
   .cog-dropped { color: var(--cog-dropped) }
   .cog-tokens { color: var(--cog-tokens) }
   .cog-cost { color: var(--cog-cost) }
+  .cog-tooltip {
+    display: none; position: absolute; bottom: 100%; left: 16px; margin-bottom: 6px;
+    background: var(--bg); border: 1px solid var(--line); border-radius: 6px;
+    padding: 6px 10px; font-size: 11px; color: var(--fg); white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0,0,0,.3); pointer-events: none; z-index: 30;
+  }
+  .cog-info { color: var(--dim); opacity: .6; cursor: help; font-size: 12px }
+  .cog-stats:hover .cog-tooltip { display: block }
 
   /* ---- venue card (floating) ---- */
 

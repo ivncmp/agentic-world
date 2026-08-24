@@ -1,5 +1,6 @@
+import { Queue, Worker, type Job as BullJob } from 'bullmq'
+import { Redis as IORedis } from 'ioredis'
 import type { AgentId } from '../agents/agent.js'
-import type { ModelProvider } from '../cognition/provider.js'
 
 export type Job =
   | { kind: 'scene'; a: AgentId; b: AgentId; tension: number; tick: number }
@@ -13,19 +14,29 @@ export type CallResult = {
   outputTokens: number
 }
 
+export type JobKind = Job['kind']
+
+export const MAX_CONCURRENT = 6
+
+const KIND_PRIORITY: Record<JobKind, number> = {
+  reflection: 1,
+  deliberation: 2,
+  crisis: 3,
+  scene: 4,
+}
+
+const QUEUE_NAME = 'cognition'
+
 /**
- * Runs cognition *beside* the tick loop, never inside it.
- *
- * A scene costs 15-40s against dproxy. Awaiting that in the loop would stop the
- * world clock for the duration — the pair is frozen by design, but everyone
- * else must keep living. The queue is bounded so a backlog degrades richness
- * (jobs are dropped) rather than memory.
+ * BullMQ-backed cognition queue. Redis persists jobs across restarts;
+ * priority ensures reflections drain before scenes.
  */
 export class CognitionWorker {
-  /** Jobs carry their durable row id so completion can clear it. */
-  private readonly queue: { job: Job; id: number }[] = []
-  private running = 0
-  private stopped = false
+  private readonly queue: Queue
+  private readonly worker: Worker
+  private _pending = 0
+  private runningByKind: Record<string, number> = {}
+  private queuedByKind: Record<string, number> = {}
 
   spent = 0
   inputTokens = 0
@@ -34,64 +45,93 @@ export class CognitionWorker {
   dropped = 0
 
   constructor(
-    private readonly provider: ModelProvider,
-    private readonly handler: (job: Job) => Promise<CallResult>,
-    private readonly opts: {
-      concurrency?: number
-      maxQueue?: number
-      onDone?: (id: number) => Promise<void>
-      onFailed?: (id: number) => Promise<void>
-    } = {},
-  ) {}
+    redisUrl: string,
+    handler: (job: Job) => Promise<CallResult>,
+    opts: { concurrency?: number } = {},
+  ) {
+    const queueConn = new IORedis(redisUrl, { maxRetriesPerRequest: null })
+    const workerConn = new IORedis(redisUrl, { maxRetriesPerRequest: null })
+
+    this.queue = new Queue(QUEUE_NAME, {
+      connection: queueConn,
+      defaultJobOptions: { removeOnComplete: true, removeOnFail: 100 },
+    })
+
+    this.worker = new Worker(QUEUE_NAME, async (bullJob: BullJob<Job>) => {
+      const job = bullJob.data
+      const kind = job.kind
+      this.queuedByKind[kind] = Math.max(0, (this.queuedByKind[kind] ?? 1) - 1)
+      this.runningByKind[kind] = (this.runningByKind[kind] ?? 0) + 1
+      try {
+        const result = await handler(job)
+        this.spent += result.costUsd
+        this.inputTokens += result.inputTokens
+        this.outputTokens += result.outputTokens
+        this.completed++
+        return result
+      } finally {
+        this.runningByKind[kind] = Math.max(0, (this.runningByKind[kind] ?? 1) - 1)
+        this._pending = Math.max(0, this._pending - 1)
+      }
+    }, {
+      connection: workerConn,
+      concurrency: opts.concurrency ?? MAX_CONCURRENT,
+    })
+
+    this.worker.on('failed', (_job, err) => {
+      console.error('cognition job failed:', err.message)
+    })
+  }
+
+  /** Sync in-memory counters with Redis state (call once on startup). */
+  async init(): Promise<number> {
+    const counts = await this.queue.getJobCounts('waiting', 'active')
+    const total = (counts.waiting ?? 0) + (counts.active ?? 0)
+    this._pending = total
+    if (total > 0) {
+      const waiting = await this.queue.getJobs(['waiting'], 0, 200)
+      for (const j of waiting) {
+        if (j.data?.kind) this.queuedByKind[j.data.kind] = (this.queuedByKind[j.data.kind] ?? 0) + 1
+      }
+    }
+    return total
+  }
 
   get pending(): number {
-    return this.queue.length + this.running
+    return this._pending
   }
 
-  /** Silently drops work when saturated: a queue that grows without bound turns
-   *  a slow provider into an out-of-memory crash hours later. */
-  submit(job: Job, id = 0): void {
-    if (this.stopped) return
-    if (this.queue.length >= (this.opts.maxQueue ?? 64)) {
-      this.dropped++
-      return
+  get breakdown(): Record<string, { queued: number; running: number }> {
+    const out: Record<string, { queued: number; running: number }> = {}
+    for (const [kind, n] of Object.entries(this.queuedByKind)) {
+      if (n > 0) out[kind] = { queued: n, running: 0 }
     }
-    this.queue.push({ job, id })
-    void this.pump()
+    for (const [kind, n] of Object.entries(this.runningByKind)) {
+      if (n > 0) {
+        const e = out[kind] ??= { queued: 0, running: 0 }
+        e.running = n
+      }
+    }
+    return out
   }
 
-  private async pump(): Promise<void> {
-    while (!this.stopped && this.running < (this.opts.concurrency ?? 2) && this.queue.length > 0) {
-      const entry = this.queue.shift()
-      if (entry == null) return
-      this.running++
-      void this.handler(entry.job)
-        .then(async (result) => {
-          this.spent += result.costUsd
-          this.inputTokens += result.inputTokens
-          this.outputTokens += result.outputTokens
-          this.completed++
-          if (entry.id > 0) await this.opts.onDone?.(entry.id)
-        })
-        .catch(async () => {
-          if (entry.id > 0) await this.opts.onFailed?.(entry.id)
-        })
-        .finally(() => {
-          this.running--
-          void this.pump()
-        })
-    }
+  async submit(job: Job): Promise<void> {
+    this._pending++
+    this.queuedByKind[job.kind] = (this.queuedByKind[job.kind] ?? 0) + 1
+    await this.queue.add(job.kind, job, {
+      priority: KIND_PRIORITY[job.kind],
+    })
   }
 
   async drain(timeoutMs = 60_000): Promise<void> {
     const until = Date.now() + timeoutMs
-    while (this.pending > 0 && Date.now() < until) {
+    while (this._pending > 0 && Date.now() < until) {
       await new Promise((r) => setTimeout(r, 200))
     }
   }
 
-  stop(): void {
-    this.stopped = true
-    this.queue.length = 0
+  async stop(): Promise<void> {
+    await this.worker.close()
+    await this.queue.close()
   }
 }

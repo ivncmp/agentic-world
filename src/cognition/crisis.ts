@@ -13,6 +13,8 @@ export type CrisisInput = {
 
 export type CrisisResult = {
   thought: string
+  prompt: string
+  rawResponse: string
   model: string
   costUsd: number
   durationMs: number
@@ -62,6 +64,8 @@ export async function resolveCrisis(
   const res: CompletionResult = await provider.complete({ prompt, purpose: 'crisis' })
   return {
     thought: parseCrisisResponse(res.text),
+    prompt,
+    rawResponse: res.text,
     model: res.model,
     costUsd: res.costUsd,
     durationMs: res.durationMs,

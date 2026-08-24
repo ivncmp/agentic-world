@@ -138,12 +138,25 @@ export function initSidebar(conn: EngineConnection, world: WorldInfo): void {
 
     const c = s.cognition
     const tk = (n: number) => n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : n >= 1_000 ? `${(n / 1_000).toFixed(1)}k` : String(n)
+
+    let tooltipHtml = ''
+    if (c.breakdown && Object.keys(c.breakdown).length > 0) {
+      const lines = Object.entries(c.breakdown).map(([kind, { queued, running }]) => {
+        const parts: string[] = []
+        if (running) parts.push(`${running} running`)
+        if (queued) parts.push(`${queued} queued`)
+        return `${kind}: ${parts.join(', ')}`
+      })
+      tooltipHtml = `<div class="cog-tooltip">${lines.join('<br>')}</div>`
+    }
+
     cogEl.innerHTML =
       `<span class="cog-calls">${c.done} calls</span>` +
       (c.pending ? ` · <span class="cog-pending">${c.pending} pending</span>` : '') +
       (c.dropped ? ` · <span class="cog-dropped">${c.dropped} dropped</span>` : '') +
       ` · <span class="cog-tokens">${tk(c.inputTokens)} in / ${tk(c.outputTokens)} out</span>` +
-      ` · <span class="cog-cost">$${c.spentUsd.toFixed(3)}</span>`
+      ` · <span class="cog-cost">$${c.spentUsd.toFixed(3)}</span>` +
+      (tooltipHtml ? ` <span class="cog-info">ⓘ</span>` + tooltipHtml : '')
 
     tableEl.innerHTML = s.agents
       .map((a) => {

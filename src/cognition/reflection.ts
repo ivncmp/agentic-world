@@ -125,6 +125,8 @@ export function parseReflection(text: string, fallbackName: string): ReflectionO
 
 export type ReflectionResult = {
   outcome: ReflectionOutcome
+  prompt: string
+  rawResponse: string
   model: string
   costUsd: number
   durationMs: number
@@ -136,12 +138,12 @@ export async function reflect(
   input: Parameters<typeof buildReflectionPrompt>[0],
   provider: ModelProvider,
 ): Promise<ReflectionResult> {
-  const res = await provider.complete({
-    prompt: buildReflectionPrompt(input),
-    purpose: 'reflection',
-  })
+  const prompt = buildReflectionPrompt(input)
+  const res = await provider.complete({ prompt, purpose: 'reflection' })
   return {
     outcome: parseReflection(res.text, input.agent.name),
+    prompt,
+    rawResponse: res.text,
     model: res.model,
     costUsd: res.costUsd,
     durationMs: res.durationMs,

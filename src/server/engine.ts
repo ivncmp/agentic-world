@@ -31,9 +31,9 @@ import type { MemoryStore } from '../memory/store.js'
 import { makePool, migrate } from '../persistence/db.js'
 import { WorldRepository } from '../persistence/world-repo.js'
 import { HistoryRepository } from '../persistence/history-repo.js'
-import { JobRepository } from '../persistence/job-repo.js'
 import { OwnerRepository } from '../persistence/owner-repo.js'
-import { CognitionWorker, type Job, type CallResult } from './cognition-worker.js'
+import { CognitionWorker, MAX_CONCURRENT, type Job, type CallResult } from './cognition-worker.js'
+import { logLlmCall } from './llm-logger.js'
 import type { Agent } from '../agents/agent.js'
 import type { Location } from '../world/locations.js'
 
@@ -69,7 +69,6 @@ const provider = new DproxyProvider({
 const pool = PERSIST ? makePool() : null
 const worldRepo = pool == null ? null : new WorldRepository(pool)
 const history = pool == null ? null : new HistoryRepository(pool)
-const jobs = pool == null ? null : new JobRepository(pool)
 const owners = pool == null ? null : new OwnerRepository(pool)
 const store: MemoryStore = PERSIST
   ? new DbrainStore({
@@ -206,7 +205,8 @@ function snapshot(): unknown {
       }
     }),
     cognition: { pending: worker.pending, done: worker.completed, dropped: worker.dropped,
-      spentUsd: worker.spent, inputTokens: worker.inputTokens, outputTokens: worker.outputTokens },
+      spentUsd: worker.spent, inputTokens: worker.inputTokens, outputTokens: worker.outputTokens,
+      breakdown: worker.breakdown },
   }
 }
 
@@ -219,7 +219,9 @@ function broadcast(msg: unknown): void {
 
 const ZERO_RESULT: CallResult = { costUsd: 0, inputTokens: 0, outputTokens: 0 }
 
-const worker = new CognitionWorker(provider, async (job: Job): Promise<CallResult> => {
+const REDIS_URL = process.env.REDIS_URL ?? 'redis://localhost:6479'
+
+const worker = new CognitionWorker(REDIS_URL, async (job: Job): Promise<CallResult> => {
   if (job.kind === 'scene') {
     const a = state.agents.find((x) => x.id === job.a)
     const b = state.agents.find((x) => x.id === job.b)
@@ -252,6 +254,10 @@ const worker = new CognitionWorker(provider, async (job: Job): Promise<CallResul
         costUsd: res.costUsd / 2, durationMs: res.durationMs }
       await history?.recordCall({ ...callBase, agentId: a.id })
       await history?.recordCall({ ...callBase, agentId: b.id })
+      void logLlmCall({ agent: `${a.name} × ${b.name}`, purpose: 'scene', model: res.model,
+        inputTokens: res.inputTokens, outputTokens: res.outputTokens,
+        costUsd: res.costUsd, durationMs: res.durationMs, tick: job.tick,
+        prompt: res.prompt, response: res.rawResponse })
       const gossipCount = res.outcome.gossipA.length + res.outcome.gossipB.length
       publish('scene', `${a.name} × ${b.name} · ${placeOf(a.location)}`, {
         a: a.id, b: b.id,
@@ -304,6 +310,10 @@ const worker = new CognitionWorker(provider, async (job: Job): Promise<CallResul
       await history?.recordCall({ tick: job.tick, agentId: a.id, purpose: 'deliberation',
         provider: provider.name, model: res.model, inputTokens: res.inputTokens,
         outputTokens: res.outputTokens, costUsd: res.costUsd, durationMs: res.durationMs })
+      void logLlmCall({ agent: a.name, purpose: 'deliberation', model: res.model,
+        inputTokens: res.inputTokens, outputTokens: res.outputTokens,
+        costUsd: res.costUsd, durationMs: res.durationMs, tick: job.tick,
+        prompt: res.prompt, response: res.rawResponse })
       publish('deliberation', `${a.name} — thinking`, {
         biases: res.outcome.biases,
         seekScene: res.outcome.seekScene.map((s) => ({ target: nameOf(s.target), reason: s.reason })),
@@ -331,6 +341,10 @@ const worker = new CognitionWorker(provider, async (job: Job): Promise<CallResul
       await history?.recordCall({ tick: job.tick, agentId: a.id, purpose: 'crisis',
         provider: provider.name, model: res.model, inputTokens: res.inputTokens,
         outputTokens: res.outputTokens, costUsd: res.costUsd, durationMs: res.durationMs })
+      void logLlmCall({ agent: a.name, purpose: 'crisis', model: res.model,
+        inputTokens: res.inputTokens, outputTokens: res.outputTokens,
+        costUsd: res.costUsd, durationMs: res.durationMs, tick: job.tick,
+        prompt: res.prompt, response: res.rawResponse })
       publish('crisis', `${a.name} — inner voice (${job.crisisKind.replace('_', ' ')})`, {
         thought: res.thought, crisisKind: job.crisisKind,
       })
@@ -364,6 +378,10 @@ const worker = new CognitionWorker(provider, async (job: Job): Promise<CallResul
     await history?.recordCall({ tick: job.tick, agentId: a.id, purpose: 'reflection',
       provider: provider.name, model: res.model, inputTokens: res.inputTokens,
       outputTokens: res.outputTokens, costUsd: res.costUsd, durationMs: res.durationMs })
+    void logLlmCall({ agent: a.name, purpose: 'reflection', model: res.model,
+      inputTokens: res.inputTokens, outputTokens: res.outputTokens,
+      costUsd: res.costUsd, durationMs: res.durationMs, tick: job.tick,
+      prompt: res.prompt, response: res.rawResponse })
     publish('diary', `${a.name} — diary`, { text: res.outcome.diary, drift: res.outcome.drift })
     return { costUsd: res.costUsd, inputTokens: res.inputTokens, outputTokens: res.outputTokens }
   } catch (err) {
@@ -371,34 +389,34 @@ const worker = new CognitionWorker(provider, async (job: Job): Promise<CallResul
     return ZERO_RESULT
   }
 }, {
-  concurrency: Number(process.env.COGNITION_CONCURRENCY ?? 2),
-  onDone: async (id) => { await jobs?.done(id) },
-  onFailed: async (id) => { await jobs?.failed(id) },
+  concurrency: Number(process.env.COGNITION_CONCURRENCY ?? MAX_CONCURRENT),
 })
 
-/** Enqueue durably first, so a crash between here and completion is recoverable. */
 async function submit(job: Job): Promise<void> {
-  const id = (await jobs?.enqueue(job)) ?? 0
-  worker.submit(job, id)
+  await worker.submit(job)
 }
 
-// Two recovery paths, because they cover different failures. The queue covers
-// work that was written down and never finished; the diary backfill covers a
-// day that closed without the job ever being enqueued at all.
-if (jobs != null) {
-  const stranded = await jobs.pending()
-  for (const { id, job } of stranded) worker.submit(job, id)
-  if (stranded.length > 0) console.log(`requeued ${stranded.length} job(s) from the previous run`)
+// Recovery: BullMQ persists jobs in Redis — stranded jobs from a previous run
+// are picked up automatically. Diary backfill still needs Postgres.
+{
+  const recovered = await worker.init()
+  if (recovered > 0) console.log(`${recovered} job(s) pending in Redis from a previous run`)
 
-  const today = Math.floor(state.tick / TICKS_PER_DAY) + 1
-  const missing = await jobs.daysMissingDiary(state.agents.map((a) => a.id), today)
-  for (const m of missing) {
-    await submit({ kind: 'reflection', agent: m.agent, tick: m.day * TICKS_PER_DAY })
+  if (history != null) {
+    const today = Math.floor(state.tick / TICKS_PER_DAY) + 1
+    const missing = await history.daysMissingDiary(state.agents.map((a) => a.id), today)
+    for (const m of missing) {
+      await submit({ kind: 'reflection', agent: m.agent, tick: m.day * TICKS_PER_DAY })
+    }
+    if (missing.length > 0) console.log(`backfilling ${missing.length} missing diary/diaries`)
   }
-  if (missing.length > 0) console.log(`backfilling ${missing.length} missing diary/diaries`)
 }
 
 // ---- the loop --------------------------------------------------------------
+
+/** Stagger reflections across the first game hour instead of submitting all at
+ *  midnight tick 0. Each tick drains one agent from this queue. */
+const staggeredReflections: { agent: string; tick: number }[] = []
 
 let ticking = false
 async function step(): Promise<void> {
@@ -413,7 +431,11 @@ async function step(): Promise<void> {
 
     if (USE_LLM) {
       for (const s of r.sceneJobs) await submit({ kind: 'scene', a: s.a, b: s.b, tension: s.score, tick: state.tick })
-      for (const id of r.reflectionJobs) await submit({ kind: 'reflection', agent: id, tick: state.tick })
+      for (const id of r.reflectionJobs) staggeredReflections.push({ agent: id, tick: state.tick })
+      if (staggeredReflections.length > 0) {
+        const batch = staggeredReflections.splice(0, Math.ceil(staggeredReflections.length / TICKS_PER_HOUR))
+        for (const r of batch) await submit({ kind: 'reflection', agent: r.agent, tick: r.tick })
+      }
       for (const id of r.deliberationJobs) await submit({ kind: 'deliberation', agent: id, tick: state.tick })
       for (const c of r.crisisJobs) await submit({ kind: 'crisis', agent: c.agent, crisisKind: c.kind, context: c.context, tick: state.tick })
     }
@@ -969,7 +991,7 @@ const timer = setInterval(() => void step(), TICK_MS)
 
 async function shutdown(): Promise<void> {
   clearInterval(timer)
-  worker.stop()
+  await worker.stop()
   if (worldRepo != null) await worldRepo.save(state, SEED, city.config)
   await pool?.end()
   console.log(`\nstopped at tick ${state.tick}`)

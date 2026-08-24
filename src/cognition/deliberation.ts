@@ -22,6 +22,8 @@ export type DeliberationInput = {
 
 export type DeliberationResult = {
   outcome: DeliberationOutcome
+  prompt: string
+  rawResponse: string
   model: string
   costUsd: number
   durationMs: number
@@ -155,6 +157,8 @@ export async function deliberate(
   const outcome = parseDeliberation(res.text, validAgentIds, input.agent.id)
   return {
     outcome,
+    prompt,
+    rawResponse: res.text,
     model: res.model,
     costUsd: res.costUsd,
     durationMs: res.durationMs,

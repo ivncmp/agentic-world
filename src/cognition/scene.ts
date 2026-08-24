@@ -255,6 +255,8 @@ export function parseSceneOutcome(
 
 export type SceneResult = {
   outcome: SceneOutcome
+  prompt: string
+  rawResponse: string
   model: string
   costUsd: number
   durationMs: number
@@ -266,10 +268,13 @@ export async function resolveScene(
   input: Parameters<typeof buildScenePrompt>[0],
   provider: ModelProvider,
 ): Promise<SceneResult> {
-  const res = await provider.complete({ prompt: buildScenePrompt(input), purpose: 'scene' })
+  const prompt = buildScenePrompt(input)
+  const res = await provider.complete({ prompt, purpose: 'scene' })
   const thirdPartyIds = new Set((input.knownInCommon ?? []).map((t) => t.id))
   return {
     outcome: parseSceneOutcome(res.text, input.a.name, input.b.name, canLend(input.rel), thirdPartyIds),
+    prompt,
+    rawResponse: res.text,
     model: res.model,
     costUsd: res.costUsd,
     durationMs: res.durationMs,

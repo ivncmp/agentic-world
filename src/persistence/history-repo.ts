@@ -158,6 +158,21 @@ export class HistoryRepository {
     return r.rows
   }
 
+  async daysMissingDiary(agentIds: readonly string[], currentDay: number, lookback = 3):
+      Promise<{ agent: string; day: number }[]> {
+    if (agentIds.length === 0 || currentDay <= 1) return []
+    const from = Math.max(1, currentDay - lookback)
+    const r = await this.pool.query<{ agent_id: string; day: number }>(
+      `SELECT a.id AS agent_id, d.day
+         FROM unnest($1::text[]) AS a(id)
+         CROSS JOIN generate_series($2::int, $3::int) AS d(day)
+         LEFT JOIN diaries dd ON dd.agent_id = a.id AND dd.day = d.day
+        WHERE dd.agent_id IS NULL`,
+      [[...agentIds], from, currentDay - 1],
+    )
+    return r.rows.map((x) => ({ agent: x.agent_id, day: x.day }))
+  }
+
   /** Counts by kind for a day — the shape a briefing needs. */
   async daySummary(agentId: AgentId, day: number): Promise<Record<string, number>> {
     const r = await this.pool.query<{ kind: string; n: string }>(

@@ -19,3 +19,4 @@ preview/
 
 # 3D model binaries (Kenney CC0 — re-download from kenney.nl)
 tools/render-characters/models/*.glb
+logs

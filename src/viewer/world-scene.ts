@@ -352,16 +352,17 @@ export class WorldScene extends Phaser.Scene {
     this.tooltipBg.fillRoundedRect(-w / 2, -h / 2, w, h, 10)
     this.tooltipBg.strokeRoundedRect(-w / 2, -h / 2, w, h, 10)
 
+    const nLines = text.split('\n').length
+    const lineH = this.tooltipText.height / nLines
+    const textY = -h / 2 + 5
+
     const hasLine0Av = avatars?.some((a) => a.line === 0)
     if (!hasLine0Av) {
       this.tooltipBg.fillStyle(dot, 1)
-      this.tooltipBg.fillCircle(-w / 2 + 11, 0, 3.5)
+      this.tooltipBg.fillCircle(-w / 2 + 11, textY + lineH / 2, 3.5)
     }
 
     if (avatars?.length) {
-      const nLines = text.split('\n').length
-      const lineH = this.tooltipText.height / nLines
-      const textY = -h / 2 + 5
       for (const av of avatars) {
         const key = `avatar-${av.id}`
         if (!this.textures.exists(key)) continue
