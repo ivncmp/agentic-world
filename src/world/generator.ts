@@ -1,4 +1,4 @@
-import type { CityConfig, CityTemplate } from './config.js'
+import type { CityConfig, CityTemplate, WaterRegion } from './config.js'
 import { DEFAULT_CITY } from './config.js'
 import type { Location, LocationId, LocationKind, Tile } from './locations.js'
 import { cityLayout, STREET_PERIOD, type Block, type CityLayout } from './layout.js'
@@ -33,6 +33,8 @@ export type GeneratedCity = {
   markOccupied: (tiles: ReadonlySet<string>) => void
   /** Workplace id -> remaining vacancies. */
   openings: Map<LocationId, number>
+  /** Water regions (river, sea, lake). Empty for procedural cities. */
+  water: WaterRegion[]
 }
 
 /**
@@ -149,7 +151,7 @@ export function generateCity(
     for (const t of tiles) occupied.add(t)
   }
 
-  return { config, layout, locations, openings, allocateHome, markOccupied }
+  return { config, layout, locations, openings, allocateHome, markOccupied, water: [] }
 }
 
 export const venuesOfKind = (city: GeneratedCity, kind: LocationKind): Location[] =>
@@ -228,7 +230,7 @@ export function cityFromTemplate(t: CityTemplate): GeneratedCity {
     openingsPerWorkplace: t.openingsPerWorkplace,
   }
 
-  return { config, layout, locations, openings, allocateHome, markOccupied }
+  return { config, layout, locations, openings, allocateHome, markOccupied, water: t.water ?? [] }
 }
 
 export function exportTemplate(city: GeneratedCity, seed: number): CityTemplate {

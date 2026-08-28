@@ -229,4 +229,44 @@ describe('gossip parsing', () => {
     )
     expect(result.gossipA).toEqual([{ about: 'elena-1', text: 'ok' }])
   })
+
+  it('normalizes {id, content} format', () => {
+    const result = parseSceneOutcome(
+      sceneWith([{ id: 'elena-1', content: 'Elena is in trouble.' }]),
+      'Marta', 'Juan', true, validIds,
+    )
+    expect(result.gossipA).toEqual([{ about: 'elena-1', text: 'Elena is in trouble.' }])
+  })
+
+  it('normalizes {id, text} format', () => {
+    const result = parseSceneOutcome(
+      sceneWith([{ id: 'pedro-1', text: 'Pedro lost his job.' }]),
+      'Marta', 'Juan', true, validIds,
+    )
+    expect(result.gossipA).toEqual([{ about: 'pedro-1', text: 'Pedro lost his job.' }])
+  })
+
+  it('normalizes {subject, description} format', () => {
+    const result = parseSceneOutcome(
+      sceneWith([{ subject: 'elena-1', description: 'She was seen at the bar.' }]),
+      'Marta', 'Juan', true, validIds,
+    )
+    expect(result.gossipA).toEqual([{ about: 'elena-1', text: 'She was seen at the bar.' }])
+  })
+
+  it('normalizes {person, content} format', () => {
+    const result = parseSceneOutcome(
+      sceneWith([{ person: 'pedro-1', content: 'Pedro is gambling again.' }]),
+      'Marta', 'Juan', true, validIds,
+    )
+    expect(result.gossipA).toEqual([{ about: 'pedro-1', text: 'Pedro is gambling again.' }])
+  })
+
+  it('normalizes {about, claim} format', () => {
+    const result = parseSceneOutcome(
+      sceneWith([{ about: 'elena-1', claim: 'Elena owes everyone money.' }]),
+      'Marta', 'Juan', true, validIds,
+    )
+    expect(result.gossipA).toEqual([{ about: 'elena-1', text: 'Elena owes everyone money.' }])
+  })
 })

@@ -56,6 +56,8 @@ export type ActionContext = {
   findLocation: (kind: LocationKind) => LocationId | null
   /** Other agents currently sharing the agent's location. */
   co: readonly Agent[]
+  /** How many agents are at a given location (excluding self). */
+  crowdAt: (loc: LocationId) => number
   /**
    * How this agent feels about another, −1..1. Read only when weighing theft,
    * so the relationship map never has to be walked on an ordinary tick.
@@ -152,6 +154,14 @@ export type ScoredAction = { action: Action; score: number }
  * Values enter here and only here. An axis is only real if it changes a score
  * in this function; adding an axis without touching this is decoration.
  */
+/**
+ * People avoid crowded places. A packed bar is less appealing than a quiet one.
+ * No penalty up to 3 occupants; beyond that each extra person subtracts 0.12
+ * from the action score. At 9 occupants (the screenshot that inspired this)
+ * the penalty is −0.72, which kills most leisure and social scores.
+ */
+const crowdPenalty = (crowd: number): number => Math.max(0, (crowd - 3) * 0.12)
+
 export function scoreActions(agent: Agent, ctx: ActionContext): ScoredAction[] {
   const v = ctx.values
   const out: ScoredAction[] = []
@@ -166,12 +176,22 @@ export function scoreActions(agent: Agent, ctx: ActionContext): ScoredAction[] {
 
   const home = ctx.homeId
 
-  // Survival drives, largely value-independent.
+  // Thrifty agents mentally reserve rent money. The reserve scales with thrift:
+  // at thrift 0.5 they hold back one day's rent; at 1.0, two days.
+  const rentReserve = Math.max(0, v.thrift + 0.5) * agent.housing.due
+  const discretionary = Math.max(0, agent.money - rentReserve)
+
+  // Survival drives, largely value-independent. Crowd aversion applies here
+  // too: with only one supermarket, the morning rush puts everyone in the same
+  // queue — a packed shop nudges agents toward a quieter café or bar.
   const EAT_COST = 8
   if (agent.needs.hunger >= NEED_THRESHOLD.hunger && agent.money >= EAT_COST) {
-    push('eat', ctx.findLocation('supermarket'), agent.needs.hunger * 1.2)
-    push('eat', ctx.findLocation('bar'), agent.needs.hunger * (0.9 + v.sociability * 0.4))
-    push('eat', ctx.findLocation('cafe'), agent.needs.hunger * (0.9 + v.sociability * 0.35))
+    const superId = ctx.findLocation('supermarket')
+    const barId = ctx.findLocation('bar')
+    const cafeId = ctx.findLocation('cafe')
+    push('eat', superId, agent.needs.hunger * 1.2 - (superId ? crowdPenalty(ctx.crowdAt(superId)) : 0))
+    push('eat', barId, agent.needs.hunger * (0.9 + v.sociability * 0.4) - (barId ? crowdPenalty(ctx.crowdAt(barId)) : 0))
+    push('eat', cafeId, agent.needs.hunger * (0.9 + v.sociability * 0.35) - (cafeId ? crowdPenalty(ctx.crowdAt(cafeId)) : 0))
   }
   // Tiredness *and* the hour. Either can carry it: an exhausted agent sleeps in
   // the afternoon, a rested one still turns in at night.
@@ -191,27 +211,37 @@ export function scoreActions(agent: Agent, ctx: ActionContext): ScoredAction[] {
   }
 
   // Company. Pride suppresses seeking others out when things are going badly.
+  // Vice frustration makes agents irritable and less inclined to socialize.
+  const viceFrustration = agent.vices.reduce((max, vi) => {
+    const def = viceDef(vi.kind)
+    return def.moneyCost > discretionary && vi.urge > max ? vi.urge : max
+  }, 0)
   if (ctx.co.length > 0 && agent.needs.social >= NEED_THRESHOLD.social) {
     push(
       'socialize',
       agent.location,
-      0.3 + agent.needs.social * (0.6 + v.sociability * 0.4) + seeking * 0.5 - v.pride * pressure * 0.2,
+      0.3 + agent.needs.social * (0.6 + v.sociability * 0.4) + seeking * 0.5
+        - v.pride * pressure * 0.2 - viceFrustration * 0.25,
     )
   }
 
   // Vices pull hardest where they are triggered; thrift resists the costly ones.
+  // A broke agent can still indulge at reduced cost — you gamble what you have,
+  // not what the house wants. The economy drains less but the urge resets.
   for (const vice of agent.vices) {
     if (vice.urge < VICE_URGE_THRESHOLD) continue
     const def = viceDef(vice.kind)
     const where = def.triggers.find((k) => ctx.findLocation(k) != null)
     if (where == null) continue
-    if (def.moneyCost > agent.money) continue
-    // Saving for something makes a costly vice easier to resist.
+    const canAffordFull = def.moneyCost <= discretionary
+    const canAffordPartial = def.moneyCost > 0 && discretionary >= def.moneyCost * 0.25
+    if (!canAffordFull && !canAffordPartial) continue
     const costResistance = def.moneyCost > 0 ? v.thrift * 0.5 + saving * 0.6 : 0
+    const desperationBonus = !canAffordFull && canAffordPartial ? 0.15 : 0
     push(
       'indulge_vice',
       ctx.findLocation(where),
-      vice.urge * (1 + v.riskTolerance * 0.3) - costResistance,
+      vice.urge * (1 + v.riskTolerance * 0.3) + desperationBonus - costResistance,
       vice.kind as unknown as string,
     )
   }
@@ -230,10 +260,16 @@ export function scoreActions(agent: Agent, ctx: ActionContext): ScoredAction[] {
   //
   // Owner constraints veto outright: this is where the owner loop reaches the
   // reflex layer.
+  // Vice frustration: a costly vice at full urge the agent can't afford is
+  // desperation that feeds into theft — and dampens sociability.
+  const frustrated = agent.vices.some(
+    (vi) => vi.urge >= 0.85 && viceDef(vi.kind).moneyCost > discretionary,
+  )
+
   const starving = agent.money < EAT_COST && agent.needs.hunger >= NEED_THRESHOLD.hunger
   const theftCooledDown =
     agent.lastTheftTick == null || ctx.tick - agent.lastTheftTick >= THEFT_COOLDOWN_TICKS
-  if (!agent.constraints.includes('no_theft') && starving && theftCooledDown) {
+  if (!agent.constraints.includes('no_theft') && (starving || frustrated) && theftCooledDown) {
     // You do not rob the people you are fond of. Among eight neighbours this is
     // most of what stops theft being the default answer to an empty pocket.
     const marks = ctx.co.filter((o) => o.money >= EAT_COST && ctx.feelingToward(o.id) < 0.15)
@@ -248,10 +284,12 @@ export function scoreActions(agent: Agent, ctx: ActionContext): ScoredAction[] {
   }
 
   // Friends: go where a friend is. Earned through prior co-location and scenes
-  // (affection >= 0.25), so strangers never trigger this.
+  // (affection >= 0.25), so strangers never trigger this. Crowd aversion
+  // prevents the snowball where everyone piles onto the same bar.
   for (const fl of ctx.friendLocations) {
     if (fl.locationId === agent.location) continue
     const score = 0.3 + fl.affection * 0.5 + seeking * 0.4 + v.sociability * 0.2
+      - crowdPenalty(ctx.crowdAt(fl.locationId))
     push('socialize', fl.locationId, score)
   }
 
@@ -259,19 +297,25 @@ export function scoreActions(agent: Agent, ctx: ActionContext): ScoredAction[] {
   // give the other half a purpose and, more importantly, give off-shift hours
   // somewhere to go. Which one an agent picks falls out of thrift and sociability.
   if (agent.needs.fun >= NEED_THRESHOLD.fun) {
-    push('relax', ctx.findLocation('park'), agent.needs.fun * (0.8 + v.thrift * 0.3))
-    if (agent.money >= 5) {
-      push('relax', ctx.findLocation('cafe'), agent.needs.fun * (0.7 + v.sociability * 0.2))
+    const parkId = ctx.findLocation('park')
+    push('relax', parkId, agent.needs.fun * (0.8 + v.thrift * 0.3) - (parkId ? crowdPenalty(ctx.crowdAt(parkId)) : 0))
+    if (discretionary >= 5) {
+      const cafeId = ctx.findLocation('cafe')
+      push('relax', cafeId, agent.needs.fun * (0.7 + v.sociability * 0.2) - (cafeId ? crowdPenalty(ctx.crowdAt(cafeId)) : 0))
     }
-    if (agent.money >= 10) {
-      push('exercise', ctx.findLocation('gym'), agent.needs.fun * (0.6 - v.thrift * 0.2))
-      push('exercise', ctx.findLocation('bowling'), agent.needs.fun * (0.65 + v.sociability * 0.15))
+    if (discretionary >= 10) {
+      const gymId = ctx.findLocation('gym')
+      const bowlId = ctx.findLocation('bowling')
+      push('exercise', gymId, agent.needs.fun * (0.6 - v.thrift * 0.2) - (gymId ? crowdPenalty(ctx.crowdAt(gymId)) : 0))
+      push('exercise', bowlId, agent.needs.fun * (0.65 + v.sociability * 0.15) - (bowlId ? crowdPenalty(ctx.crowdAt(bowlId)) : 0))
     }
-    if (agent.money >= 15) {
-      push('browse', ctx.findLocation('cinema'), agent.needs.fun * (0.7 - v.thrift * 0.2))
+    if (discretionary >= 15) {
+      const cinId = ctx.findLocation('cinema')
+      push('browse', cinId, agent.needs.fun * (0.7 - v.thrift * 0.2) - (cinId ? crowdPenalty(ctx.crowdAt(cinId)) : 0))
     }
-    if (agent.money >= 25) {
-      push('browse', ctx.findLocation('shop'), agent.needs.fun * (0.7 - v.thrift * 0.5))
+    if (discretionary >= 25) {
+      const shopId = ctx.findLocation('shop')
+      push('browse', shopId, agent.needs.fun * (0.7 - v.thrift * 0.5) - (shopId ? crowdPenalty(ctx.crowdAt(shopId)) : 0))
     }
   }
   if (agent.needs.hygiene >= NEED_THRESHOLD.hygiene) {
@@ -283,7 +327,8 @@ export function scoreActions(agent: Agent, ctx: ActionContext): ScoredAction[] {
   // cheapest way to turn dead time into co-location, which is what feeds scenes.
   // At night, boredom sends you home, not to the bar.
   const haunt = pull >= 0.4 ? home : v.sociability > 0 ? (ctx.findLocation('cafe') ?? ctx.findLocation('bar') ?? home) : (ctx.findLocation('park') ?? home)
-  push('idle', haunt, 0.05 + ctx.random() * 0.05 + Math.max(0, v.sociability) * 0.06)
+  const hauntCrowd = haunt !== home ? crowdPenalty(ctx.crowdAt(haunt)) : 0
+  push('idle', haunt, 0.05 + ctx.random() * 0.05 + Math.max(0, v.sociability) * 0.06 - hauntCrowd)
   push('idle', agent.location, 0.05 + ctx.random() * 0.04)
 
   // Layer 1.5: deliberation biases shift action scores for the next ~12 hours.

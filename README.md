@@ -12,44 +12,66 @@ A Habbo/Sims-style world that runs 24/7. Each person authors their agent's perso
 
 ## How it works
 
+Every design decision reduces to one question: *does this moment deserve intelligence, or does an `if` suffice?*
+
 | Layer | Cost | When |
 |-------|------|------|
-| **Reflex** | Free (pure TS) | ~95% of ticks — utility AI, state machines |
-| **Social** | Cheap (Haiku) | Two agents co-locate with interaction potential |
-| **Reflection** | Expensive (Opus) | Once per agent per game night — diary, memory consolidation, character drift |
+| **Reflex** | Free (pure TS) | ~95% of ticks — utility AI over needs, values, money and goals |
+| **Scene** | One call | Two agents co-locate *and* the gate scores them worth a conversation |
+| **Deliberation** | One call | An agent rethinks after something intense — returns biases, not actions |
+| **Crisis** | One call | Interior monologue at the moment of temptation: a vice, a theft, deep debt, isolation |
+| **Reflection** | One call | Once per agent per game night — diary, memory consolidation, character drift |
 
-The tick engine runs deterministically in pure TypeScript. LLM calls are queued and resolved out-of-band — the world never blocks on cognition.
+The tick engine is a pure function and runs deterministically. LLM calls leave as jobs on a bounded Redis queue and resolve out-of-band, so the world never blocks on cognition — if the provider disappears, agents keep eating, working and paying rent.
 
 ## Quick start
 
 ```bash
-cp .env.example .env          # set POSTGRES_PASSWORD at minimum
-docker compose up -d           # postgres, dbrain, engine, viewer
-open http://localhost:8080     # isometric viewer
+cp .env.example .env          # set POSTGRES_PASSWORD and ADMIN_SECRET at minimum
+docker compose up -d          # postgres, redis, dbrain, engine, worker, mcp, viewer
+open http://localhost:8080    # the city, in 3D
 ```
 
-For development, `docker-compose.override.yml` runs the viewer with Vite HMR — edits to `src/viewer/` reflect instantly.
+`docker-compose.override.yml` is loaded automatically and runs the viewer as a Vite dev server with `src/` mounted, so viewer edits hot-reload. Delete it to serve the static nginx build.
 
-## Dev tools
+| Service | Port |
+|---|---|
+| Viewer | 8080 |
+| Engine (HTTP + `/live` WebSocket) | 7070 |
+| MCP (owner loop) | 7071 |
+| dbrain | 7978, dashboard 7979 |
+| Postgres | 5532 (pgweb on 8082) |
+| Redis | 6479 |
+
+## Development
 
 ```bash
-pnpm watch                     # text village log — a day in seconds
-pnpm soak                      # headless full-day simulation with histograms
-pnpm check                     # tsc + eslint + prettier + tests
+pnpm check                    # tsc --noEmit + vitest
+docker compose logs -f engine # the village log, live
 ```
+
+`LLM=0` in `.env` runs the world on the reflex layer alone — the fastest way to check a change to needs, action scoring or the economy.
 
 ## Architecture
 
 Characters are data, cognition is a service. Agents are not processes — a character is a row in Postgres plus a memory graph in [dbrain](https://dtoolkit.vercel.app/).
 
-| Store | What |
-|-------|------|
-| **Postgres** | World state, events, scenes, diaries |
-| **dbrain** | Episodic/identity memory, recalled by relevance |
+| Store | What | Why there |
+|-------|------|-----------|
+| **Postgres** | World state, events, scenes, diaries | Written every tick; read by address ("day 5"), which is a lookup |
+| **dbrain** | Episodic and identity memory | Narrative text recalled by relevance, with decay already built |
+
+Relationships are never programmed. They emerge because memory persists: when two agents meet, the scene prompt is built from each one's recall about the other. Gossip is just second-hand memory transfer — and second-hand memories can be wrong, which is a feature.
+
+## The viewer
+
+Three.js over Kenney asset packs. The browser is a spectator with no authority: it draws `GET /world` once and follows the `/live` WebSocket. Buildings and agents are clickable and hoverable, venue labels show who is inside, and the sun tracks the in-game clock — sunrise at 6, noon at 13, sunset at 20.
 
 ## The owner loop
 
-The differentiator: owners connect from outside via MCP, receive briefings about their agent's life, and send back **guidance** — disposition shifts, never direct actions. Guidance decays on a half-life, so raising is continuous.
+The differentiator: owners connect from outside via MCP, receive briefings and open dilemmas about their agent's life, and send back **guidance** — disposition shifts, never direct actions. If the owner can predict what happens tomorrow, the question was wrong.
+
+Guidance is typed (`valueDeltas`, `priorities`, `constraints`, plus a prose `note`) so it can feed the free reflex layer every tick instead of costing a call to interpret. It decays on a half-life, so raising is continuous, and an absent owner means the agent falls back to its authored personality.
 
 ## License
 

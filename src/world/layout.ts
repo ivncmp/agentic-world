@@ -25,7 +25,7 @@ export const isStreet = (x: number, y: number, period = STREET_PERIOD): boolean 
  * that is public, a commercial belt around it, and homes further out — the
  * shape that makes a commute, and therefore a rhythm to the day.
  */
-export type BlockRole = 'plaza' | 'green' | 'civic' | 'residential'
+export type BlockRole = 'plaza' | 'green' | 'civic' | 'residential' | 'harbor' | 'sea'
 
 export type Block = {
   bx: number

@@ -258,6 +258,17 @@ const worker = new CognitionWorker(REDIS_URL, async (job: Job): Promise<CallResu
         inputTokens: res.inputTokens, outputTokens: res.outputTokens,
         costUsd: res.costUsd, durationMs: res.durationMs, tick: job.tick,
         prompt: res.prompt, response: res.rawResponse })
+      // Reactive deliberation: an intense scene makes the participants rethink.
+      const intensity = job.tension + Math.abs(res.outcome.transfer) / 50
+        + Math.abs(res.outcome.deltas.aToB.trust) + Math.abs(res.outcome.deltas.bToA.trust)
+      if (intensity > 4) {
+        for (const who of [a, b]) {
+          const since = state.tick - who.lastDeliberationTick
+          if (since > TICKS_PER_HOUR * 2) {
+            void submit({ kind: 'deliberation', agent: who.id, tick: state.tick })
+          }
+        }
+      }
       const gossipCount = res.outcome.gossipA.length + res.outcome.gossipB.length
       publish('scene', `${a.name} × ${b.name} · ${placeOf(a.location)}`, {
         a: a.id, b: b.id,
@@ -428,6 +439,18 @@ async function step(): Promise<void> {
 
     for (const e of r.events) describe(e)
     await history?.recordEvents(r.events)
+
+    // Reactive deliberation: theft victims rethink their life.
+    if (USE_LLM) {
+      for (const e of r.events) {
+        if (e.type === 'theft') {
+          const victim = state.agents.find((x) => x.id === e.victim)
+          if (victim != null && state.tick - victim.lastDeliberationTick > TICKS_PER_HOUR * 2) {
+            void submit({ kind: 'deliberation', agent: e.victim, tick: state.tick })
+          }
+        }
+      }
+    }
 
     if (USE_LLM) {
       for (const s of r.sceneJobs) await submit({ kind: 'scene', a: s.a, b: s.b, tension: s.score, tick: state.tick })
@@ -939,6 +962,7 @@ const http = createServer((req, res) => {
         // is a layout decision, and duplicating that decision in the viewer is
         // how the two quietly stop agreeing.
         blocks: city.layout.blocks.map((b) => ({ bx: b.bx, by: b.by, role: b.role })),
+        water: city.water,
       },
       locations: allLocs.map((l) => ({
         id: l.id, kind: l.kind, name: l.name, district: l.district,

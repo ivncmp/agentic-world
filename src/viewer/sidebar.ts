@@ -3,7 +3,7 @@
  * Driven by the same EngineConnection the Phaser scene uses.
  */
 import type { EngineConnection, WorldInfo, StateMsg, FeedItem } from './connection.js'
-import { avatarImg, addToCache } from './avatar.js'
+import { avatarImg } from './avatar.js'
 
 const STATE_COLORS: Record<string, string> = {
   sleep: '#60a5fa', work: '#4ade80', travel: '#fbbf24', scene: '#e879f9',
@@ -12,7 +12,14 @@ const STATE_COLORS: Record<string, string> = {
   seek_job: '#fb7185', browse: '#a78bfa', wash: '#67e8f9',
 }
 
-type Tab = 'town' | 'feed' | 'agent' | 'graph'
+type Tab = 'town' | 'places' | 'feed' | 'agent' | 'graph'
+
+const KIND_LABEL: Record<string, string> = {
+  home: 'home', bar: 'bar', office: 'offices', shop: 'shop',
+  supermarket: 'supermarket', clinic: 'clinic', school: 'school',
+  gym: 'gym', garage: 'garage', park: 'park', plaza: 'plaza',
+  cinema: 'cinema', bowling: 'bowling', cafe: 'cafe', restaurant: 'restaurant',
+}
 
 let activeTab: Tab = 'town'
 let feedUnread = false
@@ -62,6 +69,45 @@ export function initSidebar(conn: EngineConnection, world: WorldInfo): void {
       window.dispatchEvent(new CustomEvent('aw:agent-click', { detail: { id } }))
     }
   })
+
+  // Places tab: click a place to open its card and fly the camera to it
+  const placesEl = document.getElementById('places-list')!
+  placesEl.addEventListener('click', (ev) => {
+    const id = (ev.target as HTMLElement).closest('[data-place]')?.getAttribute('data-place')
+    if (id == null) return
+    window.dispatchEvent(new CustomEvent('aw:venue-focus', { detail: { id } }))
+    window.dispatchEvent(new CustomEvent('aw:venue-click', { detail: { id } }))
+  })
+
+  const publicPlaces = world.locations.filter(l => l.kind !== 'home')
+  const homes = world.locations.filter(l => l.kind === 'home')
+  const byDistrict = new Map<string, typeof world.locations>()
+  for (const l of publicPlaces) {
+    const list = byDistrict.get(l.district) ?? []
+    list.push(l)
+    byDistrict.set(l.district, list)
+  }
+
+  function renderPlaces(occ: Map<string, number>): void {
+    const row = (l: { id: string; name: string; kind: string }): string => {
+      const n = occ.get(l.id) ?? 0
+      return `<div class="place-row${n > 0 ? ' busy' : ''}" data-place="${l.id}">` +
+        `<span class="place-name">${esc(l.name)}</span>` +
+        `<span class="place-kind">${esc(KIND_LABEL[l.kind] ?? l.kind)}</span>` +
+        `<span class="place-occ">${n > 0 ? n : '·'}</span></div>`
+    }
+    let html = ''
+    for (const [district, list] of byDistrict) {
+      html += `<div class="places-group">${esc(district)}</div>` +
+        [...list].sort((a, b) => a.name.localeCompare(b.name)).map(row).join('')
+    }
+    if (homes.length > 0) {
+      html += `<div class="places-group">Homes</div>` +
+        [...homes].sort((a, b) => a.name.localeCompare(b.name)).map(row).join('')
+    }
+    placesEl.innerHTML = html
+  }
+  renderPlaces(new Map())
 
   conn.onConnection((connected) => {
     connEl.textContent = connected ? 'live' : 'reconnecting...'
@@ -118,12 +164,7 @@ export function initSidebar(conn: EngineConnection, world: WorldInfo): void {
   const knownAgents = new Set<string>()
 
   conn.onState((s: StateMsg) => {
-    for (const a of s.agents) {
-      if (!knownAgents.has(a.id)) {
-        knownAgents.add(a.id)
-        void addToCache(a.id)
-      }
-    }
+    for (const a of s.agents) knownAgents.add(a.id)
     const nowReal = performance.now()
     const nowGame = new Date(s.time).getTime()
     if (lastTickReal > 0) {
@@ -157,6 +198,13 @@ export function initSidebar(conn: EngineConnection, world: WorldInfo): void {
       ` · <span class="cog-tokens">${tk(c.inputTokens)} in / ${tk(c.outputTokens)} out</span>` +
       ` · <span class="cog-cost">$${c.spentUsd.toFixed(3)}</span>` +
       (tooltipHtml ? ` <span class="cog-info">ⓘ</span>` + tooltipHtml : '')
+
+    const occ = new Map<string, number>()
+    for (const a of s.agents) {
+      if (a.state === 'travel') continue
+      occ.set(a.at, (occ.get(a.at) ?? 0) + 1)
+    }
+    renderPlaces(occ)
 
     tableEl.innerHTML = s.agents
       .map((a) => {

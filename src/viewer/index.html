@@ -251,6 +251,28 @@
   }
   .tab-pane.active { display: flex }
 
+  /* ---- places tab ---- */
+
+  .places-list { padding: 6px 12px }
+  .places-group {
+    font-size: 9px; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--dim); margin: 10px 4px 4px;
+  }
+  .places-group:first-child { margin-top: 2px }
+  .place-row {
+    display: flex; align-items: baseline; gap: 8px;
+    padding: 5px 6px; border-radius: 6px; cursor: pointer;
+    transition: background .1s;
+  }
+  .place-row:hover { background: var(--row-hover) }
+  .place-name { flex: 1; font-size: 12px; color: var(--fg) }
+  .place-kind { font-size: 10px; color: var(--dim) }
+  .place-occ {
+    min-width: 20px; text-align: right;
+    font-size: 10px; font-variant-numeric: tabular-nums; color: var(--dim);
+  }
+  .place-row.busy .place-occ { color: var(--accent); font-weight: 600 }
+
   /* ---- town tab: roster ---- */
 
   .agents-list { padding: 6px 12px }
@@ -457,15 +479,91 @@
   .occupants tr { cursor: pointer }
   .occupants tr:hover { background: var(--venue-hover) }
   .occupants td { padding: 3px 0; white-space: nowrap }
+
+  /* ---- 3D loading overlay ---- */
+  #loading {
+    position: absolute; inset: 0; background: var(--bg); display: flex;
+    flex-direction: column; align-items: center; justify-content: center; z-index: 100;
+    transition: opacity 0.4s;
+  }
+  #loading.done { opacity: 0; pointer-events: none }
+  #loading h2 { font-size: 14px; font-weight: 500; color: var(--accent); margin-bottom: 12px }
+  #loading .bar { width: 200px; height: 3px; background: var(--line); border-radius: 2px; overflow: hidden }
+  #loading .fill { height: 100%; background: var(--accent); transition: width 0.2s; width: 0 }
+  #loading .status { margin-top: 8px; font-size: 10px; color: var(--dim) }
+
+  /* ---- 3D tooltip ---- */
+  .tooltip-3d {
+    position: fixed; background: var(--tooltip-bg); border: 1px solid var(--tooltip-border);
+    border-radius: 5px; padding: 6px 10px; font-size: 10px;
+    pointer-events: none; opacity: 0; transition: opacity 0.1s; z-index: 20;
+    max-width: 180px; box-shadow: 0 3px 12px rgba(0,0,0,0.3);
+  }
+  .tooltip-3d.show { opacity: 1 }
+  .tooltip-3d .tt-name { font-weight: 600; color: var(--fg) }
+  .tooltip-3d .tt-kind { color: var(--dim); text-transform: uppercase; font-size: 9px; letter-spacing: 0.06em }
+  .tooltip-3d .tt-district { color: var(--accent); font-size: 9px }
+  .tooltip-3d .tt-occ { margin-top: 4px; border-top: 1px solid var(--line); padding-top: 4px }
+  .tooltip-3d .tt-agent { color: var(--fg); font-size: 9px; opacity: .85 }
+
+  /* ---- 3D overlay layer (venue labels) ---- */
+  .overlay-3d {
+    position: absolute; inset: 0; pointer-events: none; z-index: 5; overflow: hidden;
+  }
+  .venue-label {
+    position: absolute; transform: translate(-50%, -100%);
+    background: var(--tooltip-bg); border: 1px solid var(--tooltip-border);
+    border-radius: 6px; padding: 4px 8px;
+    font-size: 10px; white-space: nowrap; cursor: pointer;
+    pointer-events: auto;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    transition: background .15s;
+  }
+  .venue-label:hover { background: var(--ctrl-hover) }
+  .vl-name { font-weight: 600; color: var(--fg); display: block }
+  .vl-kind { color: var(--dim); text-transform: uppercase; font-size: 8px; letter-spacing: 0.06em }
+  .vl-occ { margin-top: 2px; border-top: 1px solid var(--line); padding-top: 2px }
+  .vl-agent { display: block; color: var(--accent); font-size: 9px }
+  /* pointer triangle from the label down onto the building */
+  .vl-arrow {
+    position: absolute; left: 50%; bottom: -6px; transform: translateX(-50%);
+    width: 0; height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid var(--tooltip-border);
+  }
+  .vl-arrow::after {
+    content: ''; position: absolute; left: -5px; top: -6px;
+    width: 0; height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid var(--tooltip-bg);
+  }
+
+  .agent-label {
+    position: absolute; transform: translate(-50%, -100%);
+    background: var(--tooltip-bg); border: 1px solid var(--tooltip-border);
+    border-radius: 999px; padding: 1px 7px;
+    font-size: 9px; font-weight: 600; color: var(--fg);
+    white-space: nowrap; cursor: pointer; pointer-events: auto;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    transition: background .15s;
+  }
+  .agent-label:hover { background: var(--ctrl-hover) }
 </style>
 <body>
   <div id="game-container">
+    <div id="loading">
+      <h2>Loading city assets…</h2>
+      <div class="bar"><div class="fill" id="load-fill"></div></div>
+      <div class="status" id="load-status">Initialising</div>
+    </div>
     <div id="controls">
       <button data-zoom="-1" title="Zoom out">−</button>
       <button data-zoom="1" title="Zoom in">+</button>
       <span class="sep"></span>
       <button data-fit title="Fit the whole city">⤢</button>
-      <span class="hint">drag to pan · scroll to zoom</span>
+      <span class="hint">LMB orbit · RMB pan · scroll zoom · R reset</span>
     </div>
     <button class="theme-toggle" id="theme-toggle" title="Toggle light/dark mode">☀</button>
   </div>
@@ -482,6 +580,7 @@
     </div>
     <div class="tab-bar">
       <button class="tab-btn active" data-tab="town">Town</button>
+      <button class="tab-btn" data-tab="places">Places</button>
       <button class="tab-btn" data-tab="feed">Feed<span class="tab-badge" id="feed-badge" hidden></span></button>
       <button class="tab-btn" data-tab="agent">Agent</button>
       <button class="tab-btn" data-tab="graph">Graph</button>
@@ -489,6 +588,9 @@
     <div class="tab-content">
       <div class="tab-pane active" id="tab-town">
         <div class="agents-list" id="agents-table"></div>
+      </div>
+      <div class="tab-pane" id="tab-places">
+        <div class="places-list" id="places-list"></div>
       </div>
       <div class="tab-pane" id="tab-feed">
         <div class="feed" id="feed"></div>

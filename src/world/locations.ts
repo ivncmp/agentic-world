@@ -13,6 +13,7 @@ export const LOCATION_KINDS = [
   'cinema',
   'bowling',
   'cafe',
+  'restaurant',
 ] as const
 
 export type LocationKind = (typeof LOCATION_KINDS)[number]

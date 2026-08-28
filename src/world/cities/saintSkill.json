@@ -1,14 +1,15 @@
 {
   "name": "Saint Skill",
   "grid": {
-    "width": 17,
-    "height": 17
+    "width": 25,
+    "height": 25
   },
   "streetPeriod": 4,
   "districts": [
     "Old Quarter",
     "Dockside",
     "Hillcrest",
+    "Marina",
     "Ironworks"
   ],
   "blocks": [
@@ -33,6 +34,16 @@
       "role": "residential"
     },
     {
+      "bx": 4,
+      "by": 0,
+      "role": "residential"
+    },
+    {
+      "bx": 5,
+      "by": 0,
+      "role": "residential"
+    },
+    {
       "bx": 0,
       "by": 1,
       "role": "residential"
@@ -51,6 +62,16 @@
       "bx": 3,
       "by": 1,
       "role": "civic"
+    },
+    {
+      "bx": 4,
+      "by": 1,
+      "role": "residential"
+    },
+    {
+      "bx": 5,
+      "by": 1,
+      "role": "residential"
     },
     {
       "bx": 0,
@@ -73,6 +94,16 @@
       "role": "civic"
     },
     {
+      "bx": 4,
+      "by": 2,
+      "role": "green"
+    },
+    {
+      "bx": 5,
+      "by": 2,
+      "role": "residential"
+    },
+    {
       "bx": 0,
       "by": 3,
       "role": "residential"
@@ -91,6 +122,76 @@
       "bx": 3,
       "by": 3,
       "role": "civic"
+    },
+    {
+      "bx": 4,
+      "by": 3,
+      "role": "residential"
+    },
+    {
+      "bx": 5,
+      "by": 3,
+      "role": "residential"
+    },
+    {
+      "bx": 0,
+      "by": 4,
+      "role": "residential"
+    },
+    {
+      "bx": 1,
+      "by": 4,
+      "role": "residential"
+    },
+    {
+      "bx": 2,
+      "by": 4,
+      "role": "green"
+    },
+    {
+      "bx": 3,
+      "by": 4,
+      "role": "residential"
+    },
+    {
+      "bx": 4,
+      "by": 4,
+      "role": "harbor"
+    },
+    {
+      "bx": 5,
+      "by": 4,
+      "role": "sea"
+    },
+    {
+      "bx": 0,
+      "by": 5,
+      "role": "residential"
+    },
+    {
+      "bx": 1,
+      "by": 5,
+      "role": "residential"
+    },
+    {
+      "bx": 2,
+      "by": 5,
+      "role": "residential"
+    },
+    {
+      "bx": 3,
+      "by": 5,
+      "role": "residential"
+    },
+    {
+      "bx": 4,
+      "by": 5,
+      "role": "harbor"
+    },
+    {
+      "bx": 5,
+      "by": 5,
+      "role": "sea"
     }
   ],
   "venues": [
@@ -104,22 +205,71 @@
     {
       "kind": "bar",
       "name": "Dockside Tavern",
-      "x": 5,
-      "y": 9,
+      "x": 7,
+      "y": 5,
       "district": "Old Quarter"
     },
     {
       "kind": "bar",
       "name": "The Forge",
-      "x": 13,
+      "x": 17,
+      "y": 13,
+      "district": "Marina"
+    },
+    {
+      "kind": "bar",
+      "name": "The Salty Dog",
+      "x": 21,
+      "y": 13,
+      "district": "Marina"
+    },
+    {
+      "kind": "restaurant",
+      "name": "The Captain's Table",
+      "x": 17,
+      "y": 5,
+      "district": "Old Quarter"
+    },
+    {
+      "kind": "restaurant",
+      "name": "Riverside Grill",
+      "x": 7,
       "y": 9,
       "district": "Old Quarter"
+    },
+    {
+      "kind": "cafe",
+      "name": "Bean & Anvil",
+      "x": 7,
+      "y": 15,
+      "district": "Old Quarter"
+    },
+    {
+      "kind": "cafe",
+      "name": "The Morning Press",
+      "x": 15,
+      "y": 15,
+      "district": "Old Quarter"
+    },
+    {
+      "kind": "cafe",
+      "name": "Marina Roast",
+      "x": 19,
+      "y": 17,
+      "district": "Marina"
     },
     {
       "kind": "office",
       "name": "Blackwell & Sons",
       "x": 5,
-      "y": 13,
+      "y": 9,
+      "district": "Old Quarter"
+    },
+    {
+      "kind": "office",
+      "name": "Harbour Trading",
+      "x": 13,
+      "y": 9,
       "district": "Old Quarter"
     },
     {
@@ -137,11 +287,25 @@
       "district": "Old Quarter"
     },
     {
+      "kind": "shop",
+      "name": "The Compass Rose",
+      "x": 21,
+      "y": 9,
+      "district": "Marina"
+    },
+    {
       "kind": "supermarket",
       "name": "Harbour Fresh",
       "x": 5,
       "y": 5,
       "district": "Old Quarter"
+    },
+    {
+      "kind": "supermarket",
+      "name": "North Market",
+      "x": 17,
+      "y": 1,
+      "district": "Hillcrest"
     },
     {
       "kind": "clinic",
@@ -153,23 +317,23 @@
     {
       "kind": "school",
       "name": "Ironworks Academy",
-      "x": 15,
+      "x": 11,
       "y": 7,
       "district": "Old Quarter"
     },
     {
       "kind": "gym",
       "name": "The Furnace Gym",
-      "x": 7,
-      "y": 11,
+      "x": 15,
+      "y": 7,
       "district": "Old Quarter"
     },
     {
-      "kind": "park",
-      "name": "Hilltop Gardens",
-      "x": 10,
-      "y": 2,
-      "district": "Hillcrest"
+      "kind": "gym",
+      "name": "Coastal Fitness",
+      "x": 21,
+      "y": 5,
+      "district": "Marina"
     },
     {
       "kind": "garage",
@@ -181,65 +345,143 @@
     {
       "kind": "cinema",
       "name": "The Lantern Cinema",
-      "x": 7,
-      "y": 15,
+      "x": 5,
+      "y": 13,
       "district": "Old Quarter"
     },
     {
-      "kind": "cafe",
-      "name": "Bean & Anvil",
+      "kind": "bowling",
+      "name": "Strike Lanes",
       "x": 11,
       "y": 15,
       "district": "Old Quarter"
     },
     {
-      "kind": "cafe",
-      "name": "The Morning Press",
-      "x": 15,
-      "y": 15,
-      "district": "Old Quarter"
+      "kind": "bowling",
+      "name": "Sea Bowl",
+      "x": 17,
+      "y": 17,
+      "district": "Ironworks"
+    },
+    {
+      "kind": "park",
+      "name": "Hilltop Gardens",
+      "x": 10,
+      "y": 2,
+      "district": "Hillcrest"
+    },
+    {
+      "kind": "park",
+      "name": "Dockside Common",
+      "x": 2,
+      "y": 10,
+      "district": "Dockside"
+    },
+    {
+      "kind": "park",
+      "name": "Harbour Gardens",
+      "x": 18,
+      "y": 18,
+      "district": "Marina"
+    },
+    {
+      "kind": "park",
+      "name": "Founders Square",
+      "x": 10,
+      "y": 18,
+      "district": "Ironworks"
     }
   ],
   "homePlots": [
     {
-      "x": 5,
+      "x": 1,
       "y": 1,
       "district": "Dockside"
     },
     {
-      "x": 7,
+      "x": 3,
       "y": 3,
       "district": "Dockside"
     },
     {
-      "x": 7,
+      "x": 3,
       "y": 1,
       "district": "Dockside"
     },
     {
-      "x": 5,
+      "x": 1,
       "y": 3,
       "district": "Dockside"
     },
     {
-      "x": 6,
+      "x": 2,
       "y": 1,
       "district": "Dockside"
     },
     {
-      "x": 5,
+      "x": 1,
       "y": 2,
       "district": "Dockside"
     },
     {
-      "x": 7,
+      "x": 3,
       "y": 2,
       "district": "Dockside"
     },
     {
-      "x": 6,
+      "x": 2,
       "y": 3,
       "district": "Dockside"
+    },
+    {
+      "x": 2,
+      "y": 2,
+      "district": "Dockside"
+    },
+    {
+      "x": 5,
+      "y": 1,
+      "district": "Hillcrest"
+    },
+    {
+      "x": 7,
+      "y": 3,
+      "district": "Hillcrest"
+    },
+    {
+      "x": 7,
+      "y": 1,
+      "district": "Hillcrest"
+    },
+    {
+      "x": 5,
+      "y": 3,
+      "district": "Hillcrest"
+    },
+    {
+      "x": 6,
+      "y": 1,
+      "district": "Hillcrest"
+    },
+    {
+      "x": 5,
+      "y": 2,
+      "district": "Hillcrest"
+    },
+    {
+      "x": 7,
+      "y": 2,
+      "district": "Hillcrest"
+    },
+    {
+      "x": 6,
+      "y": 3,
+      "district": "Hillcrest"
+    },
+    {
+      "x": 6,
+      "y": 2,
+      "district": "Hillcrest"
     },
     {
       "x": 13,
@@ -279,6 +521,101 @@
     {
       "x": 14,
       "y": 3,
+      "district": "Hillcrest"
+    },
+    {
+      "x": 14,
+      "y": 2,
+      "district": "Hillcrest"
+    },
+    {
+      "x": 17,
+      "y": 1,
+      "district": "Hillcrest"
+    },
+    {
+      "x": 19,
+      "y": 3,
+      "district": "Hillcrest"
+    },
+    {
+      "x": 19,
+      "y": 1,
+      "district": "Hillcrest"
+    },
+    {
+      "x": 17,
+      "y": 3,
+      "district": "Hillcrest"
+    },
+    {
+      "x": 18,
+      "y": 1,
+      "district": "Hillcrest"
+    },
+    {
+      "x": 17,
+      "y": 2,
+      "district": "Hillcrest"
+    },
+    {
+      "x": 19,
+      "y": 2,
+      "district": "Hillcrest"
+    },
+    {
+      "x": 18,
+      "y": 3,
+      "district": "Hillcrest"
+    },
+    {
+      "x": 18,
+      "y": 2,
+      "district": "Hillcrest"
+    },
+    {
+      "x": 21,
+      "y": 1,
+      "district": "Hillcrest"
+    },
+    {
+      "x": 23,
+      "y": 3,
+      "district": "Hillcrest"
+    },
+    {
+      "x": 23,
+      "y": 1,
+      "district": "Hillcrest"
+    },
+    {
+      "x": 21,
+      "y": 3,
+      "district": "Hillcrest"
+    },
+    {
+      "x": 22,
+      "y": 1,
+      "district": "Hillcrest"
+    },
+    {
+      "x": 21,
+      "y": 2,
+      "district": "Hillcrest"
+    },
+    {
+      "x": 23,
+      "y": 2,
+      "district": "Hillcrest"
+    },
+    {
+      "x": 22,
+      "y": 3,
+      "district": "Hillcrest"
+    },
+    {
+      "x": 22,
+      "y": 2,
       "district": "Hillcrest"
     },
     {
@@ -322,85 +659,602 @@
       "district": "Dockside"
     },
     {
+      "x": 2,
+      "y": 6,
+      "district": "Dockside"
+    },
+    {
+      "x": 17,
+      "y": 5,
+      "district": "Marina"
+    },
+    {
+      "x": 19,
+      "y": 7,
+      "district": "Marina"
+    },
+    {
+      "x": 19,
+      "y": 5,
+      "district": "Marina"
+    },
+    {
+      "x": 17,
+      "y": 7,
+      "district": "Marina"
+    },
+    {
+      "x": 18,
+      "y": 5,
+      "district": "Marina"
+    },
+    {
+      "x": 17,
+      "y": 6,
+      "district": "Marina"
+    },
+    {
+      "x": 19,
+      "y": 6,
+      "district": "Marina"
+    },
+    {
+      "x": 18,
+      "y": 7,
+      "district": "Marina"
+    },
+    {
+      "x": 18,
+      "y": 6,
+      "district": "Marina"
+    },
+    {
+      "x": 21,
+      "y": 5,
+      "district": "Marina"
+    },
+    {
+      "x": 23,
+      "y": 7,
+      "district": "Marina"
+    },
+    {
+      "x": 23,
+      "y": 5,
+      "district": "Marina"
+    },
+    {
+      "x": 21,
+      "y": 7,
+      "district": "Marina"
+    },
+    {
+      "x": 22,
+      "y": 5,
+      "district": "Marina"
+    },
+    {
+      "x": 21,
+      "y": 6,
+      "district": "Marina"
+    },
+    {
+      "x": 23,
+      "y": 6,
+      "district": "Marina"
+    },
+    {
+      "x": 22,
+      "y": 7,
+      "district": "Marina"
+    },
+    {
+      "x": 22,
+      "y": 6,
+      "district": "Marina"
+    },
+    {
+      "x": 21,
+      "y": 9,
+      "district": "Marina"
+    },
+    {
+      "x": 23,
+      "y": 11,
+      "district": "Marina"
+    },
+    {
+      "x": 23,
+      "y": 9,
+      "district": "Marina"
+    },
+    {
+      "x": 21,
+      "y": 11,
+      "district": "Marina"
+    },
+    {
+      "x": 22,
+      "y": 9,
+      "district": "Marina"
+    },
+    {
+      "x": 21,
+      "y": 10,
+      "district": "Marina"
+    },
+    {
+      "x": 23,
+      "y": 10,
+      "district": "Marina"
+    },
+    {
+      "x": 22,
+      "y": 11,
+      "district": "Marina"
+    },
+    {
+      "x": 22,
+      "y": 10,
+      "district": "Marina"
+    },
+    {
       "x": 1,
       "y": 13,
-      "district": "Ironworks"
+      "district": "Dockside"
     },
     {
       "x": 3,
       "y": 15,
-      "district": "Ironworks"
+      "district": "Dockside"
     },
     {
       "x": 3,
       "y": 13,
-      "district": "Ironworks"
+      "district": "Dockside"
     },
     {
       "x": 1,
       "y": 15,
-      "district": "Ironworks"
+      "district": "Dockside"
     },
     {
       "x": 2,
       "y": 13,
-      "district": "Ironworks"
+      "district": "Dockside"
     },
     {
       "x": 1,
       "y": 14,
-      "district": "Ironworks"
+      "district": "Dockside"
     },
     {
       "x": 3,
       "y": 14,
-      "district": "Ironworks"
+      "district": "Dockside"
     },
     {
       "x": 2,
       "y": 15,
+      "district": "Dockside"
+    },
+    {
+      "x": 2,
+      "y": 14,
+      "district": "Dockside"
+    },
+    {
+      "x": 17,
+      "y": 13,
+      "district": "Marina"
+    },
+    {
+      "x": 19,
+      "y": 15,
+      "district": "Marina"
+    },
+    {
+      "x": 19,
+      "y": 13,
+      "district": "Marina"
+    },
+    {
+      "x": 17,
+      "y": 15,
+      "district": "Marina"
+    },
+    {
+      "x": 18,
+      "y": 13,
+      "district": "Marina"
+    },
+    {
+      "x": 17,
+      "y": 14,
+      "district": "Marina"
+    },
+    {
+      "x": 19,
+      "y": 14,
+      "district": "Marina"
+    },
+    {
+      "x": 18,
+      "y": 15,
+      "district": "Marina"
+    },
+    {
+      "x": 18,
+      "y": 14,
+      "district": "Marina"
+    },
+    {
+      "x": 21,
+      "y": 13,
+      "district": "Marina"
+    },
+    {
+      "x": 23,
+      "y": 15,
+      "district": "Marina"
+    },
+    {
+      "x": 23,
+      "y": 13,
+      "district": "Marina"
+    },
+    {
+      "x": 21,
+      "y": 15,
+      "district": "Marina"
+    },
+    {
+      "x": 22,
+      "y": 13,
+      "district": "Marina"
+    },
+    {
+      "x": 21,
+      "y": 14,
+      "district": "Marina"
+    },
+    {
+      "x": 23,
+      "y": 14,
+      "district": "Marina"
+    },
+    {
+      "x": 22,
+      "y": 15,
+      "district": "Marina"
+    },
+    {
+      "x": 22,
+      "y": 14,
+      "district": "Marina"
+    },
+    {
+      "x": 1,
+      "y": 17,
+      "district": "Dockside"
+    },
+    {
+      "x": 3,
+      "y": 19,
+      "district": "Dockside"
+    },
+    {
+      "x": 3,
+      "y": 17,
+      "district": "Dockside"
+    },
+    {
+      "x": 1,
+      "y": 19,
+      "district": "Dockside"
+    },
+    {
+      "x": 2,
+      "y": 17,
+      "district": "Dockside"
+    },
+    {
+      "x": 1,
+      "y": 18,
+      "district": "Dockside"
+    },
+    {
+      "x": 3,
+      "y": 18,
+      "district": "Dockside"
+    },
+    {
+      "x": 2,
+      "y": 19,
+      "district": "Dockside"
+    },
+    {
+      "x": 2,
+      "y": 18,
+      "district": "Dockside"
+    },
+    {
+      "x": 5,
+      "y": 17,
+      "district": "Ironworks"
+    },
+    {
+      "x": 7,
+      "y": 19,
+      "district": "Ironworks"
+    },
+    {
+      "x": 7,
+      "y": 17,
+      "district": "Ironworks"
+    },
+    {
+      "x": 5,
+      "y": 19,
+      "district": "Ironworks"
+    },
+    {
+      "x": 6,
+      "y": 17,
+      "district": "Ironworks"
+    },
+    {
+      "x": 5,
+      "y": 18,
+      "district": "Ironworks"
+    },
+    {
+      "x": 7,
+      "y": 18,
+      "district": "Ironworks"
+    },
+    {
+      "x": 6,
+      "y": 19,
+      "district": "Ironworks"
+    },
+    {
+      "x": 6,
+      "y": 18,
+      "district": "Ironworks"
+    },
+    {
+      "x": 13,
+      "y": 17,
+      "district": "Ironworks"
+    },
+    {
+      "x": 15,
+      "y": 19,
+      "district": "Ironworks"
+    },
+    {
+      "x": 15,
+      "y": 17,
+      "district": "Ironworks"
+    },
+    {
+      "x": 13,
+      "y": 19,
+      "district": "Ironworks"
+    },
+    {
+      "x": 14,
+      "y": 17,
+      "district": "Ironworks"
+    },
+    {
+      "x": 13,
+      "y": 18,
+      "district": "Ironworks"
+    },
+    {
+      "x": 15,
+      "y": 18,
+      "district": "Ironworks"
+    },
+    {
+      "x": 14,
+      "y": 19,
+      "district": "Ironworks"
+    },
+    {
+      "x": 14,
+      "y": 18,
       "district": "Ironworks"
     },
     {
       "x": 1,
-      "y": 1,
+      "y": 21,
       "district": "Dockside"
     },
     {
       "x": 3,
-      "y": 3,
+      "y": 23,
       "district": "Dockside"
     },
     {
       "x": 3,
-      "y": 1,
+      "y": 21,
       "district": "Dockside"
     },
     {
       "x": 1,
-      "y": 3,
+      "y": 23,
       "district": "Dockside"
     },
     {
       "x": 2,
-      "y": 1,
+      "y": 21,
       "district": "Dockside"
     },
     {
       "x": 1,
-      "y": 2,
+      "y": 22,
       "district": "Dockside"
     },
     {
       "x": 3,
-      "y": 2,
+      "y": 22,
       "district": "Dockside"
     },
     {
       "x": 2,
-      "y": 3,
+      "y": 23,
       "district": "Dockside"
+    },
+    {
+      "x": 2,
+      "y": 22,
+      "district": "Dockside"
+    },
+    {
+      "x": 5,
+      "y": 21,
+      "district": "Ironworks"
+    },
+    {
+      "x": 7,
+      "y": 23,
+      "district": "Ironworks"
+    },
+    {
+      "x": 7,
+      "y": 21,
+      "district": "Ironworks"
+    },
+    {
+      "x": 5,
+      "y": 23,
+      "district": "Ironworks"
+    },
+    {
+      "x": 6,
+      "y": 21,
+      "district": "Ironworks"
+    },
+    {
+      "x": 5,
+      "y": 22,
+      "district": "Ironworks"
+    },
+    {
+      "x": 7,
+      "y": 22,
+      "district": "Ironworks"
+    },
+    {
+      "x": 6,
+      "y": 23,
+      "district": "Ironworks"
+    },
+    {
+      "x": 6,
+      "y": 22,
+      "district": "Ironworks"
+    },
+    {
+      "x": 9,
+      "y": 21,
+      "district": "Ironworks"
+    },
+    {
+      "x": 11,
+      "y": 23,
+      "district": "Ironworks"
+    },
+    {
+      "x": 11,
+      "y": 21,
+      "district": "Ironworks"
+    },
+    {
+      "x": 9,
+      "y": 23,
+      "district": "Ironworks"
+    },
+    {
+      "x": 10,
+      "y": 21,
+      "district": "Ironworks"
+    },
+    {
+      "x": 9,
+      "y": 22,
+      "district": "Ironworks"
+    },
+    {
+      "x": 11,
+      "y": 22,
+      "district": "Ironworks"
+    },
+    {
+      "x": 10,
+      "y": 23,
+      "district": "Ironworks"
+    },
+    {
+      "x": 10,
+      "y": 22,
+      "district": "Ironworks"
+    },
+    {
+      "x": 13,
+      "y": 21,
+      "district": "Ironworks"
+    },
+    {
+      "x": 15,
+      "y": 23,
+      "district": "Ironworks"
+    },
+    {
+      "x": 15,
+      "y": 21,
+      "district": "Ironworks"
+    },
+    {
+      "x": 13,
+      "y": 23,
+      "district": "Ironworks"
+    },
+    {
+      "x": 14,
+      "y": 21,
+      "district": "Ironworks"
+    },
+    {
+      "x": 13,
+      "y": 22,
+      "district": "Ironworks"
+    },
+    {
+      "x": 15,
+      "y": 22,
+      "district": "Ironworks"
+    },
+    {
+      "x": 14,
+      "y": 23,
+      "district": "Ironworks"
+    },
+    {
+      "x": 14,
+      "y": 22,
+      "district": "Ironworks"
     }
   ],
-  "openingsPerWorkplace": 2
+  "openingsPerWorkplace": 2,
+  "water": [
+    { "kind": "river", "x0": 2, "y0": 0, "x1": 3, "y1": 20 },
+    { "kind": "river", "x0": 2, "y0": 21, "x1": 20, "y1": 22 },
+    { "kind": "sea",   "x0": 20, "y0": 17, "x1": 24, "y1": 24 },
+    { "kind": "lake",  "x0": 18, "y0": 9, "x1": 18, "y1": 11 },
+    { "kind": "lake",  "x0": 17, "y0": 10, "x1": 19, "y1": 10 }
+  ]
 }

@@ -1,11 +1,9 @@
-import Phaser from 'phaser'
 import { EngineConnection } from './connection.js'
-import { WorldScene } from './world-scene.js'
+import { CityScene3D } from './scene-3d.js'
 import { initSidebar } from './sidebar.js'
 import { initAgentCard } from './agent-card.js'
 import { initVenueCard } from './venue-card.js'
 import { initGraph } from './graph.js'
-import { onThemeChange, cssHex } from './theme.js'
 
 const engineUrl =
   new URLSearchParams(location.search).get('engine') ?? location.origin
@@ -17,45 +15,23 @@ async function boot(): Promise<void> {
   console.log('[aw] fetching world...')
   const world = await conn.fetchWorld()
   console.log('[aw] world loaded:', world.agents.length, 'agents,', world.locations.length, 'locations')
+
   const container = document.getElementById('game-container')!
+  const loadingEl = document.getElementById('loading')
+  const loadFill = document.getElementById('load-fill')
+  const loadStatus = document.getElementById('load-status')
 
-  // The scene is registered after boot rather than via `scene:` so it starts
-  // with the world payload — an auto-started scene would run create() with no data.
-  const game = new Phaser.Game({
-    type: Phaser.AUTO,
-    parent: container,
-    width: container.clientWidth,
-    height: container.clientHeight,
-    backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--canvas-bg').trim(),
-    scale: { mode: Phaser.Scale.RESIZE },
-    input: { mouse: { preventDefaultWheel: true } },
-    render: { antialias: true },
-    // Chrome stops calling requestAnimationFrame in a hidden tab, which stalls
-    // Phaser's loader partway through preload and leaves a black canvas.
-    // Screenshot tooling always runs hidden, so `?bg` swaps in a timer-driven
-    // loop. Off by default: rAF is the right clock for a tab you can see.
-    fps: { forceSetTimeOut: new URLSearchParams(location.search).has('bg') },
-  })
+  const scene = new CityScene3D(container, conn, world)
+  scene.loadProgress = (loaded, total, name) => {
+    if (loadFill) loadFill.style.width = `${(loaded / total) * 100}%`
+    if (loadStatus) loadStatus.textContent = name
+  }
 
-  game.scene.add('WorldScene', WorldScene, true, { connection: conn, world })
-  console.log('[aw] scene started')
+  await scene.build()
+  if (loadingEl) loadingEl.classList.add('done')
+  console.log('[aw] 3D scene ready')
 
-  onThemeChange(() => {
-    const hex = getComputedStyle(document.documentElement).getPropertyValue('--canvas-bg').trim()
-    const c = Phaser.Display.Color.HexStringToColor(hex)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const bg = (game.renderer as any).config?.backgroundColor as Phaser.Display.Color | undefined
-    bg?.setFromRGB({ r: c.red, g: c.green, b: c.blue })
-    const ws = game.scene.getScene('WorldScene') as WorldScene
-    ws.applyTheme()
-  })
-
-  // A canvas shows you nothing when it goes wrong, so keep a handle to poke at
-  // from the console. A debugging aid, not an API — nothing may depend on it.
-  ;(window as unknown as { __aw: unknown }).__aw = { game, conn, world }
-
-  // Camera controls live in the DOM and reach the scene by event, so the
-  // toolbar never needs a handle on Phaser internals.
+  // Camera controls from DOM buttons
   container.querySelector('#controls')?.addEventListener('click', (ev) => {
     const btn = (ev.target as HTMLElement).closest('button')
     if (btn == null) return
@@ -69,6 +45,8 @@ async function boot(): Promise<void> {
   initVenueCard(conn, world)
   initGraph()
   conn.connect()
+
+  ;(window as unknown as { __aw: unknown }).__aw = { scene, conn, world }
 }
 
 boot().catch(console.error)

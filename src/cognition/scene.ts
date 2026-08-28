@@ -188,17 +188,26 @@ const clampDelta = (n: unknown): number =>
  */
 const MAX_GOSSIP = 2
 
+function normalizeGossip(
+  g: Record<string, unknown>,
+  validIds: ReadonlySet<string>,
+): { about: AgentId; text: string } | null {
+  const id = g.about ?? g.id ?? g.subject ?? g.person
+  const text = g.text ?? g.content ?? g.description ?? g.claim
+  if (typeof id !== 'string' || typeof text !== 'string') return null
+  if (!validIds.has(id)) return null
+  return { about: id as AgentId, text }
+}
+
 function parseGossip(
   raw: unknown,
   validIds: ReadonlySet<string>,
 ): { about: AgentId; text: string }[] {
   if (!Array.isArray(raw)) return []
   return raw
-    .filter((g): g is { about: string; text: string } =>
-      g != null && typeof g === 'object' &&
-      typeof (g as { about?: unknown }).about === 'string' &&
-      typeof (g as { text?: unknown }).text === 'string' &&
-      validIds.has((g as { about: string }).about))
+    .filter((g): g is Record<string, unknown> => g != null && typeof g === 'object')
+    .map((g) => normalizeGossip(g, validIds))
+    .filter((g): g is { about: AgentId; text: string } => g != null)
     .slice(0, MAX_GOSSIP)
 }
 

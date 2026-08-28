@@ -115,19 +115,19 @@ describe('scene gate', () => {
 })
 
 describe('scene budget', () => {
-  const cand = (a: string, b: string, score: number) => ({ a, b, score })
+  const cand = (a: string, b: string, score: number, location = 'bar-1') => ({ a, b, score, location })
 
   it('spends on the best candidates first', () => {
     const picked = selectScenes(
-      [cand('a', 'b', 1), cand('c', 'd', 9), cand('e', 'f', 5)],
+      [cand('a', 'b', 1, 'loc-1'), cand('c', 'd', 9, 'loc-2'), cand('e', 'f', 5, 'loc-3')],
       new Map(),
-      { maxScenesPerTick: 2, maxScenesPerAgentPerDay: 6 },
+      { maxScenesPerTick: 2, maxScenesPerAgentPerDay: 6, maxScenesPerLocationPerTick: 2 },
     )
     expect(picked.map((c) => c.score)).toEqual([9, 5])
   })
 
   it('never exceeds the per-tick cap', () => {
-    const many = Array.from({ length: 20 }, (_, i) => cand(`a${i}`, `b${i}`, i))
+    const many = Array.from({ length: 20 }, (_, i) => cand(`a${i}`, `b${i}`, i, `loc-${i}`))
     expect(selectScenes(many, new Map(), GATE_DEFAULTS)).toHaveLength(
       GATE_DEFAULTS.maxScenesPerTick,
     )
@@ -135,18 +135,29 @@ describe('scene budget', () => {
 
   it('skips an agent who has used up their day', () => {
     const picked = selectScenes(
-      [cand('spent', 'x', 10), cand('fresh', 'y', 1)],
+      [cand('spent', 'x', 10, 'loc-1'), cand('fresh', 'y', 1, 'loc-2')],
       new Map([['spent', 6]]),
-      { maxScenesPerTick: 3, maxScenesPerAgentPerDay: 6 },
+      { maxScenesPerTick: 3, maxScenesPerAgentPerDay: 6, maxScenesPerLocationPerTick: 3 },
     )
     expect(picked.map((c) => c.a)).toEqual(['fresh'])
   })
 
+  it('caps scenes per location to prevent crowd lock-in', () => {
+    const picked = selectScenes(
+      [cand('a', 'b', 10, 'bar-1'), cand('c', 'd', 9, 'bar-1'), cand('e', 'f', 8, 'bar-1'), cand('g', 'h', 7, 'park-1')],
+      new Map(),
+      { maxScenesPerTick: 6, maxScenesPerAgentPerDay: 6, maxScenesPerLocationPerTick: 2 },
+    )
+    const atBar = picked.filter((c) => c.location === 'bar-1')
+    expect(atBar).toHaveLength(2)
+    expect(picked).toHaveLength(3) // 2 at bar + 1 at park
+  })
+
   it('counts both participants against their daily allowance', () => {
     const picked = selectScenes(
-      [cand('a', 'b', 9), cand('a', 'c', 8)],
+      [cand('a', 'b', 9, 'loc-1'), cand('a', 'c', 8, 'loc-2')],
       new Map(),
-      { maxScenesPerTick: 5, maxScenesPerAgentPerDay: 1 },
+      { maxScenesPerTick: 5, maxScenesPerAgentPerDay: 1, maxScenesPerLocationPerTick: 5 },
     )
     expect(picked).toHaveLength(1)
   })

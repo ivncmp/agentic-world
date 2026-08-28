@@ -202,6 +202,9 @@ export function tick(state: WorldState, deps: TickDeps): TickResult {
   const occupants = (loc: LocationId, self: AgentId): Agent[] =>
     [...draft.values()].filter((o) => o.id !== self && o.location === loc)
 
+  const crowdAt = (loc: LocationId, self: AgentId): number =>
+    [...draft.values()].reduce((n, o) => n + (o.id !== self && o.location === loc ? 1 : 0), 0)
+
   for (const id of draft.keys()) {
     const agent = draft.get(id)
     if (agent == null) continue
@@ -253,6 +256,7 @@ export function tick(state: WorldState, deps: TickDeps): TickResult {
       workplaceId: current.job?.employerId ?? null,
       findLocation: (k) => haunt(current.id, k),
       co: occupants(current.location, current.id),
+      crowdAt: (loc) => crowdAt(loc, current.id),
       feelingToward: (other) => relationships.get(pairKey(current.id, other))?.affection ?? 0,
       friendLocations: friends,
       random: deps.random,
@@ -501,7 +505,7 @@ export function tick(state: WorldState, deps: TickDeps): TickResult {
         random: deps.random,
       })
       if (score > GATE_DEFAULTS.threshold) {
-        candidates.push({ a: a.id, b: b.id, score })
+        candidates.push({ a: a.id, b: b.id, score, location: a.location })
         continue
       }
 
@@ -652,13 +656,14 @@ function applyAction(
       return { ...agent, needs: { ...agent.needs, social: clamp01(agent.needs.social - 0.3), fun: clamp01(agent.needs.fun - 0.15) } }
 
     case 'indulge_vice': {
-      // targetAgent carries the vice kind for this action — see scoreActions.
       const kind = action.targetAgent
       const indulged = agent.vices.find((v) => v.kind === kind) ?? agent.vices[0]
+      const fullCost = viceDef(indulged.kind).moneyCost
+      const cost = Math.min(fullCost, agent.money)
       const vices = agent.vices.map((v) =>
-        v.kind === indulged.kind ? { ...v, urge: 0 } : v,
+        v.kind === indulged.kind ? { ...v, urge: cost >= fullCost ? 0 : v.urge * 0.3 } : v,
       ) as Agent['vices']
-      return { ...agent, vices, money: agent.money - viceDef(indulged.kind).moneyCost }
+      return { ...agent, vices, money: agent.money - cost }
     }
 
     case 'steal': {

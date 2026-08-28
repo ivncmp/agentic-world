@@ -413,7 +413,7 @@ describe('deliberation (Layer 1.5)', () => {
       locationKindOf: () => 'bar',
       homeId: 'home-a', workplaceId: null,
       findLocation: (k) => k === 'supermarket' ? 'shop-1' : k === 'bar' ? 'bar-1' : null,
-      co: [], feelingToward: () => 0, friendLocations: [], random: () => 0.5,
+      co: [], crowdAt: () => 0, feelingToward: () => 0, friendLocations: [], random: () => 0.5,
     })
     const eatScores = scores.filter((s) => s.action.kind === 'eat')
     // Without the bias eat would score ~0.6; with +0.8 it should be ~1.4

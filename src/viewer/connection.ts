@@ -34,7 +34,12 @@ export type LocationInfo = {
 export type BlockInfo = {
   bx: number
   by: number
-  role: 'plaza' | 'green' | 'civic' | 'residential'
+  role: 'plaza' | 'green' | 'civic' | 'residential' | 'harbor' | 'sea'
+}
+
+export type WaterRegion = {
+  kind: 'river' | 'sea' | 'lake'
+  x0: number; y0: number; x1: number; y1: number
 }
 
 export type WorldInfo = {
@@ -44,6 +49,7 @@ export type WorldInfo = {
     streetPeriod: number
     districts: string[]
     blocks: BlockInfo[]
+    water?: WaterRegion[]
   }
   locations: LocationInfo[]
   agents: { id: string; name: string; occupation: string }[]

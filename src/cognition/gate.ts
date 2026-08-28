@@ -41,14 +41,16 @@ export const MIN_SUBSTANCE = 0.6
 
 export const GATE_DEFAULTS = {
   /** Rejects mere co-location. Volume is controlled by the budget, not here. */
-  threshold: 1.4,
-  maxScenesPerTick: 6,
+  threshold: 1.8,
+  maxScenesPerTick: 3,
   maxScenesPerAgentPerDay: 14,
+  maxScenesPerLocationPerTick: 2,
 } as const
 
 export type SceneBudget = {
   maxScenesPerTick: number
   maxScenesPerAgentPerDay: number
+  maxScenesPerLocationPerTick: number
 }
 
 export type GateContext = {
@@ -142,6 +144,7 @@ export type SceneCandidate = {
   a: AgentId
   b: AgentId
   score: number
+  location: string
 }
 
 /**
@@ -162,6 +165,7 @@ export function selectScenes(
   // Nobody holds two conversations at once. Enforced here rather than at
   // candidate collection, because busy is only set once selection is done.
   const engaged = new Set<AgentId>()
+  const locationCount = new Map<string, number>()
 
   for (const c of [...candidates].sort((x, y) => y.score - x.score)) {
     if (chosen.length >= budget.maxScenesPerTick) break
@@ -170,11 +174,14 @@ export function selectScenes(
     const usedB = spent.get(c.b) ?? 0
     if (usedA >= budget.maxScenesPerAgentPerDay) continue
     if (usedB >= budget.maxScenesPerAgentPerDay) continue
+    const atLoc = locationCount.get(c.location) ?? 0
+    if (atLoc >= budget.maxScenesPerLocationPerTick) continue
     engaged.add(c.a)
     engaged.add(c.b)
     chosen.push(c)
     spent.set(c.a, usedA + 1)
     spent.set(c.b, usedB + 1)
+    locationCount.set(c.location, atLoc + 1)
   }
   return chosen
 }

@@ -18,6 +18,11 @@ export type CityConfig = {
 
 // ---- JSON city template -----------------------------------------------------
 
+export type WaterRegion = {
+  kind: 'river' | 'sea' | 'lake'
+  x0: number; y0: number; x1: number; y1: number
+}
+
 export type CityTemplate = {
   name: string
   grid: { width: number; height: number }
@@ -27,6 +32,7 @@ export type CityTemplate = {
   venues: { kind: Exclude<LocationKind, 'home'>; name: string; x: number; y: number; district: string }[]
   homePlots: { x: number; y: number; district: string }[]
   openingsPerWorkplace: number
+  water?: WaterRegion[]
 }
 
 export function loadTemplate(path: string): CityTemplate {

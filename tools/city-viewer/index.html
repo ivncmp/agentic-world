@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Saint Skill — City Viewer</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #1a1d23; color: #cdd2dc; font-family: 'SF Mono', 'JetBrains Mono', monospace; overflow: hidden; }
+  #c { display: block; width: 100vw; height: 100vh; }
+
+  #hud {
+    position: fixed; top: 16px; left: 16px;
+    background: rgba(26,29,35,0.92); border: 1px solid #2e3340; border-radius: 8px;
+    padding: 14px 18px; font-size: 11px; min-width: 200px;
+    pointer-events: auto; z-index: 10;
+  }
+  #hud h1 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+  #hud h1 span { color: #62a07a; }
+  #hud .meta { color: #6e7788; font-size: 10px; margin-bottom: 10px; }
+  #hud .stat { display: flex; justify-content: space-between; padding: 2px 0; }
+  #hud .stat .label { color: #6e7788; }
+  #hud .stat .val { color: #cdd2dc; font-weight: 500; }
+  #hud hr { border: none; border-top: 1px solid #2e3340; margin: 8px 0; }
+
+  #tooltip {
+    position: fixed; background: rgba(26,29,35,0.95); border: 1px solid #3a4050;
+    border-radius: 5px; padding: 6px 10px; font-size: 10px;
+    pointer-events: none; opacity: 0; transition: opacity 0.1s; z-index: 20;
+    max-width: 180px; box-shadow: 0 3px 12px rgba(0,0,0,0.3);
+  }
+  #tooltip.show { opacity: 1; }
+  #tooltip .name { font-weight: 600; }
+  #tooltip .kind { color: #6e7788; text-transform: uppercase; font-size: 9px; letter-spacing: 0.06em; }
+  #tooltip .district { color: #62a07a; font-size: 9px; }
+
+  #loading {
+    position: fixed; inset: 0; background: #1a1d23; display: flex;
+    flex-direction: column; align-items: center; justify-content: center; z-index: 100;
+    transition: opacity 0.4s;
+  }
+  #loading.done { opacity: 0; pointer-events: none; }
+  #loading h2 { font-size: 14px; font-weight: 500; color: #62a07a; margin-bottom: 12px; }
+  #loading .bar { width: 200px; height: 3px; background: #2e3340; border-radius: 2px; overflow: hidden; }
+  #loading .fill { height: 100%; background: #62a07a; transition: width 0.2s; width: 0; }
+  #loading .status { margin-top: 8px; font-size: 10px; color: #6e7788; }
+
+  #controls {
+    position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+    background: rgba(26,29,35,0.9); border: 1px solid #2e3340; border-radius: 6px;
+    padding: 6px 12px; font-size: 9px; color: #6e7788; z-index: 10;
+  }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div id="hud">
+  <h1><span>Saint Skill</span> Expanded</h1>
+  <div class="meta">25 × 25 · 6×6 blocks</div>
+  <div class="stat"><span class="label">Venues</span><span class="val">28</span></div>
+  <div class="stat"><span class="label">Homes</span><span class="val" id="home-count">—</span></div>
+  <div class="stat"><span class="label">Models loaded</span><span class="val" id="model-count">—</span></div>
+  <hr>
+  <div class="stat"><span class="label">Hover tile</span><span class="val" id="hover-info">—</span></div>
+</div>
+
+<div id="tooltip"></div>
+
+<div id="loading">
+  <h2>Loading city assets…</h2>
+  <div class="bar"><div class="fill" id="load-fill"></div></div>
+  <div class="status" id="load-status">Initialising</div>
+</div>
+
+<div id="controls">
+  LMB drag: orbit · RMB drag: pan · Scroll: zoom · R: reset camera
+</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "/three/build/three.module.js",
+    "three/addons/": "/three/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three'
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
+
+// ══════════════════════════════════════════════════════════════════════
+//  City data — expanded Saint Skill (25×25, 6×6 blocks)
+// ══════════════════════════════════════════════════════════════════════
+
+const GRID = 25, PERIOD = 4, TILE = 2.0
+const isStreet = (x, y) => x % PERIOD === 0 || y % PERIOD === 0
+const hash = (x, y, s = '') => {
+  let h = 0
+  const k = `${x},${y},${s}`
+  for (let i = 0; i < k.length; i++) h = ((h << 5) - h + k.charCodeAt(i)) | 0
+  return Math.abs(h)
+}
+
+const BLOCKS = []
+for (let by = 0; by < 6; by++) for (let bx = 0; bx < 6; bx++) {
+  const c = 2, ring = Math.max(Math.abs(bx - c), Math.abs(by - c))
+  const isGreen = (bx === c && Math.abs(by - c) === 2) || (by === c && Math.abs(bx - c) === 2)
+  const isSea = bx === 5 && by >= 4
+  const isHarbor = bx === 4 && by >= 4
+  const role = isSea ? 'sea' : ring === 0 ? 'plaza' : isHarbor ? 'harbor'
+    : isGreen ? 'green' : ring === 1 ? 'civic' : 'residential'
+  BLOCKS.push({ bx, by, role, ring })
+}
+const blockOf = (bx, by) => BLOCKS.find(b => b.bx === bx && b.by === by)
+
+function districtOf(bx, by) {
+  if (bx === 5 && by >= 4) return null
+  const ring = Math.max(Math.abs(bx - 2), Math.abs(by - 2))
+  if (ring <= 1) return 'Old Quarter'
+  if (bx === 0) return 'Dockside'
+  if (by === 0) return 'Hillcrest'
+  if (bx >= 4) return 'Marina'
+  if (by >= 4) return 'Ironworks'
+  return 'Old Quarter'
+}
+
+// Water features
+const RIVER = new Set(), SEA = new Set(), LAKE = new Set()
+for (let y = 0; y <= 20; y++) { RIVER.add(`2,${y}`); RIVER.add(`3,${y}`) }
+for (let x = 2; x <= 20; x++) { RIVER.add(`${x},21`); RIVER.add(`${x},22`) }
+RIVER.add('2,20'); RIVER.add('3,20')
+for (let x = 21; x < GRID; x++) for (let y = 17; y < GRID; y++) SEA.add(`${x},${y}`)
+for (let y = 17; y < GRID; y++) SEA.add(`20,${y}`)
+;['18,9','17,10','18,10','19,10','18,11'].forEach(t => LAKE.add(t))
+// River mouth: promote river tiles directly adjacent to original sea → sea (no cascade)
+const seaSnapshot = new Set(SEA)
+for (const t of [...RIVER]) {
+  const [x, y] = t.split(',').map(Number)
+  const adjSea = [[-1,0],[1,0],[0,-1],[0,1]].some(([dx,dy]) => seaSnapshot.has(`${x+dx},${y+dy}`))
+  if (adjSea) { RIVER.delete(t); SEA.add(t) }
+}
+const isWater = (x, y) => RIVER.has(`${x},${y}`) || SEA.has(`${x},${y}`) || LAKE.has(`${x},${y}`)
+const isBridge = (x, y) => {
+  if (!RIVER.has(`${x},${y}`) || !isStreet(x, y) || SEA.has(`${x},${y}`)) return false
+  for (const [dx, dy] of [[-1,0],[1,0],[0,-1],[0,1]]) {
+    if (SEA.has(`${x+dx},${y+dy}`)) return false
+  }
+  return true
+}
+
+// Venues
+const VENUES = [
+  { kind:'bar', name:'The Rusty Nail', x:13, y:5 },
+  { kind:'bar', name:'Dockside Tavern', x:7, y:5 },
+  { kind:'bar', name:'The Forge', x:17, y:13 },
+  { kind:'bar', name:'The Salty Dog', x:21, y:13 },
+  { kind:'restaurant', name:"The Captain's Table", x:17, y:5 },
+  { kind:'restaurant', name:'Riverside Grill', x:7, y:9 },
+  { kind:'cafe', name:'Bean & Anvil', x:7, y:15 },
+  { kind:'cafe', name:'The Morning Press', x:15, y:15 },
+  { kind:'cafe', name:'Marina Roast', x:19, y:17 },
+  { kind:'office', name:'Blackwell & Sons', x:5, y:9 },
+  { kind:'office', name:'Harbour Trading', x:13, y:9 },
+  { kind:'shop', name:'Hillcrest Goods', x:9, y:13 },
+  { kind:'shop', name:'The Iron Market', x:13, y:13 },
+  { kind:'shop', name:'The Compass Rose', x:21, y:9 },
+  { kind:'supermarket', name:'Harbour Fresh', x:5, y:5 },
+  { kind:'supermarket', name:'North Market', x:17, y:1 },
+  { kind:'clinic', name:'St. Skill Infirmary', x:9, y:5 },
+  { kind:'school', name:'Ironworks Academy', x:11, y:7 },
+  { kind:'gym', name:'The Furnace Gym', x:15, y:7 },
+  { kind:'gym', name:'Coastal Fitness', x:21, y:5 },
+  { kind:'garage', name:'Cranks & Bolts', x:15, y:11 },
+  { kind:'cinema', name:'The Lantern Cinema', x:5, y:13 },
+  { kind:'bowling', name:'Strike Lanes', x:11, y:15 },
+  { kind:'bowling', name:'Sea Bowl', x:17, y:17 },
+  { kind:'park', name:'Hilltop Gardens', x:10, y:2 },
+  { kind:'park', name:'Riverside Park', x:2, y:10 },
+  { kind:'park', name:'Beacon Park', x:18, y:10 },
+  { kind:'park', name:'Harbour Gardens', x:10, y:18 },
+]
+VENUES.forEach(v => {
+  const bx = Math.floor(v.x / PERIOD), by = Math.floor(v.y / PERIOD)
+  v.district = districtOf(bx, by) || 'Marina'
+})
+const venueAt = new Map(VENUES.map(v => [`${v.x},${v.y}`, v]))
+
+// ══════════════════════════════════════════════════════════════════════
+//  Model catalogue
+// ══════════════════════════════════════════════════════════════════════
+
+const GLB = (pack, name) => `/assets/${pack}/Models/GLB format/${name}.glb`
+
+const MODELS_TO_LOAD = {
+  // Commercial buildings (civic filler + venue buildings)
+  'com-a': GLB('commercial', 'building-a'),
+  'com-c': GLB('commercial', 'building-c'),
+  'com-e': GLB('commercial', 'building-e'),
+  'com-g': GLB('commercial', 'building-g'),
+  'com-h': GLB('commercial', 'building-h'),
+  'com-j': GLB('commercial', 'building-j'),
+  'com-l': GLB('commercial', 'building-l'),
+  'com-n': GLB('commercial', 'building-n'),
+  // Skyscrapers
+  'sky-a': GLB('commercial', 'building-skyscraper-a'),
+  'sky-c': GLB('commercial', 'building-skyscraper-c'),
+  'sky-e': GLB('commercial', 'building-skyscraper-e'),
+  // Low-detail commercial (background filler)
+  'low-a': GLB('commercial', 'low-detail-building-a'),
+  'low-d': GLB('commercial', 'low-detail-building-d'),
+  'low-g': GLB('commercial', 'low-detail-building-g'),
+  'low-j': GLB('commercial', 'low-detail-building-j'),
+  // Details / props
+  'parasol': GLB('commercial', 'detail-parasol-a'),
+  'parasol-b': GLB('commercial', 'detail-parasol-b'),
+  'awning': GLB('commercial', 'detail-awning'),
+  'overhang': GLB('commercial', 'detail-overhang'),
+  // Suburban houses (compact types that don't overflow tiles)
+  'sub-b': GLB('suburban', 'building-type-b'),
+  'sub-d': GLB('suburban', 'building-type-d'),
+  'sub-f': GLB('suburban', 'building-type-f'),
+  'sub-h': GLB('suburban', 'building-type-h'),
+  'sub-k': GLB('suburban', 'building-type-k'),
+  'sub-n': GLB('suburban', 'building-type-n'),
+  'sub-q': GLB('suburban', 'building-type-q'),
+  'sub-t': GLB('suburban', 'building-type-t'),
+  // Industrial
+  'ind-a': GLB('industrial', 'building-a'),
+  'ind-d': GLB('industrial', 'building-d'),
+  'ind-h': GLB('industrial', 'building-h'),
+  'ind-l': GLB('industrial', 'building-l'),
+  'chimney': GLB('industrial', 'chimney-medium'),
+  'chimney-sm': GLB('industrial', 'chimney-small'),
+  'tank': GLB('industrial', 'detail-tank'),
+  // Nature & suburban props
+  'tree-lg': GLB('suburban', 'tree-large'),
+  'tree-sm': GLB('suburban', 'tree-small'),
+  'fence': GLB('suburban', 'fence'),
+  'fence-low': GLB('suburban', 'fence-low'),
+  'planter': GLB('suburban', 'planter'),
+  'path-stones': GLB('suburban', 'path-stones-short'),
+  'driveway': GLB('suburban', 'driveway-short'),
+  // Roads pack — tiles
+  'rd-straight': GLB('roads', 'road-straight'),
+  'rd-crossroad': GLB('roads', 'road-crossroad'),
+  'rd-intersection': GLB('roads', 'road-intersection'),
+  'rd-bend': GLB('roads', 'road-bend'),
+  'rd-end': GLB('roads', 'road-end'),
+  'rd-crossing': GLB('roads', 'road-crossing'),
+  // Roads pack — props
+  'light-curved': GLB('roads', 'light-curved'),
+  'light-square': GLB('roads', 'light-square'),
+  'traffic-light': GLB('roads', 'traffic-light'),
+  'dumpster': GLB('roads', 'dumpster'),
+  'cone': GLB('roads', 'construction-cone'),
+  'barrier': GLB('roads', 'construction-barrier'),
+  'elec-pole': GLB('roads', 'electricity-pole-single'),
+}
+
+const COMMERCIAL_POOL = ['com-a','com-c','com-e','com-g','com-h','com-j','com-l','com-n']
+const SKYSCRAPER_POOL = ['sky-a','sky-c','sky-e']
+const LOW_DETAIL_POOL = ['low-a','low-d','low-g','low-j']
+const SUBURBAN_POOL = ['sub-b','sub-d','sub-f','sub-h','sub-k','sub-n','sub-q','sub-t']
+const INDUSTRIAL_POOL = ['ind-a','ind-d','ind-h','ind-l']
+
+// Venue kind → model pools
+const VENUE_MODELS = {
+  bar: COMMERCIAL_POOL,
+  restaurant: COMMERCIAL_POOL,
+  cafe: ['com-a', 'com-c'],
+  office: SKYSCRAPER_POOL,
+  shop: COMMERCIAL_POOL.slice(4),
+  supermarket: ['com-j', 'com-l'],
+  clinic: ['com-e'],
+  school: ['com-g'],
+  gym: ['com-n'],
+  garage: ['ind-a'],
+  cinema: ['sky-c'],
+  bowling: ['com-h'],
+}
+
+// ══════════════════════════════════════════════════════════════════════
+//  Three.js setup
+// ══════════════════════════════════════════════════════════════════════
+
+const canvas = document.getElementById('c')
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true })
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+renderer.setSize(window.innerWidth, window.innerHeight)
+renderer.shadowMap.enabled = true
+renderer.shadowMap.type = THREE.PCFSoftShadowMap
+renderer.toneMapping = THREE.ACESFilmicToneMapping
+renderer.toneMappingExposure = 1.1
+
+const scene = new THREE.Scene()
+scene.background = new THREE.Color(0x87CEEB)
+scene.fog = new THREE.FogExp2(0x87CEEB, 0.008)
+
+// Camera — perspective with a nice isometric-ish default angle
+const camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 0.5, 200)
+const CENTER = new THREE.Vector3(GRID * TILE / 2, 0, GRID * TILE / 2)
+camera.position.set(CENTER.x + 35, 30, CENTER.z + 35)
+camera.lookAt(CENTER)
+
+const controls = new OrbitControls(camera, canvas)
+controls.target.copy(CENTER)
+controls.enableDamping = true
+controls.dampingFactor = 0.08
+controls.minDistance = 8
+controls.maxDistance = 100
+controls.maxPolarAngle = Math.PI / 2.2
+
+// Lighting
+const ambient = new THREE.AmbientLight(0xffffff, 0.6)
+scene.add(ambient)
+
+const sun = new THREE.DirectionalLight(0xfff5e0, 1.2)
+sun.position.set(30, 40, 20)
+sun.castShadow = true
+sun.shadow.mapSize.set(2048, 2048)
+sun.shadow.camera.left = -60
+sun.shadow.camera.right = 60
+sun.shadow.camera.top = 60
+sun.shadow.camera.bottom = -60
+sun.shadow.camera.near = 1
+sun.shadow.camera.far = 120
+sun.shadow.bias = -0.001
+scene.add(sun)
+
+const fill = new THREE.DirectionalLight(0xb0c4de, 0.3)
+fill.position.set(-20, 15, -10)
+scene.add(fill)
+
+// ══════════════════════════════════════════════════════════════════════
+//  Materials
+// ══════════════════════════════════════════════════════════════════════
+
+const MAT = {
+  grass: new THREE.MeshLambertMaterial({ color: 0x4a8a3a }),
+  grassLight: new THREE.MeshLambertMaterial({ color: 0x5aaa4a }),
+  street: new THREE.MeshLambertMaterial({ color: 0x606060 }),
+  dirt: new THREE.MeshLambertMaterial({ color: 0x8a7a60 }),
+  sand: new THREE.MeshLambertMaterial({ color: 0xc8b888 }),
+  water: new THREE.MeshPhongMaterial({ color: 0x2e6ea4, shininess: 70 }),
+}
+
+// ══════════════════════════════════════════════════════════════════════
+//  Build ground
+// ══════════════════════════════════════════════════════════════════════
+
+const tileGeo = new THREE.PlaneGeometry(TILE, TILE)
+tileGeo.rotateX(-Math.PI / 2)
+const waterGeo = new THREE.PlaneGeometry(TILE + 0.04, TILE + 0.04)
+waterGeo.rotateX(-Math.PI / 2)
+
+function worldPos(gx, gy) {
+  return new THREE.Vector3(gx * TILE + TILE / 2, 0, gy * TILE + TILE / 2)
+}
+
+const tileData = new Map() // 'x,y' → { venue, home, role, district, water, bridge }
+
+function buildGround() {
+  for (let gy = 0; gy < GRID; gy++) {
+    for (let gx = 0; gx < GRID; gx++) {
+      const k = `${gx},${gy}`
+      const pos = worldPos(gx, gy)
+      let mat, yOff = 0
+
+      const info = { venue: venueAt.get(k) || null, home: false, role: null, district: null, water: null, bridge: false }
+      const bx = Math.floor(gx / PERIOD), by = Math.floor(gy / PERIOD)
+      const block = blockOf(bx, by)
+      info.role = block?.role || null
+      info.district = districtOf(bx, by)
+
+      if (SEA.has(k)) {
+        mat = MAT.water; yOff = -0.12; info.water = 'sea'
+      } else if (isBridge(gx, gy)) {
+        mat = MAT.water; yOff = -0.12; info.water = 'river'; info.bridge = true
+      } else if (RIVER.has(k)) {
+        mat = MAT.water; yOff = -0.12; info.water = 'river'
+      } else if (LAKE.has(k)) {
+        mat = MAT.water; yOff = -0.12; info.water = 'lake'
+      } else if (isStreet(gx, gy)) {
+        // Coast road gets sand; other streets skip (road models placed later)
+        const isCoastRoad = [[-1,0],[1,0],[0,-1],[0,1]].some(([dx,dy]) => SEA.has(`${gx+dx},${gy+dy}`))
+        if (isCoastRoad) {
+          mat = MAT.sand
+        } else {
+          // No flat tile — road model will cover this
+          tileData.set(k, info)
+          continue
+        }
+      } else if (block) {
+        if (block.role === 'plaza') mat = MAT.dirt
+        else if (block.role === 'green') mat = MAT.grassLight
+        else if (block.role === 'harbor') mat = MAT.sand
+        else mat = MAT.grass
+      } else {
+        mat = MAT.grass
+      }
+
+      // Residential block non-water non-venue → home
+      if (block?.role === 'residential' && !isStreet(gx, gy) && !isWater(gx, gy) && !info.venue) {
+        info.home = true
+      }
+
+      const geo = info.water ? waterGeo : tileGeo
+      const tile = new THREE.Mesh(geo, mat)
+      tile.position.copy(pos)
+      tile.position.y = yOff
+      tile.receiveShadow = true
+      scene.add(tile)
+
+      tileData.set(k, info)
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+//  Load models
+// ══════════════════════════════════════════════════════════════════════
+
+const loader = new GLTFLoader()
+const modelCache = new Map()
+
+let roadBaseScale = null
+
+async function loadModels() {
+  // Load rd-straight first to establish road pack scale
+  const entries = Object.entries(MODELS_TO_LOAD)
+  entries.sort(([a], [b]) => (a === 'rd-straight' ? -1 : b === 'rd-straight' ? 1 : 0))
+  const total = entries.length
+  let loaded = 0
+
+  for (const [key, url] of entries) {
+    document.getElementById('load-status').textContent = key
+    try {
+      const gltf = await loader.loadAsync(url)
+      const model = gltf.scene
+      // Normalise: center at origin, scale to fit tile
+      const box = new THREE.Box3().setFromObject(model)
+      const size = new THREE.Vector3()
+      box.getSize(size)
+      const maxDim = Math.max(size.x, size.z)
+      const isNature = key.startsWith('tree') || key === 'parasol' || key === 'fence' || key === 'planter'
+      const isRoadPack = key.startsWith('rd-') || key.startsWith('light') || key.startsWith('traffic') || key === 'dumpster'
+      let scale
+      if (isRoadPack) {
+        // All road pack models share ONE scale (computed from rd-straight's footprint)
+        // so Kenney's designed proportions are preserved (lamp ≈ 1 storey, etc.)
+        if (key === 'rd-straight') {
+          roadBaseScale = TILE / maxDim
+          console.log(`[rd-straight] raw size X=${size.x.toFixed(3)} Z=${size.z.toFixed(3)} → runs along ${size.x >= size.z ? 'X (E-W)' : 'Z (N-S)'} at rot=0`)
+        }
+        scale = roadBaseScale || (TILE / maxDim)
+      } else if (isNature) {
+        scale = (TILE * 0.4) / maxDim
+        if (size.y * scale > TILE * 1.2) scale = (TILE * 1.2) / size.y
+      } else if (key.startsWith('sub-')) {
+        scale = (TILE * 0.7) / maxDim
+      } else {
+        scale = (TILE * 0.58) / maxDim
+      }
+      model.scale.setScalar(scale)
+
+      // Re-measure after scale
+      box.setFromObject(model)
+      const center = new THREE.Vector3()
+      box.getCenter(center)
+      // Ground the model: shift so bottom is at y=0 and centered on XZ
+      model.position.sub(center)
+      model.position.y += (box.max.y - box.min.y) / 2 * 0 // keep grounded
+      box.setFromObject(model)
+      model.position.y -= box.min.y
+
+      model.traverse(child => {
+        if (child.isMesh) {
+          child.castShadow = true
+          child.receiveShadow = true
+        }
+      })
+
+      modelCache.set(key, model)
+    } catch (e) {
+      console.warn(`Failed to load ${key}: ${e.message}`)
+    }
+    loaded++
+    document.getElementById('load-fill').style.width = `${(loaded / total) * 100}%`
+  }
+  document.getElementById('model-count').textContent = modelCache.size
+}
+
+function placeModel(key, gx, gy, rotY = 0) {
+  const template = modelCache.get(key)
+  if (!template) return null
+  const clone = template.clone()
+  const pos = worldPos(gx, gy)
+  clone.position.add(pos)
+  clone.rotation.y = rotY
+  scene.add(clone)
+  return clone
+}
+
+// ══════════════════════════════════════════════════════════════════════
+//  Place buildings
+// ══════════════════════════════════════════════════════════════════════
+
+let homeCount = 0
+
+function placeBuildings() {
+  // Venues
+  for (const v of VENUES) {
+    if (v.kind === 'park') {
+      const ph = hash(v.x, v.y, 'park') % 4
+      if (ph < 2) placeModel('tree-lg', v.x, v.y)
+      else if (ph === 2) placeModel('tree-sm', v.x, v.y)
+      else placeModel('planter', v.x, v.y)
+      continue
+    }
+    const pool = VENUE_MODELS[v.kind] || COMMERCIAL_POOL
+    const idx = hash(v.x, v.y, v.name) % pool.length
+    const rot = (hash(v.x, v.y, 'rot') % 4) * (Math.PI / 2)
+    placeModel(pool[idx], v.x, v.y, rot)
+  }
+
+  // Filler buildings + homes
+  const adjSea = (x, y) => [[-1,0],[1,0],[0,-1],[0,1]].some(([dx,dy]) => SEA.has(`${x+dx},${y+dy}`))
+  for (let gy = 0; gy < GRID; gy++) {
+    for (let gx = 0; gx < GRID; gx++) {
+      if (isStreet(gx, gy) || isWater(gx, gy) || isBridge(gx, gy)) continue
+      if (venueAt.has(`${gx},${gy}`)) continue
+      if (adjSea(gx, gy)) continue
+
+      const bx = Math.floor(gx / PERIOD), by = Math.floor(gy / PERIOD)
+      const block = blockOf(bx, by)
+      if (!block || block.role === 'sea') continue
+      const lx = (gx % PERIOD) - 1, ly = (gy % PERIOD) - 1
+      const middle = lx === 1 && ly === 1
+      const district = districtOf(bx, by)
+      const rot = (hash(gx, gy, 'rot') % 4) * (Math.PI / 2)
+
+      if (block.role === 'civic') {
+        const h = hash(gx, gy, 'fill') % 100
+        if (middle) {
+          // Center of civic block: planter or dumpster
+          placeModel(h % 3 === 0 ? 'dumpster' : 'planter', gx, gy, rot)
+        } else if (h < 75) {
+          const pool = h < 15 ? SKYSCRAPER_POOL : (h < 40 ? COMMERCIAL_POOL : LOW_DETAIL_POOL)
+          placeModel(pool[hash(gx, gy, 'idx') % pool.length], gx, gy, rot)
+        } else {
+          // Empty civic plot: urban props
+          const ph = hash(gx, gy, 'prop') % 5
+          if (ph === 0) placeModel('planter', gx, gy)
+          else if (ph === 1) placeModel('dumpster', gx, gy, rot)
+          else if (ph === 2) placeModel('tree-sm', gx, gy)
+          else if (ph === 3) placeModel('fence-low', gx, gy, rot)
+          else placeModel('cone', gx, gy)
+        }
+      } else if (block.role === 'residential') {
+        const isIronworks = district === 'Ironworks'
+        const pool = isIronworks ? INDUSTRIAL_POOL : SUBURBAN_POOL
+        const h = hash(gx, gy, 'home') % 100
+        if (h < 78) {
+          placeModel(pool[hash(gx, gy, 'hidx') % pool.length], gx, gy, rot)
+          homeCount++
+        } else {
+          // Empty residential plot: garden/yard props
+          const ph = hash(gx, gy, 'yard') % 6
+          if (ph < 2) placeModel('tree-sm', gx, gy)
+          else if (ph === 2) placeModel('fence-low', gx, gy, rot)
+          else if (ph === 3) placeModel('planter', gx, gy)
+          else if (ph === 4) placeModel('parasol', gx, gy, rot)
+          else placeModel('tree-lg', gx, gy)
+        }
+      } else if (block.role === 'green') {
+        if (middle) {
+          placeModel('planter', gx, gy)
+        } else {
+          const onPath = lx === 1 || ly === 1
+          if (onPath) {
+            if (hash(gx, gy, 'pstone') % 3 === 0) placeModel('path-stones', gx, gy, rot)
+          } else {
+            const treeKey = hash(gx, gy, 'tree') % 3 === 0 ? 'tree-sm' : 'tree-lg'
+            placeModel(treeKey, gx, gy)
+          }
+        }
+      } else if (block.role === 'plaza') {
+        if (!middle) {
+          const corner = (lx === 0 || lx === 2) && (ly === 0 || ly === 2)
+          if (corner) placeModel('tree-lg', gx, gy)
+          else {
+            const ph = hash(gx, gy, 'parasol') % 6
+            if (ph < 2) placeModel(ph === 0 ? 'parasol' : 'parasol-b', gx, gy, rot)
+            else if (ph === 2) placeModel('planter', gx, gy)
+          }
+        } else {
+          placeModel('parasol', gx, gy)
+        }
+      } else if (block.role === 'harbor') {
+        const h = hash(gx, gy, 'hbr') % 100
+        if (h < 40) {
+          const hpool = [...COMMERCIAL_POOL, ...INDUSTRIAL_POOL]
+          placeModel(hpool[hash(gx, gy, 'hidx') % hpool.length], gx, gy, rot)
+        } else {
+          const ph = hash(gx, gy, 'hprop') % 7
+          if (ph === 0) placeModel('tank', gx, gy, rot)
+          else if (ph === 1) placeModel('chimney-sm', gx, gy)
+          else if (ph === 2) placeModel('barrier', gx, gy, rot)
+          else if (ph === 3) placeModel('cone', gx, gy)
+          else if (ph === 4) placeModel('dumpster', gx, gy, rot)
+          else if (ph === 5) placeModel('fence-low', gx, gy, rot)
+          else placeModel('planter', gx, gy)
+        }
+      }
+    }
+  }
+
+  document.getElementById('home-count').textContent = homeCount
+}
+
+// ══════════════════════════════════════════════════════════════════════
+//  Street furniture (from Kenney roads pack)
+// ══════════════════════════════════════════════════════════════════════
+
+function placeStreetFurniture() {
+  for (let gy = 0; gy < GRID; gy++) {
+    for (let gx = 0; gx < GRID; gx++) {
+      if (!isStreet(gx, gy) || isWater(gx, gy) || isBridge(gx, gy)) continue
+      if (SEA.has(`${gx},${gy}`)) continue
+      const isIntersection = (gx % PERIOD === 0) && (gy % PERIOD === 0)
+      const h = hash(gx, gy, 'furn')
+      const rot4 = (h % 4) * (Math.PI / 2)
+
+      if (!isIntersection) continue
+
+      // Street lamp at every intersection
+      const lampKey = h % 4 < 2 ? 'light-curved' : 'light-square'
+      placeModel(lampKey, gx, gy, rot4)
+
+      // Traffic light at ~25% of intersections (civic/harbor areas only)
+      if (h % 4 === 0) {
+        const bx = Math.floor(gx / PERIOD), by = Math.floor(gy / PERIOD)
+        const block = blockOf(bx, by)
+        if (block && (block.role === 'civic' || block.role === 'plaza' || block.role === 'harbor')) {
+          placeModel('traffic-light', gx, gy, ((h >> 3) % 4) * (Math.PI / 2))
+        }
+      }
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+//  Road tiles — replace flat gray planes with 3D Kenney models
+// ══════════════════════════════════════════════════════════════════════
+
+function isRoadConnected(gx, gy) {
+  if (gx < 0 || gy < 0 || gx >= GRID || gy >= GRID) return false
+  if (isWater(gx, gy) && !isBridge(gx, gy)) return false
+  return isStreet(gx, gy)
+}
+
+function classifyRoad(gx, gy) {
+  const n = isRoadConnected(gx, gy - 1)
+  const e = isRoadConnected(gx + 1, gy)
+  const s = isRoadConnected(gx, gy + 1)
+  const w = isRoadConnected(gx - 1, gy)
+  const count = [n, e, s, w].filter(Boolean).length
+  // Verified: rd-straight runs along Z (N-S) at rot=0
+  // Three.js Y-rotation: +θ rotates +X→-Z→-X→+Z (CCW from above)
+  const H = Math.PI / 2
+
+  if (count === 4) return { model: 'rd-crossroad', rot: 0 }
+
+  if (count === 3) {
+    if (!n) return { model: 'rd-intersection', rot: 0 }
+    if (!w) return { model: 'rd-intersection', rot: H }
+    if (!s) return { model: 'rd-intersection', rot: Math.PI }
+    if (!e) return { model: 'rd-intersection', rot: -H }
+  }
+
+  if (count === 2) {
+    if (e && w) return { model: 'rd-straight', rot: 0 }
+    if (n && s) return { model: 'rd-straight', rot: H }
+    if (e && s) return { model: 'rd-bend', rot: H }
+    if (n && e) return { model: 'rd-bend', rot: Math.PI }
+    if (w && n) return { model: 'rd-bend', rot: -H }
+    if (s && w) return { model: 'rd-bend', rot: 0 }
+  }
+
+  if (count === 1) {
+    if (s) return { model: 'rd-end', rot: 0 }
+    if (e) return { model: 'rd-end', rot: H }
+    if (n) return { model: 'rd-end', rot: Math.PI }
+    if (w) return { model: 'rd-end', rot: Math.PI }
+  }
+
+  return { model: 'rd-straight', rot: 0 }
+}
+
+const BRIDGE_MAT = new THREE.MeshLambertMaterial({ color: 0x8a7040 })
+const PLANK_MAT = new THREE.MeshLambertMaterial({ color: 0xa08850 })
+
+function placeRoads() {
+  for (let gy = 0; gy < GRID; gy++) {
+    for (let gx = 0; gx < GRID; gx++) {
+      if (!isStreet(gx, gy)) continue
+      if (isWater(gx, gy) && !isBridge(gx, gy)) continue
+      if (SEA.has(`${gx},${gy}`)) continue
+
+      if (isBridge(gx, gy)) {
+        // Procedural bridge (river crossing)
+        const pos = worldPos(gx, gy)
+        const plank = new THREE.Mesh(new THREE.BoxGeometry(TILE, 0.06, TILE), PLANK_MAT)
+        plank.position.set(pos.x, 0.08, pos.z)
+        plank.castShadow = true
+        scene.add(plank)
+        const isVertRiver = (gx === 2 || gx === 3) && gy <= 20
+        if (isVertRiver) {
+          const rGeo = new THREE.BoxGeometry(TILE, 0.25, TILE * 0.06)
+          for (const dz of [-0.44, 0.44]) {
+            const r = new THREE.Mesh(rGeo, BRIDGE_MAT)
+            r.position.set(pos.x, 0.2, pos.z + TILE * dz)
+            scene.add(r)
+          }
+        } else {
+          const rGeo = new THREE.BoxGeometry(TILE * 0.06, 0.25, TILE)
+          for (const dx of [-0.44, 0.44]) {
+            const r = new THREE.Mesh(rGeo, BRIDGE_MAT)
+            r.position.set(pos.x + TILE * dx, 0.2, pos.z)
+            scene.add(r)
+          }
+        }
+        continue
+      }
+
+      const { model, rot } = classifyRoad(gx, gy)
+      placeModel(model, gx, gy, rot)
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+//  Raycasting / tooltip
+// ══════════════════════════════════════════════════════════════════════
+
+const raycaster = new THREE.Raycaster()
+const mouse = new THREE.Vector2()
+const groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0)
+const tooltip = document.getElementById('tooltip')
+const hoverInfo = document.getElementById('hover-info')
+
+canvas.addEventListener('mousemove', (e) => {
+  mouse.x = (e.clientX / window.innerWidth) * 2 - 1
+  mouse.y = -(e.clientY / window.innerHeight) * 2 + 1
+
+  raycaster.setFromCamera(mouse, camera)
+  const pt = new THREE.Vector3()
+  raycaster.ray.intersectPlane(groundPlane, pt)
+  if (!pt) { tooltip.classList.remove('show'); return }
+
+  const gx = Math.floor(pt.x / TILE), gy = Math.floor(pt.z / TILE)
+  if (gx < 0 || gy < 0 || gx >= GRID || gy >= GRID) {
+    tooltip.classList.remove('show')
+    hoverInfo.textContent = '—'
+    return
+  }
+
+  const k = `${gx},${gy}`
+  const info = tileData.get(k)
+  hoverInfo.textContent = `(${gx},${gy})`
+
+  if (info?.venue) {
+    tooltip.innerHTML = `<div class="name">${info.venue.name}</div>
+      <div class="kind">${info.venue.kind}</div>
+      <div class="district">${info.venue.district}</div>`
+    tooltip.classList.add('show')
+  } else if (info?.water) {
+    tooltip.innerHTML = `<div class="name">${info.water}</div>`
+    tooltip.classList.add('show')
+  } else if (info?.bridge) {
+    tooltip.innerHTML = `<div class="name">Bridge</div>`
+    tooltip.classList.add('show')
+  } else if (info?.home) {
+    tooltip.innerHTML = `<div class="name">Home</div>
+      <div class="district">${info.district || ''}</div>`
+    tooltip.classList.add('show')
+  } else {
+    tooltip.classList.remove('show')
+  }
+  tooltip.style.left = (e.clientX + 12) + 'px'
+  tooltip.style.top = (e.clientY + 12) + 'px'
+})
+canvas.addEventListener('mouseleave', () => tooltip.classList.remove('show'))
+
+// ══════════════════════════════════════════════════════════════════════
+//  Resize + animate
+// ══════════════════════════════════════════════════════════════════════
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight
+  camera.updateProjectionMatrix()
+  renderer.setSize(window.innerWidth, window.innerHeight)
+})
+
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'r' || e.key === 'R') {
+    camera.position.set(CENTER.x + 35, 30, CENTER.z + 35)
+    controls.target.copy(CENTER)
+  }
+})
+
+// Water animation
+const clock = new THREE.Clock()
+function animate() {
+  requestAnimationFrame(animate)
+  controls.update()
+
+  // Subtle water wave via position oscillation
+  const t = clock.getElapsedTime()
+  scene.traverse(obj => {
+    if (obj.isMesh && obj.material === MAT.water) {
+      obj.position.y = -0.12 + Math.sin(t * 1.5 + obj.position.x * 0.3 + obj.position.z * 0.2) * 0.02
+    }
+  })
+
+  renderer.render(scene, camera)
+}
+
+// ══════════════════════════════════════════════════════════════════════
+//  Boot
+// ══════════════════════════════════════════════════════════════════════
+
+console.log('[city-viewer v3] n&&s→rot:0, e&&w→rot:H — if you see v2 or earlier, hard-refresh (Cmd+Shift+R)')
+buildGround()
+await loadModels()
+placeRoads()
+placeBuildings()
+placeStreetFurniture()
+
+document.getElementById('loading').classList.add('done')
+animate()
+</script>
+</body>
+</html>

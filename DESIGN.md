@@ -1,6 +1,9 @@
 # agentic-world — Documento de diseño (brainstorm inicial)
 
-> Estado: concepto / pre-v0 — 2026-08-19
+> **Este documento es el registro de origen, no el estado actual.** El cuerpo se conserva tal como se escribió el 2026-08-19, antes de que existiera una línea de código: su valor es el *porqué*, y reescribirlo para que encaje con lo construido destruiría justo eso.
+>
+> Para lo que hay hoy: [README.md](./README.md) (qué es y cómo se levanta) y [CLAUDE.md](./CLAUDE.md) (decisiones de arquitectura vigentes). Al final de este documento, [Qué pasó realmente](#qué-pasó-realmente) contrasta cada apuesta de aquel día con el resultado.
+>
 > Origen: sesión de brainstorm sobre proyectos personales con IA. Esta idea ganó.
 
 ## El concepto en una frase
@@ -86,3 +89,39 @@ Diseñar una economía cerrada que no hiperinflacione es otro problema jugoso: s
 - **LLMs:** Haiku para escenas sociales, modelo grande para reflexiones, Ollama local como válvula de escape de costes.
 - **Visor (fase 2):** Phaser 3, isométrico, WebSocket.
 - **Persistencia del mundo:** SQLite para empezar (estado del mundo, economía, posiciones).
+
+---
+
+## Qué pasó realmente
+
+Sección añadida a posteriori. El resto del documento queda intacto.
+
+### Lo que se cumplió
+
+- **La cognición por capas era efectivamente el problema central.** Todo el diseño sigue girando alrededor de esa tabla, y la regla "nunca una llamada LLM dentro del tick" se sostuvo: `src/engine/tick.ts` es una función pura y la cognición sale como jobs a una cola.
+- **dbrain como motor de memoria de personajes** funcionó y se quedó. La memoria episódica con decay produce el comportamiento realista que se esperaba.
+- **La economía como generador de conflicto** se confirmó, y con un matiz que no estaba previsto: al arreglar la economía murió el drama, porque nadie pasaba apuros. Hizo falta añadir objetivos para que volviera a haber gente desesperada. *Un mundo donde nadie necesita nada es correcto y está muerto.*
+- **La sopa insípida era el riesgo real**, tal como se anticipó. La defensa diseñada (dos vicios obligatorios por agente) sigue siendo la mecánica que más fricción genera.
+
+### Lo que cambió
+
+| Apuesta de aquel día | Cómo quedó | Por qué |
+|---|---|---|
+| SQLite para empezar | **Postgres 16**, más Redis para la cola | El mundo corre 24/7 en un contenedor y varios procesos escriben; SQLite no daba esa concurrencia |
+| Visor Phaser 3 isométrico | **Three.js 3D** con packs GLB de Kenney | El 3D trae ciclo día/noche y cámara real casi gratis, y los packs de assets aportan la ciudad entera |
+| El visor es fase 2 | Se adelantó | El feed de texto validó el drama, pero la depuración de distribución espacial (dónde está la gente, quién se cruza con quién) es casi imposible sin verlo |
+| Tres capas de cognición | **Cinco rutas** | Escena y reflexión no bastaban: aparecieron *deliberación* (el agente replantea intenciones tras algo intenso) y *crisis* (monólogo interior en el momento de la tentación) |
+| Tick cada 5 minutos reales | 5 minutos **de juego** por tick, 2s reales | Un día de juego en ~10 minutos reales; a ritmo real no se puede iterar sobre el diseño |
+| Ollama local como válvula | No hizo falta | dproxy sobre la suscripción de Claude cubrió el volumen del v0 |
+
+### Lo que no se había visto venir
+
+- **La deliberación es el patrón correcto para añadir cognición**: no decide nada, sesga la capa gratuita que decide todo. Una ruta que devuelve acciones en vez de disposiciones rompe el modelo de coste, porque obliga a llamarla cada tick.
+- **El presupuesto de escenas importa más que el umbral del gate.** La densidad de encuentros depende de dónde esté la gente, así que un umbral solo produce un número imprevisible de llamadas al día. El dial de coste es el presupuesto, no el filtro.
+- **Todo número relacional que solo sube acaba rompiendo el mundo.** Sin una vuelta a neutro, todos los pares colapsan a −1.00 y el pueblo entero se odia.
+- **La morosidad sigue sin consecuencias** — un agente puede acumular 520 de alquiler impagado y no pasa nada. Bug abierto, y el hueco más evidente de la economía.
+- **Moderación:** el riesgo 3 del brainstorm sigue sin abordar. No hay filtro sobre las personalidades que escriben los dueños.
+
+### Los próximos pasos de entonces
+
+Los tres estaban bien elegidos y están hechos: el tick engine y el esquema del agente son el corazón del proyecto; el rol del humano se concretó en el bucle del dueño (guía tipada que decae, nunca órdenes); y el formato de memorias episódica/relacional/identidad se implementó con una división que no estaba prevista — las relaciones viven desnormalizadas en Postgres porque el gate las lee por cada par colocalizado en cada tick, y dbrain guarda la narrativa detrás de esos números. En caso de divergencia, manda dbrain.
