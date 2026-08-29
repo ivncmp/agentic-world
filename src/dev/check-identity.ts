@@ -21,11 +21,11 @@ async function main() {
   for (const id of ids) {
     try {
       const e = await c.getEntity(id)
-      const facts = e.facts.filter((f: any) => f.category === 'identity')
+      const facts = e.facts.filter((f: { category?: string }) => f.category === 'identity')
       console.log(`${id}: ${facts.length} identity facts`)
     } catch {
       console.log(`${id}: NOT FOUND`)
     }
   }
 }
-main()
+void main()

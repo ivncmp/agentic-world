@@ -19,7 +19,7 @@ export function failFrom(res: ServerResponse, err: unknown): void {
 export function withBody(req: NodeJS.ReadableStream, handler: (body: string) => Promise<void>): void {
   let body = ''
   req.on('data', (c: Buffer) => {
-    body += c
+    body += c.toString()
   })
   req.on('end', () => void handler(body))
 }

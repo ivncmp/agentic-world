@@ -29,11 +29,16 @@ Everything except the four cognition routes is exercised that way.
 ## Checks
 
 ```bash
-pnpm check    # tsc --noEmit + vitest
+pnpm check    # tsc --noEmit + eslint + prettier --check + vitest
 ```
 
-That is the whole gate, and it must pass. There is no linter or formatter in
-this repo yet; match the style of the file you are editing.
+That is the whole gate, and it must pass. `pnpm lint:fix` and `pnpm format`
+fix most of what it complains about.
+
+Prettier owns formatting, so ESLint carries no stylistic rules. Two of its rules
+are project constraints rather than preferences, and they exist for the reasons
+in the next section: **no `Math.random` or `Date.now` inside `src/engine/`**, and
+**no `Math.random` anywhere in `src/viewer/`**.
 
 ## The rules that are not style preferences
 

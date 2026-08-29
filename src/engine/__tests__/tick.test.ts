@@ -369,7 +369,7 @@ describe('daily counters', () => {
   it('clears passing pairs at the day rollover', () => {
     const two = [agent('a', { location: 'bar-1' }), agent('b', { location: 'bar-1' })]
     // Build up a passing record, then cross midnight.
-    let r = tick(world(two), deps())
+    const r = tick(world(two), deps())
     expect(r.state.passingTodayByPair.size).toBeGreaterThan(0)
     const atMidnight = tick({ ...r.state, tick: 287 }, deps({ ticksPerDay: 288 }))
     // Whatever is there afterwards belongs to the new day, not the old one.

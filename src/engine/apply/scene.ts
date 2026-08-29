@@ -1,4 +1,4 @@
-import type { Agent, AgentId, Relationship } from '../../agents/agent.js'
+import type { AgentId, Relationship } from '../../agents/agent.js'
 import type { SceneOutcome } from '../../cognition/scene.js'
 import { pairKey, type WorldState } from '../tick.js'
 import { adjustFeeling } from '../relationship.js'
@@ -68,6 +68,6 @@ export function applySceneOutcome(
 export function abandonScene(state: WorldState, aId: AgentId, bId: AgentId): WorldState {
   return {
     ...state,
-    agents: state.agents.map((x) => (x.id === aId || x.id === bId ? { ...x, activity: null } : x)) as Agent[],
+    agents: state.agents.map((x) => (x.id === aId || x.id === bId ? { ...x, activity: null } : x)),
   }
 }

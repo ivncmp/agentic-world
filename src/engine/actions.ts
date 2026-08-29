@@ -259,7 +259,7 @@ export function scoreActions(agent: Agent, ctx: ActionContext): ScoredAction[] {
       'indulge_vice',
       ctx.findLocation(where),
       vice.urge * (1 + v.riskTolerance * 0.3) + desperationBonus - costResistance,
-      vice.kind as unknown as string,
+      vice.kind,
     )
   }
 

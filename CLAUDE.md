@@ -16,7 +16,7 @@ Design rationale: **[DESIGN.md](./DESIGN.md)** — the bets the project is built
 
 What is still open: arrears have no consequence (see below), moderation of owner-authored personalities does not exist, and there is no deployment beyond a single box.
 
-Toolchain: Node 22 + TypeScript throughout (`.tool-versions` pins it). `pnpm check` runs `tsc --noEmit` + vitest (129 tests). There is no linter or formatter in this repo — do not add lint steps to instructions that do not exist.
+Toolchain: Node 22 + TypeScript throughout (`.tool-versions` pins it). `pnpm check` runs `tsc --noEmit`, ESLint, Prettier and vitest (147 tests) — it is the whole gate. Prettier owns formatting, so ESLint carries no stylistic rules; what it does carry are two project rules with teeth: no `Math.random` or `Date.now` in `src/engine/` (the tick must stay deterministic) and no `Math.random` anywhere in `src/viewer/` (two spectators must see the same town).
 
 ## The central constraint: layered cognition
 

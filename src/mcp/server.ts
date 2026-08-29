@@ -1,5 +1,6 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js'
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js'
+import { asString } from '../cognition/json.js'
 
 const ENGINE_URL = process.env.ENGINE_URL ?? 'http://localhost:7070'
 
@@ -215,9 +216,9 @@ function textResult(data: unknown) {
 }
 
 function tokenResult(data: Record<string, unknown>) {
-  const token = data.ownerToken as string
-  const owner = data.ownerId ?? data.id ?? 'unknown'
-  const agents = 'id' in data && data.id !== data.ownerId ? ` for agent "${data.id}"` : ''
+  const token = asString(data.ownerToken)
+  const owner = asString(data.ownerId) || asString(data.id) || 'unknown'
+  const agents = 'id' in data && data.id !== data.ownerId ? ` for agent "${asString(data.id)}"` : ''
   return {
     content: [
       {
@@ -241,7 +242,7 @@ export function createMcpServer(): Server {
 
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name, arguments: args } = request.params
-    const a = (args ?? {}) as Record<string, unknown>
+    const a = args ?? {}
     try {
       switch (name) {
         case 'register_owner':

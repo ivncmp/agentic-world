@@ -1,7 +1,7 @@
 import type { CityConfig, CityTemplate, WaterRegion } from './config.js'
 import { DEFAULT_CITY } from './config.js'
 import type { Location, LocationId, LocationKind, Tile } from './locations.js'
-import { cityLayout, STREET_PERIOD, type Block, type CityLayout } from './layout.js'
+import { cityLayout, type Block, type CityLayout } from './layout.js'
 import { makeRng } from './rng.js'
 
 const VENUE_NAMES: Partial<Record<LocationKind, readonly string[]>> = {
@@ -238,7 +238,7 @@ export function cityFromTemplate(t: CityTemplate): GeneratedCity {
     name: t.name,
     blocksPerSide: layout.blocksPerSide,
     districts: [...t.districts],
-    venues: Object.fromEntries([...kindCount]) as CityConfig['venues'],
+    venues: Object.fromEntries([...kindCount]),
     openingsPerWorkplace: t.openingsPerWorkplace,
   }
 

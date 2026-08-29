@@ -1,7 +1,6 @@
 import type { Agent, AgentId, Relationship } from '../agents/agent.js'
 import { decayNeeds, growViceUrges } from '../agents/needs.js'
 import { resolveValues } from '../agents/values.js'
-import { viceDef } from '../agents/vices.js'
 import type { Location, LocationId, LocationKind, Tile } from '../world/locations.js'
 import { travelTicks, MIN_STAY_TICKS } from '../world/locations.js'
 import { occupationDef } from '../world/occupations.js'
@@ -149,8 +148,6 @@ const emptyRel = (): Relationship => ({
   encounters: 0,
   lastInteractionTick: null,
 })
-
-const clamp01 = (n: number) => Math.max(0, Math.min(1, n))
 
 /** Money is displayed and reasoned about by people; keep it in whole credits. */
 const credits = (n: number) => Math.round(n * 100) / 100

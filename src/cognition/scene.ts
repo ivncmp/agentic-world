@@ -203,7 +203,7 @@ function normalizeGossip(
   const text = g.text ?? g.content ?? g.description ?? g.claim
   if (typeof id !== 'string' || typeof text !== 'string') return null
   if (!validIds.has(id)) return null
-  return { about: id as AgentId, text }
+  return { about: id, text }
 }
 
 function parseGossip(raw: unknown, validIds: ReadonlySet<string>): { about: AgentId; text: string }[] {

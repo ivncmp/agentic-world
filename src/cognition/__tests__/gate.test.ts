@@ -1,12 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import {
-  scoreEncounter,
-  shouldTriggerScene,
-  selectScenes,
-  GATE_DEFAULTS,
-  MIN_SUBSTANCE,
-  type GateContext,
-} from '../gate.js'
+import { scoreEncounter, shouldTriggerScene, selectScenes, GATE_DEFAULTS, type GateContext } from '../gate.js'
 import type { Agent, Relationship } from '../../agents/agent.js'
 import { zeroVector } from '../../agents/values.js'
 

@@ -78,3 +78,14 @@ export function parseJsonResponse<T>(route: string, text: string): T {
   }
   return JSON.parse(json) as T
 }
+
+/**
+ * A model-supplied value, usable only if it really is a string.
+ *
+ * `String(x)` turns an object into "[object Object]", which then sails through
+ * validation as a plausible-looking name. Every field a route reads out of a
+ * parsed response goes through here instead.
+ */
+export function asString(v: unknown): string {
+  return typeof v === 'string' ? v : ''
+}

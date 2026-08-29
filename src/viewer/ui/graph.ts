@@ -174,7 +174,6 @@ function applyForces(g: GraphData): void {
       if (!other) continue
       const dx = other.x - node.x
       const dy = other.y - node.y
-      const dist = Math.sqrt(dx * dx + dy * dy)
       const strength = ATTRACTION * (1 + Math.abs(edge.affection) + edge.grievance)
       fx += dx * strength
       fy += dy * strength

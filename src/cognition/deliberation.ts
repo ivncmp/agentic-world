@@ -1,9 +1,9 @@
 import type { Agent, AgentId, ActionBias, SeekScene, Relationship } from '../agents/agent.js'
 import type { ActionKind } from '../engine/actions.js'
-import { resolveValues, VALUE_AXES, type ValueVector } from '../agents/values.js'
+import { VALUE_AXES, type ValueVector } from '../agents/values.js'
 import type { Memory } from '../memory/store.js'
 import type { ModelProvider, CompletionResult } from './provider.js'
-import { parseJsonResponse } from './json.js'
+import { parseJsonResponse, asString } from './json.js'
 
 export type DeliberationOutcome = {
   biases: ActionBias[]
@@ -132,10 +132,10 @@ export function parseDeliberation(
   const biases: ActionBias[] = Array.isArray(o.biases)
     ? (o.biases as Record<string, unknown>[])
         .filter((b) => typeof b === 'object' && b != null)
-        .filter((b) => VALID_ACTIONS.has(String(b.action ?? '')))
+        .filter((b) => VALID_ACTIONS.has(asString(b.action)))
         .slice(0, 4)
         .map((b) => ({
-          action: String(b.action) as ActionKind,
+          action: asString(b.action) as ActionKind,
           bias: Math.max(-1, Math.min(1, Number(b.bias) || 0)),
         }))
     : []
@@ -144,12 +144,12 @@ export function parseDeliberation(
     ? (o.seekScene as Record<string, unknown>[])
         .filter((s) => typeof s === 'object' && s != null)
         .filter((s) => {
-          const target = String(s.target ?? '')
+          const target = asString(s.target)
           return target !== '' && target !== agentId && validAgentIds.has(target)
         })
         .slice(0, 2)
         .map((s) => ({
-          target: String(s.target) as AgentId,
+          target: String(s.target),
           reason: typeof s.reason === 'string' ? s.reason.slice(0, 200) : '',
         }))
     : []

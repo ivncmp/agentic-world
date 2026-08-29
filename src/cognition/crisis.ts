@@ -1,5 +1,5 @@
 import type { Agent } from '../agents/agent.js'
-import { resolveValues, VALUE_AXES, type ValueVector } from '../agents/values.js'
+import { VALUE_AXES, type ValueVector } from '../agents/values.js'
 import { occupationDef } from '../world/occupations.js'
 import type { CrisisKind } from '../engine/crisis-detect.js'
 import type { ModelProvider, CompletionResult } from './provider.js'

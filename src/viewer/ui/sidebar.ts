@@ -43,7 +43,6 @@ const KIND_LABEL: Record<string, string> = {
 }
 
 let activeTab: Tab = 'town'
-let feedUnread = false
 
 function switchTab(tab: Tab): void {
   activeTab = tab
@@ -54,7 +53,6 @@ function switchTab(tab: Tab): void {
     pane.classList.toggle('active', pane.id === `tab-${tab}`)
   })
   if (tab === 'feed') {
-    feedUnread = false
     const badge = document.getElementById('feed-badge')
     if (badge) badge.hidden = true
   }
@@ -260,22 +258,21 @@ export function initSidebar(conn: EngineConnection, world: WorldInfo): void {
   // --- Feed (rich rendering per event kind) ---
   conn.onFeed((item: FeedItem) => {
     if (activeTab !== 'feed') {
-      feedUnread = true
       const badge = document.getElementById('feed-badge')
       if (badge) badge.hidden = false
     }
 
     const t = new Date(item.time)
     const when = `${String(t.getUTCHours()).padStart(2, '0')}:${String(t.getUTCMinutes()).padStart(2, '0')}`
-    const d = item.detail as Record<string, unknown> | undefined
+    const d = item.detail
 
     let html = `<div class="when">${when}</div>`
 
     if (item.kind === 'scene' && d?.dialogue) {
       const dialogue = d.dialogue as { speaker: string; line: string }[]
-      const outcome = d.outcome as string | undefined
-      const transfer = d.transfer as { amount: number; from: string; to: string } | undefined
-      const gossip = d.gossip as string | undefined
+      const outcome = d.outcome
+      const transfer = d.transfer
+      const gossip = d.gossip
       html +=
         `<div class="head">${esc(item.text)}</div>` +
         (outcome ? `<div class="outcome">${esc(outcome)}</div>` : '') +
@@ -286,17 +283,17 @@ export function initSidebar(conn: EngineConnection, world: WorldInfo): void {
         `<button class="expand-btn">▸ dialogue (${dialogue.length})</button>` +
         `<div class="dialogue">${dialogue.map((x) => `<div class="line"><b>${esc(x.speaker)}:</b> ${esc(x.line)}</div>`).join('')}</div>`
     } else if (item.kind === 'crisis' && d) {
-      const thought = (d.thought ?? d.text ?? '') as string
-      const crisisKind = (d.crisisKind ?? '') as string
+      const thought = d.thought ?? d.text ?? ''
+      const crisisKind = d.crisisKind ?? ''
       html +=
         `<div class="head">\u{1F4AD} ${esc(item.text)}</div>` +
         (thought ? `<div class="thought">${esc(thought)}</div>` : '') +
         (crisisKind ? `<span class="tag">${esc(crisisKind.replace(/_/g, ' '))}</span>` : '')
     } else if (item.kind === 'deliberation' && d) {
-      const biases = d.biases as { action: string; bias: number }[] | undefined
-      const seekScene = d.seekScene as { target: string }[] | undefined
-      const seed = d.seed as string | undefined
-      const thought = (d.thought ?? d.text ?? '') as string
+      const biases = d.biases
+      const seekScene = d.seekScene
+      const seed = d.seed
+      const thought = d.thought ?? d.text ?? ''
       html += `<div class="head">\u{1F9E0} ${esc(item.text)}</div>`
       if (thought) html += `<div class="thought">${esc(thought)}</div>`
       if (biases?.length || seekScene?.length || seed) {
@@ -308,21 +305,21 @@ export function initSidebar(conn: EngineConnection, world: WorldInfo): void {
         html += '</div>'
       }
     } else if (item.kind === 'diary' && d?.text) {
-      const text = d.text as string
-      const drift = d.drift as Record<string, number> | undefined
+      const text = d.text
+      const drift = d.drift
       html +=
         `<div class="head">\u{1F4D3} ${esc(item.text)}</div>` +
         `<div class="thought">${esc(text)}</div>` +
         (drift && Object.keys(drift).length
           ? `<div class="drift-line">Δ ${Object.entries(drift)
-              .map(([k, v]) => `${k} ${v > 0 ? '+' : ''}${(v as number).toFixed(2)}`)
+              .map(([k, v]) => `${k} ${v > 0 ? '+' : ''}${v.toFixed(2)}`)
               .join(', ')}</div>`
           : '')
     } else if (item.kind === 'theft') {
       html += `<div class="head">\u{1F3AD} ${esc(item.text)}</div>`
-      if (d?.outcome) html += `<div class="outcome">${esc(d.outcome as string)}</div>`
+      if (d?.outcome) html += `<div class="outcome">${esc(d.outcome)}</div>`
       if (d?.transfer) {
-        const tr = d.transfer as { amount: number; from: string; to: string }
+        const tr = d.transfer
         html += `<div class="xfer">\u{1F4B0} ${tr.amount}c · ${esc(tr.from)} → ${esc(tr.to)}</div>`
       }
     } else if (item.kind === 'error') {

@@ -34,4 +34,4 @@ async function main() {
     console.log(`added ${facts.length} rich identity facts to ${id}`)
   }
 }
-main()
+void main()

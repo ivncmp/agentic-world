@@ -1,9 +1,9 @@
 import type { Agent, AgentId, Relationship } from '../agents/agent.js'
 import type { Memory, MemoryStore } from '../memory/store.js'
-import { resolveValues, VALUE_AXES, type ValueAxis, type ValueVector } from '../agents/values.js'
+import { VALUE_AXES, type ValueAxis, type ValueVector } from '../agents/values.js'
 import { occupationDef } from '../world/occupations.js'
 import type { ModelProvider } from './provider.js'
-import { parseJsonResponse } from './json.js'
+import { parseJsonResponse, asString } from './json.js'
 
 /**
  * Layer 3. Once per agent per night, the day is consolidated: the noise becomes
@@ -105,7 +105,7 @@ export function parseReflection(text: string, fallbackName: string): ReflectionO
     ? o.relationships
         .filter((r): r is Record<string, unknown> => typeof r === 'object' && r != null)
         .map((r) => ({
-          agent: String(r.agent ?? ''),
+          agent: asString(r.agent),
           trust: clamp(r.trust, 0.2),
           affection: clamp(r.affection, 0.2),
         }))

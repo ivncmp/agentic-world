@@ -1,5 +1,4 @@
 import type { Agent, AgentId } from '../agents/agent.js'
-import { VICE_URGE_THRESHOLD } from './actions.js'
 import { viceDef } from '../agents/vices.js'
 
 export type CrisisKind = 'vice_temptation' | 'theft_temptation' | 'deep_debt' | 'isolation'

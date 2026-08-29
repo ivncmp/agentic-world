@@ -25,7 +25,7 @@ const weight = (r: { affection: number; grievance: number; debt: number }): numb
  * strata side by side, the vices with their current pressure, live needs, who
  * they know, and the diaries.
  */
-export async function agentDetail(world: World, id: string): Promise<unknown | null> {
+export async function agentDetail(world: World, id: string): Promise<unknown> {
   const a = world.state.agents.find((x) => x.id === id)
   if (a == null) return null
 

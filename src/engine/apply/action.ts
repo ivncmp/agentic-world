@@ -165,7 +165,7 @@ function applySeekJob(agent: Agent, ctx: ApplyActionContext): Agent {
  */
 function applyVice(agent: Agent, action: Action): Agent {
   const kind = action.targetAgent
-  const indulged = agent.vices.find((v) => v.kind === kind) ?? agent.vices[0]!
+  const indulged = agent.vices.find((v) => v.kind === kind) ?? agent.vices[0]
   const fullCost = viceDef(indulged.kind).moneyCost
   const cost = Math.min(fullCost, agent.money)
   const vices = agent.vices.map((v) =>

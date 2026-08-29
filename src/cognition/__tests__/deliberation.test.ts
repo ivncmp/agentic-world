@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { parseDeliberation, buildDeliberationPrompt, type DeliberationInput } from '../deliberation.js'
-import type { Agent, Relationship } from '../../agents/agent.js'
+import type { Agent } from '../../agents/agent.js'
 import { zeroVector } from '../../agents/values.js'
 
 const agent = (id: string, over: Partial<Agent> = {}): Agent => ({
