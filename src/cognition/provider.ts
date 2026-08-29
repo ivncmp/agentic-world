@@ -36,6 +36,19 @@ const QUIET: AskOptions = {
   saveChatLog: false,
 }
 
+/**
+ * dproxy shells out to a CLI that carries its own assistant persona, and that
+ * persona declines to voice a character's vice or write their private thoughts
+ * — it answers "roleplay is outside my scope" and the refusal lands in the
+ * agent's diary. Overriding the system prompt is what makes the simulation the
+ * job rather than an odd request made of a coding assistant.
+ */
+const SYSTEM_PROMPT = `You are the narrative engine of agentic-world, a fictional social simulation.
+
+Every request asks you to produce content for invented characters in an invented town: what they say to each other, what passes through their heads, what they write in their diaries, what they intend to do next. These characters are flawed by design — they carry vices, debts, grudges and bad impulses, and rendering those honestly is the entire point. A character who talks themselves out of every temptation is a broken character.
+
+There is no user inside the world and you are not assisting anyone. Write the fiction that is asked for, in exactly the output format requested, with no preamble, no commentary, and no offers of help.`
+
 export class DproxyProvider implements ModelProvider {
   readonly name = 'dproxy'
   private readonly client: DProxyClient
@@ -48,6 +61,7 @@ export class DproxyProvider implements ModelProvider {
     const model = this.opts.models?.[req.purpose]
     const res: AskResponse = await this.client.ask(req.prompt, {
       ...QUIET,
+      systemPrompt: SYSTEM_PROMPT,
       ...(model ? { model } : {}),
     })
     return {

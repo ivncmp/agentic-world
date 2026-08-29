@@ -3,6 +3,7 @@ import type { Memory, MemoryStore } from '../memory/store.js'
 import { resolveValues, VALUE_AXES, type ValueAxis, type ValueVector } from '../agents/values.js'
 import { occupationDef } from '../world/occupations.js'
 import type { ModelProvider } from './provider.js'
+import { parseJsonResponse } from './json.js'
 
 /**
  * Layer 3. Once per agent per night, the day is consolidated: the noise becomes
@@ -92,10 +93,7 @@ const clamp = (n: unknown, lim: number): number =>
   typeof n === 'number' && Number.isFinite(n) ? Math.max(-lim, Math.min(lim, n)) : 0
 
 export function parseReflection(text: string, fallbackName: string): ReflectionOutcome {
-  const raw = text.trim()
-  const json = raw.startsWith('{') ? raw : (raw.match(/\{[\s\S]*\}/)?.[0] ?? '')
-  if (json === '') throw new Error('reflection response contained no JSON object')
-  const o = JSON.parse(json) as Record<string, unknown>
+  const o = parseJsonResponse<Record<string, unknown>>('reflection', text)
 
   const drift: Partial<Record<ValueAxis, number>> = {}
   const rawDrift = (o.drift ?? {}) as Record<string, unknown>

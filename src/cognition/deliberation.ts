@@ -3,6 +3,7 @@ import type { ActionKind } from '../engine/actions.js'
 import { resolveValues, VALUE_AXES, type ValueVector } from '../agents/values.js'
 import type { Memory } from '../memory/store.js'
 import type { ModelProvider, CompletionResult } from './provider.js'
+import { parseJsonResponse } from './json.js'
 
 export type DeliberationOutcome = {
   biases: ActionBias[]
@@ -108,10 +109,7 @@ export function parseDeliberation(
   validAgentIds: ReadonlySet<string>,
   agentId: string,
 ): DeliberationOutcome {
-  const raw = text.trim()
-  const json = raw.startsWith('{') ? raw : (raw.match(/\{[\s\S]*\}/)?.[0] ?? '')
-  if (json === '') throw new Error('deliberation response contained no JSON object')
-  const o = JSON.parse(json) as Record<string, unknown>
+  const o = parseJsonResponse<Record<string, unknown>>('deliberation', text)
 
   const biases: ActionBias[] = Array.isArray(o.biases)
     ? (o.biases as Record<string, unknown>[])

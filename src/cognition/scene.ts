@@ -3,6 +3,7 @@ import type { Memory, MemoryStore } from '../memory/store.js'
 import { resolveValues, VALUE_AXES, type ValueVector } from '../agents/values.js'
 import { occupationDef } from '../world/occupations.js'
 import type { ModelProvider } from './provider.js'
+import { parseJsonResponse } from './json.js'
 
 /**
  * Scene resolution: the one place the world spends real intelligence. Two
@@ -220,10 +221,7 @@ export function parseSceneOutcome(
   /** Valid third-party ids — gossip mentioning anyone else is discarded. */
   thirdPartyIds: ReadonlySet<string> = new Set(),
 ): SceneOutcome {
-  const raw = text.trim()
-  const json = raw.startsWith('{') ? raw : (raw.match(/\{[\s\S]*\}/)?.[0] ?? '')
-  if (json === '') throw new Error('scene response contained no JSON object')
-  const o = JSON.parse(json) as Record<string, unknown>
+  const o = parseJsonResponse<Record<string, unknown>>('scene', text)
 
   const dialogue = Array.isArray(o.dialogue)
     ? o.dialogue
