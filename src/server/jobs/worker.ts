@@ -1,6 +1,6 @@
 import { Queue, Worker, type Job as BullJob } from 'bullmq'
 import { Redis as IORedis } from 'ioredis'
-import type { AgentId } from '../agents/agent.js'
+import type { AgentId } from '../../agents/agent.js'
 
 export type Job =
   | { kind: 'scene'; a: AgentId; b: AgentId; tension: number; tick: number }
