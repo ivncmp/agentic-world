@@ -1,5 +1,9 @@
-# secrets
+# secrets & certificates
 .env
+.env.*
+.env.local
+*.pem
+*.key
 
 # deps & build
 node_modules/
