@@ -14,5 +14,9 @@ INSERT INTO owners (id, secret_hash)
   WHERE owner_id NOT IN (SELECT id FROM owners)
 ON CONFLICT DO NOTHING;
 
-ALTER TABLE agents ADD CONSTRAINT fk_agents_owner FOREIGN KEY (owner_id)
-  REFERENCES owners (id) ON DELETE RESTRICT;
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_agents_owner') THEN
+    ALTER TABLE agents ADD CONSTRAINT fk_agents_owner
+      FOREIGN KEY (owner_id) REFERENCES owners (id) ON DELETE RESTRICT;
+  END IF;
+END $$;
