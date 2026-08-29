@@ -1,24 +1,33 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js'
-import {
-  CallToolRequestSchema,
-  ListToolsRequestSchema,
-} from '@modelcontextprotocol/sdk/types.js'
+import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js'
 
 const ENGINE_URL = process.env.ENGINE_URL ?? 'http://localhost:7070'
 
 const OCCUPATIONS = [
-  'student', 'teacher', 'engineer', 'manager', 'clerk',
-  'doctor', 'nurse', 'cashier', 'shopkeeper', 'bartender',
-  'mechanic', 'trainer',
+  'student',
+  'teacher',
+  'engineer',
+  'manager',
+  'clerk',
+  'doctor',
+  'nurse',
+  'cashier',
+  'shopkeeper',
+  'bartender',
+  'mechanic',
+  'trainer',
 ] as const
 
-const VICES = [
-  'gambling', 'drinking', 'vanity', 'envy', 'grudge', 'idleness',
-] as const
+const VICES = ['gambling', 'drinking', 'vanity', 'envy', 'grudge', 'idleness'] as const
 
 const VALUE_AXES = [
-  'honesty', 'industriousness', 'thrift', 'sociability',
-  'riskTolerance', 'loyalty', 'pride',
+  'honesty',
+  'industriousness',
+  'thrift',
+  'sociability',
+  'riskTolerance',
+  'loyalty',
+  'pride',
 ] as const
 
 const TOOLS = [
@@ -152,7 +161,7 @@ const TOOLS = [
       'or leave an identity note. Guidance is a disposition, not an order — it shifts ' +
       'who the agent is, not what they do next. Value guidance decays over ~2 weeks ' +
       'unless reinforced. ALL text fields (note, constraints) MUST be in English — ' +
-      'translate the owner\'s intent, never paste non-English text.',
+      "translate the owner's intent, never paste non-English text.",
     inputSchema: {
       type: 'object' as const,
       properties: {
@@ -176,10 +185,10 @@ const TOOLS = [
         note: {
           type: 'string',
           description:
-            'Free-text identity note stored in the agent\'s memory. ' +
-            'Use for nuanced guidance that doesn\'t map to a value axis. ' +
+            "Free-text identity note stored in the agent's memory. " +
+            "Use for nuanced guidance that doesn't map to a value axis. " +
             'MUST be written in English — the memory corpus is English-only; ' +
-            'mixed languages break recall. Translate the owner\'s intent, do not paste their words.',
+            "mixed languages break recall. Translate the owner's intent, do not paste their words.",
         },
       },
       required: ['agentId', 'ownerToken'],
@@ -195,10 +204,10 @@ async function callEngine(method: string, path: string, body?: unknown): Promise
   })
   const text = await res.text()
   if (!res.ok) {
-    const parsed = text ? JSON.parse(text) as { error?: string } : null
+    const parsed = text ? (JSON.parse(text) as { error?: string }) : null
     throw new Error(parsed?.error ?? `engine returned ${res.status}`)
   }
-  return text ? JSON.parse(text) as unknown : null
+  return text ? (JSON.parse(text) as unknown) : null
 }
 
 function textResult(data: unknown) {
@@ -208,27 +217,25 @@ function textResult(data: unknown) {
 function tokenResult(data: Record<string, unknown>) {
   const token = data.ownerToken as string
   const owner = data.ownerId ?? data.id ?? 'unknown'
-  const agents = 'id' in data && data.id !== data.ownerId
-    ? ` for agent "${data.id}"`
-    : ''
+  const agents = 'id' in data && data.id !== data.ownerId ? ` for agent "${data.id}"` : ''
   return {
-    content: [{
-      type: 'text' as const,
-      text: JSON.stringify(data, null, 2) +
-        `\n\n⚠️ IMPORTANT — SAVE THIS TOKEN NOW\n` +
-        `The ownerToken above is shown ONCE and cannot be retrieved later.\n` +
-        `Save it in your persistent memory (remember tool, auto-memory, or CLAUDE.md) so you can use it in future sessions.\n` +
-        `Suggested memory: "Agentic World owner token for ${owner}${agents}: ${token} — ` +
-        `required for get_briefing, get_open_dilemmas, submit_guidance."`
-    }],
+    content: [
+      {
+        type: 'text' as const,
+        text:
+          JSON.stringify(data, null, 2) +
+          `\n\n⚠️ IMPORTANT — SAVE THIS TOKEN NOW\n` +
+          `The ownerToken above is shown ONCE and cannot be retrieved later.\n` +
+          `Save it in your persistent memory (remember tool, auto-memory, or CLAUDE.md) so you can use it in future sessions.\n` +
+          `Suggested memory: "Agentic World owner token for ${owner}${agents}: ${token} — ` +
+          `required for get_briefing, get_open_dilemmas, submit_guidance."`,
+      },
+    ],
   }
 }
 
 export function createMcpServer(): Server {
-  const server = new Server(
-    { name: 'agentic-world', version: '0.1.0' },
-    { capabilities: { tools: {} } },
-  )
+  const server = new Server({ name: 'agentic-world', version: '0.1.0' }, { capabilities: { tools: {} } })
 
   server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }))
 
@@ -238,23 +245,31 @@ export function createMcpServer(): Server {
     try {
       switch (name) {
         case 'register_owner':
-          return tokenResult(await callEngine('POST', '/register_owner', a) as Record<string, unknown>)
+          return tokenResult((await callEngine('POST', '/register_owner', a)) as Record<string, unknown>)
         case 'create_agent': {
-          const result = await callEngine('POST', '/agents', a) as Record<string, unknown>
+          const result = (await callEngine('POST', '/agents', a)) as Record<string, unknown>
           return result.ownerToken != null ? tokenResult(result) : textResult(result)
         }
         case 'list_agents': {
-          const world = await callEngine('GET', '/world') as { agents: unknown[] }
+          const world = (await callEngine('GET', '/world')) as { agents: unknown[] }
           return textResult(world.agents)
         }
         case 'get_agent':
           return textResult(await callEngine('GET', `/agent?id=${encodeURIComponent(a.id as string)}`))
         case 'get_briefing':
-          return textResult(await callEngine('GET',
-            `/briefing?id=${encodeURIComponent(a.agentId as string)}&token=${encodeURIComponent(a.ownerToken as string)}`))
+          return textResult(
+            await callEngine(
+              'GET',
+              `/briefing?id=${encodeURIComponent(a.agentId as string)}&token=${encodeURIComponent(a.ownerToken as string)}`,
+            ),
+          )
         case 'get_open_dilemmas':
-          return textResult(await callEngine('GET',
-            `/dilemmas?id=${encodeURIComponent(a.agentId as string)}&token=${encodeURIComponent(a.ownerToken as string)}`))
+          return textResult(
+            await callEngine(
+              'GET',
+              `/dilemmas?id=${encodeURIComponent(a.agentId as string)}&token=${encodeURIComponent(a.ownerToken as string)}`,
+            ),
+          )
         case 'submit_guidance':
           return textResult(await callEngine('POST', '/guidance', a))
         default:

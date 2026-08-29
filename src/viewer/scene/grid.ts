@@ -10,7 +10,12 @@ import type { WorldInfo, LocationInfo, BlockInfo, WaterRegion } from '../core/co
 /** World units per grid tile. Every model is scaled against this. */
 export const TILE = 2.0
 
-const NEIGHBOURS: [number, number][] = [[-1, 0], [1, 0], [0, -1], [0, 1]]
+const NEIGHBOURS: [number, number][] = [
+  [-1, 0],
+  [1, 0],
+  [0, -1],
+  [0, 1],
+]
 
 /**
  * Water regions arrive as rectangles. Expand them to tiles, then reclassify any
@@ -24,9 +29,7 @@ function expandWater(regions: WaterRegion[]): { river: Set<string>; sea: Set<str
   for (const r of regions) {
     const set = target[r.kind]
     if (set == null) continue
-    for (let y = r.y0; y <= r.y1; y++)
-      for (let x = r.x0; x <= r.x1; x++)
-        set.add(`${x},${y}`)
+    for (let y = r.y0; y <= r.y1; y++) for (let x = r.x0; x <= r.x1; x++) set.add(`${x},${y}`)
   }
   const seaSnap = new Set(sea)
   for (const t of [...river]) {

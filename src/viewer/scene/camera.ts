@@ -17,11 +17,7 @@ export type CameraRig = {
   controls: OrbitControls
 }
 
-export function createCamera(
-  canvas: HTMLCanvasElement,
-  center: THREE.Vector3,
-  aspect: number,
-): CameraRig {
+export function createCamera(canvas: HTMLCanvasElement, center: THREE.Vector3, aspect: number): CameraRig {
   const camera = new THREE.PerspectiveCamera(35, aspect, 0.5, 200)
   camera.position.set(center.x + 35, 30, center.z + 35)
   camera.lookAt(center)
@@ -46,13 +42,18 @@ export function framingAllAgents(
   grid: CityGrid,
   views: Map<string, AgentView>,
 ): Focus | null {
-  const pts = [...views.values()].map(v => (v.travelling ? v.to : { x: v.x, y: v.y }))
+  const pts = [...views.values()].map((v) => (v.travelling ? v.to : { x: v.x, y: v.y }))
   if (pts.length === 0) return null
 
-  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity
+  let minX = Infinity,
+    maxX = -Infinity,
+    minY = Infinity,
+    maxY = -Infinity
   for (const p of pts) {
-    minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x)
-    minY = Math.min(minY, p.y); maxY = Math.max(maxY, p.y)
+    minX = Math.min(minX, p.x)
+    maxX = Math.max(maxX, p.x)
+    minY = Math.min(minY, p.y)
+    maxY = Math.max(maxY, p.y)
   }
 
   const a = grid.worldPos(minX, minY)

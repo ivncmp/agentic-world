@@ -76,9 +76,18 @@ export function generateCity(
   const locations: Location[] = []
   const openings = new Map<LocationId, number>()
 
-  const civic = rotated(layout.blocks.filter((b) => b.role === 'civic'), rng)
-  const green = rotated(layout.blocks.filter((b) => b.role === 'green'), rng)
-  const residential = rotated(layout.blocks.filter((b) => b.role === 'residential'), rng)
+  const civic = rotated(
+    layout.blocks.filter((b) => b.role === 'civic'),
+    rng,
+  )
+  const green = rotated(
+    layout.blocks.filter((b) => b.role === 'green'),
+    rng,
+  )
+  const residential = rotated(
+    layout.blocks.filter((b) => b.role === 'residential'),
+    rng,
+  )
 
   // One venue per civic block before any block takes a second, so the centre
   // fills out evenly instead of stacking everything on the first corner.
@@ -168,7 +177,7 @@ export function cityFromTemplate(t: CityTemplate): GeneratedCity {
     grid: t.grid,
     streetPeriod: t.streetPeriod,
     blocksPerSide,
-    blocks: t.blocks.map(b => {
+    blocks: t.blocks.map((b) => {
       const ox = b.bx * t.streetPeriod + 1
       const oy = b.by * t.streetPeriod + 1
       const ring = Math.max(Math.abs(b.bx - c), Math.abs(b.by - c))
@@ -185,7 +194,10 @@ export function cityFromTemplate(t: CityTemplate): GeneratedCity {
       const plots = tiles.slice()
       return { bx: b.bx, by: b.by, role: b.role, ring, tiles, frontage, plots }
     }),
-    centre: { x: c * t.streetPeriod + Math.floor(bs / 2) + 1, y: c * t.streetPeriod + Math.floor(bs / 2) + 1 },
+    centre: {
+      x: c * t.streetPeriod + Math.floor(bs / 2) + 1,
+      y: c * t.streetPeriod + Math.floor(bs / 2) + 1,
+    },
   }
 
   const locations: Location[] = []
@@ -234,7 +246,7 @@ export function cityFromTemplate(t: CityTemplate): GeneratedCity {
 }
 
 export function exportTemplate(city: GeneratedCity, seed: number): CityTemplate {
-  const residential = city.layout.blocks.filter(b => b.role === 'residential')
+  const residential = city.layout.blocks.filter((b) => b.role === 'residential')
   const rng = makeRng(seed)
   const rotK = Math.floor(rng() * residential.length)
   const ordered = [...residential.slice(rotK), ...residential.slice(0, rotK)]
@@ -259,8 +271,8 @@ export function exportTemplate(city: GeneratedCity, seed: number): CityTemplate 
     grid: city.layout.grid,
     streetPeriod: city.layout.streetPeriod,
     districts: [...city.config.districts],
-    blocks: city.layout.blocks.map(b => ({ bx: b.bx, by: b.by, role: b.role })),
-    venues: city.locations.map(l => ({
+    blocks: city.layout.blocks.map((b) => ({ bx: b.bx, by: b.by, role: b.role })),
+    venues: city.locations.map((l) => ({
       kind: l.kind as Exclude<LocationKind, 'home'>,
       name: l.name,
       x: l.tile.x,

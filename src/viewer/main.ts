@@ -5,8 +5,7 @@ import { initAgentCard } from './ui/agent-card.js'
 import { initVenueCard } from './ui/venue-card.js'
 import { initGraph } from './ui/graph.js'
 
-const engineUrl =
-  new URLSearchParams(location.search).get('engine') ?? location.origin
+const engineUrl = new URLSearchParams(location.search).get('engine') ?? location.origin
 
 console.log('[aw] booting viewer, engine:', engineUrl)
 const conn = new EngineConnection(engineUrl)

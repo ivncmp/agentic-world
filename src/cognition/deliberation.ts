@@ -33,8 +33,18 @@ export type DeliberationResult = {
 }
 
 const VALID_ACTIONS = new Set<string>([
-  'eat', 'sleep', 'work', 'socialize', 'seek_job',
-  'indulge_vice', 'steal', 'relax', 'exercise', 'browse', 'wash', 'idle',
+  'eat',
+  'sleep',
+  'work',
+  'socialize',
+  'seek_job',
+  'indulge_vice',
+  'steal',
+  'relax',
+  'exercise',
+  'browse',
+  'wash',
+  'idle',
 ])
 
 const traitLine = (v: ValueVector): string =>
@@ -53,18 +63,27 @@ export function buildDeliberationPrompt(input: DeliberationInput): string {
   if (agent.housing.arrears > 0) situationLines.push(`Behind on rent by ${agent.housing.arrears} credits.`)
   if (agent.job == null) situationLines.push('Currently unemployed.')
   if (agent.money < 20) situationLines.push(`Very low on money (${Math.round(agent.money)} credits).`)
-  if (needs.social >= 0.5) situationLines.push(`Feeling lonely (social need ${(needs.social * 100).toFixed(0)}%).`)
+  if (needs.social >= 0.5)
+    situationLines.push(`Feeling lonely (social need ${(needs.social * 100).toFixed(0)}%).`)
 
-  const relLines = input.relationships.length === 0
-    ? '  (knows nobody yet)'
-    : input.relationships
-        .slice(0, 6)
-        .map((r) => `  - ${r.name}: affection ${r.rel.affection.toFixed(2)}, trust ${r.rel.trust.toFixed(2)}, encounters ${r.rel.encounters}`)
-        .join('\n')
+  const relLines =
+    input.relationships.length === 0
+      ? '  (knows nobody yet)'
+      : input.relationships
+          .slice(0, 6)
+          .map(
+            (r) =>
+              `  - ${r.name}: affection ${r.rel.affection.toFixed(2)}, trust ${r.rel.trust.toFixed(2)}, encounters ${r.rel.encounters}`,
+          )
+          .join('\n')
 
-  const memLines = input.recentMemories.length === 0
-    ? '  (nothing recent)'
-    : input.recentMemories.slice(0, 5).map((m) => `  - ${m.text}`).join('\n')
+  const memLines =
+    input.recentMemories.length === 0
+      ? '  (nothing recent)'
+      : input.recentMemories
+          .slice(0, 5)
+          .map((m) => `  - ${m.text}`)
+          .join('\n')
 
   const others = input.allAgentNames
     .filter((o) => o.id !== agent.id)
@@ -72,9 +91,8 @@ export function buildDeliberationPrompt(input: DeliberationInput): string {
     .join(', ')
 
   const vicesLine = agent.vices.map((v) => `${v.kind} (urge ${(v.urge * 100).toFixed(0)}%)`).join(', ')
-  const jobLine = agent.job != null
-    ? `works ${agent.job.shiftStart}:00-${agent.job.shiftEnd}:00`
-    : 'unemployed'
+  const jobLine =
+    agent.job != null ? `works ${agent.job.shiftStart}:00-${agent.job.shiftEnd}:00` : 'unemployed'
 
   return `You are ${agent.name}'s inner voice. It is ${String(hour).padStart(2, '0')}:00. Think about what matters right now and make a plan for the next few hours.
 
@@ -136,9 +154,12 @@ export function parseDeliberation(
         }))
     : []
 
-  const conversationSeed = typeof o.conversationSeed === 'string' && o.conversationSeed.trim() !== '' && o.conversationSeed !== 'null'
-    ? o.conversationSeed.trim().slice(0, 200)
-    : null
+  const conversationSeed =
+    typeof o.conversationSeed === 'string' &&
+    o.conversationSeed.trim() !== '' &&
+    o.conversationSeed !== 'null'
+      ? o.conversationSeed.trim().slice(0, 200)
+      : null
 
   const thought = typeof o.thought === 'string' ? o.thought.slice(0, 300) : ''
 

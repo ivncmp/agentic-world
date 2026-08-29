@@ -87,15 +87,18 @@ export class LiveFeed {
       agents: state.agents.map((a) => {
         const here = byId.get(a.location)?.tile ?? { x: 0, y: 0 }
         const act = a.activity
-        let x = here.x, y = here.y
+        let x = here.x,
+          y = here.y
         let from = here
         let to = here
         let progress = 1
         if (act?.kind === 'travel' && act.from != null) {
           const dest = byId.get(act.at)?.tile
           if (dest != null) {
-            progress = Math.min(1, Math.max(0,
-              (state.tick - act.startedTick) / Math.max(1, act.endsTick - act.startedTick)))
+            progress = Math.min(
+              1,
+              Math.max(0, (state.tick - act.startedTick) / Math.max(1, act.endsTick - act.startedTick)),
+            )
             from = here
             to = dest
             x = Math.round((here.x + (dest.x - here.x) * progress) * 100) / 100
@@ -103,12 +106,18 @@ export class LiveFeed {
           }
         }
         return {
-          id: a.id, name: a.name, occupation: occupationDef(a.occupation).label,
+          id: a.id,
+          name: a.name,
+          occupation: occupationDef(a.occupation).label,
           // x/y is the straight-line position the simulation reasons about. The
           // viewer walks its own street route between `from` and `to` over the
           // same `progress`, so the picture follows roads without the engine
           // having to model a road network it does not need.
-          x, y, from, to, progress,
+          x,
+          y,
+          from,
+          to,
+          progress,
           state: act?.kind ?? 'idle',
           at: act?.kind === 'travel' ? act.at : a.location,
           partner: act?.with ?? null,
@@ -125,16 +134,22 @@ export class LiveFeed {
     const { nameOf, placeOf } = this.world
     switch (e.type) {
       case 'theft':
-        this.publish('theft', `${nameOf(e.thief)} stole ${e.amount}c from ${nameOf(e.victim)}`); break
+        this.publish('theft', `${nameOf(e.thief)} stole ${e.amount}c from ${nameOf(e.victim)}`)
+        break
       case 'rent_missed':
-        this.publish('rent', `${nameOf(e.agent)} missed rent — ${e.arrears} behind`); break
+        this.publish('rent', `${nameOf(e.agent)} missed rent — ${e.arrears} behind`)
+        break
       case 'hired':
-        this.publish('hired', `${nameOf(e.agent)} found work`); break
+        this.publish('hired', `${nameOf(e.agent)} found work`)
+        break
       case 'bought_home':
-        this.publish('home', `${nameOf(e.agent)} bought their flat`); break
+        this.publish('home', `${nameOf(e.agent)} bought their flat`)
+        break
       case 'passing':
-        this.publish('passing', `${nameOf(e.a)} and ${nameOf(e.b)} crossed paths at ${placeOf(e.where)}`); break
-      default: break
+        this.publish('passing', `${nameOf(e.a)} and ${nameOf(e.b)} crossed paths at ${placeOf(e.where)}`)
+        break
+      default:
+        break
     }
   }
 }

@@ -105,38 +105,28 @@ export function encounterSubstance(
  * Returns 0 for encounters with no substance behind them, so they never become
  * candidates at all — cheaper and clearer than letting them compete and lose.
  */
-export function scoreEncounter(
-  a: Agent,
-  b: Agent,
-  rel: Relationship,
-  ctx: GateContext,
-): number {
+export function scoreEncounter(a: Agent, b: Agent, rel: Relationship, ctx: GateContext): number {
   const w = GATE_WEIGHTS
 
   // Layer 1.5: seekScene bypasses the substance check entirely.
-  const aSeeking = a.deliberation?.seekScene.some(s => s.target === b.id) ?? false
-  const bSeeking = b.deliberation?.seekScene.some(s => s.target === a.id) ?? false
+  const aSeeking = a.deliberation?.seekScene.some((s) => s.target === b.id) ?? false
+  const bSeeking = b.deliberation?.seekScene.some((s) => s.target === a.id) ?? false
   if (aSeeking || bSeeking) {
-    const apart = rel.lastInteractionTick == null
-      ? 1
-      : Math.min(1, (ctx.tick - rel.lastInteractionTick) / ctx.ticksPerDay)
-    return 3.0 + apart * w.timeApart + ctx.random() * w.noise +
-      ctx.interactionsToday * w.alreadySpokeToday
+    const apart =
+      rel.lastInteractionTick == null
+        ? 1
+        : Math.min(1, (ctx.tick - rel.lastInteractionTick) / ctx.ticksPerDay)
+    return 3.0 + apart * w.timeApart + ctx.random() * w.noise + ctx.interactionsToday * w.alreadySpokeToday
   }
 
   const substance = encounterSubstance(a, b, rel, ctx.locationKind)
   if (substance < MIN_SUBSTANCE) return 0
 
   const apart =
-    rel.lastInteractionTick == null
-      ? 1
-      : Math.min(1, (ctx.tick - rel.lastInteractionTick) / ctx.ticksPerDay)
+    rel.lastInteractionTick == null ? 1 : Math.min(1, (ctx.tick - rel.lastInteractionTick) / ctx.ticksPerDay)
 
   return (
-    substance +
-    apart * w.timeApart +
-    ctx.random() * w.noise +
-    ctx.interactionsToday * w.alreadySpokeToday
+    substance + apart * w.timeApart + ctx.random() * w.noise + ctx.interactionsToday * w.alreadySpokeToday
   )
 }
 

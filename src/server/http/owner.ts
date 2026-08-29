@@ -32,9 +32,7 @@ const DEBT_FLOOR = 50
 /** How far effective values may drift from base before it is worth mentioning. */
 const DRIFT_FLOOR = 0.4
 
-type AuthResult =
-  | { ok: true; agent: Agent }
-  | { ok: false; error: string; status: number }
+type AuthResult = { ok: true; agent: Agent } | { ok: false; error: string; status: number }
 
 /** An owner may only ever act on their own agents. */
 async function authenticate(world: World, agentId: string, token: string): Promise<AuthResult> {
@@ -55,8 +53,10 @@ function relationshipsFor(world: World, a: Agent) {
       const rel = world.state.relationships.get(pairKey(a.id, o.id))
       if (rel == null || rel.encounters === 0) return null
       return {
-        id: o.id, name: o.name,
-        affection: round2(rel.affection), trust: round2(rel.trust),
+        id: o.id,
+        name: o.name,
+        affection: round2(rel.affection),
+        trust: round2(rel.trust),
         debt: round2(a.id < o.id ? rel.debt : -rel.debt),
         grievance: round2(rel.grievance),
       }
@@ -66,7 +66,10 @@ function relationshipsFor(world: World, a: Agent) {
 
 /** Where the agent stands right now, in the owner's terms. */
 export async function handleBriefing(
-  world: World, agentId: string, token: string, res: ServerResponse,
+  world: World,
+  agentId: string,
+  token: string,
+  res: ServerResponse,
 ): Promise<void> {
   const auth = await authenticate(world, agentId, token)
   if (!auth.ok) return fail(res, auth.status, auth.error)
@@ -82,14 +85,20 @@ export async function handleBriefing(
     money: Math.round(a.money),
     housing: a.housing,
     needs: a.needs,
-    job: a.job == null ? null : {
-      employer: world.placeOf(a.job.employerId), wage: a.job.wage,
-      shift: `${a.job.shiftStart}:00–${a.job.shiftEnd}:00`,
-    },
+    job:
+      a.job == null
+        ? null
+        : {
+            employer: world.placeOf(a.job.employerId),
+            wage: a.job.wage,
+            shift: `${a.job.shiftStart}:00–${a.job.shiftEnd}:00`,
+          },
     goals: a.goals,
     constraints: a.constraints,
     values: VALUE_AXES.map((axis) => ({
-      axis, base: round2(a.values.base[axis]), drift: round2(a.values.drift[axis]),
+      axis,
+      base: round2(a.values.base[axis]),
+      drift: round2(a.values.drift[axis]),
       effective: round2(effective[axis]),
     })),
     vices: a.vices.map((v) => ({ kind: v.kind, label: viceDef(v.kind).label, urge: round2(v.urge) })),
@@ -105,7 +114,10 @@ type Dilemma = { kind: string; severity: number; summary: string; detail?: unkno
  * the owner's own Claude turns it into a question worth answering.
  */
 export async function handleDilemmas(
-  world: World, agentId: string, token: string, res: ServerResponse,
+  world: World,
+  agentId: string,
+  token: string,
+  res: ServerResponse,
 ): Promise<void> {
   const auth = await authenticate(world, agentId, token)
   if (!auth.ok) return fail(res, auth.status, auth.error)
@@ -115,13 +127,19 @@ export async function handleDilemmas(
   const effective = resolveValues(a.values, world.now)
 
   if (a.housing.arrears > 0) {
-    dilemmas.push({ kind: 'arrears', severity: Math.min(1, a.housing.arrears / 200),
+    dilemmas.push({
+      kind: 'arrears',
+      severity: Math.min(1, a.housing.arrears / 200),
       summary: `${a.name} owes ${a.housing.arrears} in unpaid rent`,
-      detail: { arrears: a.housing.arrears } })
+      detail: { arrears: a.housing.arrears },
+    })
   }
   if (a.money < a.housing.due * 2) {
-    dilemmas.push({ kind: 'broke', severity: Math.min(1, 1 - a.money / (a.housing.due * 3)),
-      summary: `${a.name} has only ${Math.round(a.money)} credits — less than 2 days of rent` })
+    dilemmas.push({
+      kind: 'broke',
+      severity: Math.min(1, 1 - a.money / (a.housing.due * 3)),
+      summary: `${a.name} has only ${Math.round(a.money)} credits — less than 2 days of rent`,
+    })
   }
   if (a.job == null) {
     dilemmas.push({ kind: 'unemployed', severity: 0.8, summary: `${a.name} is unemployed` })
@@ -129,9 +147,12 @@ export async function handleDilemmas(
 
   for (const v of a.vices) {
     if (v.urge <= VICE_PRESSURE) continue
-    dilemmas.push({ kind: 'vice_pressure', severity: v.urge,
+    dilemmas.push({
+      kind: 'vice_pressure',
+      severity: v.urge,
       summary: `${viceDef(v.kind).label} urge is building (${round2(v.urge)})`,
-      detail: { vice: v.kind, urge: round2(v.urge) } })
+      detail: { vice: v.kind, urge: round2(v.urge) },
+    })
   }
 
   for (const o of world.state.agents) {
@@ -139,15 +160,21 @@ export async function handleDilemmas(
     const rel = world.state.relationships.get(pairKey(a.id, o.id))
     if (rel == null) continue
     if (rel.grievance > GRIEVANCE_FLOOR) {
-      dilemmas.push({ kind: 'grievance', severity: rel.grievance,
+      dilemmas.push({
+        kind: 'grievance',
+        severity: rel.grievance,
         summary: `Bad blood with ${o.name} (grievance ${round2(rel.grievance)})`,
-        detail: { other: o.id, otherName: o.name, grievance: round2(rel.grievance) } })
+        detail: { other: o.id, otherName: o.name, grievance: round2(rel.grievance) },
+      })
     }
     const debt = a.id < o.id ? rel.debt : -rel.debt
     if (debt > DEBT_FLOOR) {
-      dilemmas.push({ kind: 'debt_owed', severity: Math.min(1, debt / 200),
+      dilemmas.push({
+        kind: 'debt_owed',
+        severity: Math.min(1, debt / 200),
         summary: `${a.name} owes ${round2(debt)} credits to ${o.name}`,
-        detail: { creditor: o.id, creditorName: o.name, amount: round2(debt) } })
+        detail: { creditor: o.id, creditorName: o.name, amount: round2(debt) },
+      })
     }
   }
 
@@ -155,9 +182,12 @@ export async function handleDilemmas(
   for (const axis of VALUE_AXES) {
     const gap = effective[axis] - a.values.base[axis]
     if (Math.abs(gap) <= DRIFT_FLOOR) continue
-    dilemmas.push({ kind: 'value_drift', severity: Math.abs(gap),
+    dilemmas.push({
+      kind: 'value_drift',
+      severity: Math.abs(gap),
       summary: `${axis} has drifted ${gap > 0 ? '+' : ''}${round2(gap)} from the base personality`,
-      detail: { axis, base: round2(a.values.base[axis]), effective: round2(effective[axis]) } })
+      detail: { axis, base: round2(a.values.base[axis]), effective: round2(effective[axis]) },
+    })
   }
 
   dilemmas.sort((x, y) => y.severity - x.severity)
@@ -170,7 +200,10 @@ export async function handleDilemmas(
  * place free text is affordable.
  */
 export async function handleGuidance(
-  world: World, feed: LiveFeed, body: string, res: ServerResponse,
+  world: World,
+  feed: LiveFeed,
+  body: string,
+  res: ServerResponse,
 ): Promise<void> {
   try {
     const raw = JSON.parse(body) as Record<string, unknown>
@@ -192,7 +225,9 @@ export async function handleGuidance(
         if (!(VALUE_AXES as readonly string[]).includes(k)) throw new Error(`unknown value axis: ${k}`)
         if (typeof v !== 'number' || v < -1 || v > 1) throw new Error(`${k} delta must be between -1 and 1`)
         a.values.guidance[k as ValueAxis] = {
-          delta: v, setAt: world.now, halfLifeDays: GUIDANCE_HALF_LIFE_DAYS,
+          delta: v,
+          setAt: world.now,
+          halfLifeDays: GUIDANCE_HALF_LIFE_DAYS,
         }
         deltas.push(`${k} ${v > 0 ? '+' : ''}${v}`)
         applied.push(`guidance.${k} = ${v > 0 ? '+' : ''}${v}`)
@@ -230,7 +265,10 @@ export async function handleGuidance(
     if (note !== '') parts.push(`My owner told me: "${note}"`)
     if (parts.length > 0) {
       await world.store.remember({
-        agentId: a.id, kind: 'identity', text: parts.join(' '), tick: world.state.tick,
+        agentId: a.id,
+        kind: 'identity',
+        text: parts.join(' '),
+        tick: world.state.tick,
       })
     }
 
@@ -244,7 +282,10 @@ export async function handleGuidance(
 
 /** Mints an owner token. Gated on the server's admin secret, not on a session. */
 export async function handleRegisterOwner(
-  world: World, adminSecret: string, body: string, res: ServerResponse,
+  world: World,
+  adminSecret: string,
+  body: string,
+  res: ServerResponse,
 ): Promise<void> {
   try {
     const raw = JSON.parse(body) as Record<string, unknown>

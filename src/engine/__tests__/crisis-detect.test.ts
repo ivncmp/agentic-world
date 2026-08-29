@@ -4,15 +4,30 @@ import type { Agent } from '../../agents/agent.js'
 import { zeroVector } from '../../agents/values.js'
 
 const agent = (id: string, over: Partial<Agent> = {}): Agent => ({
-  id, name: id, ownerId: 'o', occupation: 'clerk',
+  id,
+  name: id,
+  ownerId: 'o',
+  occupation: 'clerk',
   values: { base: zeroVector(), drift: zeroVector(), guidance: {} },
-  vices: [{ kind: 'grudge', urge: 0 }, { kind: 'idleness', urge: 0 }],
+  vices: [
+    { kind: 'grudge', urge: 0 },
+    { kind: 'idleness', urge: 0 },
+  ],
   needs: { hunger: 0.2, energy: 0.3, social: 0.4, hygiene: 0.2, fun: 0.3 },
-  money: 80, location: 'bar-1', job: null,
+  money: 80,
+  location: 'bar-1',
+  job: null,
   housing: { kind: 'rent', due: 25, arrears: 0 },
-  arrivedTick: null, lastTheftTick: null, lastReflectionDay: 0,
-  activity: null, goals: [], constraints: [], interests: [],
-  deliberation: null, lastDeliberationTick: 0, lastCrisisTick: 0,
+  arrivedTick: null,
+  lastTheftTick: null,
+  lastReflectionDay: 0,
+  activity: null,
+  goals: [],
+  constraints: [],
+  interests: [],
+  deliberation: null,
+  lastDeliberationTick: 0,
+  lastCrisisTick: 0,
   ...over,
 })
 
@@ -29,7 +44,12 @@ describe('detectCrisis', () => {
   })
 
   it('detects vice temptation when urge >= 0.7', () => {
-    const a = agent('a', { vices: [{ kind: 'gambling', urge: 0.75 }, { kind: 'idleness', urge: 0 }] })
+    const a = agent('a', {
+      vices: [
+        { kind: 'gambling', urge: 0.75 },
+        { kind: 'idleness', urge: 0 },
+      ],
+    })
     const result = detectCrisis(a, ctx())
     expect(result).not.toBeNull()
     expect(result!.kind).toBe('vice_temptation')
@@ -37,12 +57,20 @@ describe('detectCrisis', () => {
   })
 
   it('does not trigger vice temptation below 0.7', () => {
-    const a = agent('a', { vices: [{ kind: 'gambling', urge: 0.6 }, { kind: 'idleness', urge: 0 }] })
+    const a = agent('a', {
+      vices: [
+        { kind: 'gambling', urge: 0.6 },
+        { kind: 'idleness', urge: 0 },
+      ],
+    })
     expect(detectCrisis(a, ctx())).toBeNull()
   })
 
   it('detects theft temptation when starving with marks nearby', () => {
-    const a = agent('a', { money: 3, needs: { hunger: 0.5, energy: 0.3, social: 0.4, hygiene: 0.2, fun: 0.3 } })
+    const a = agent('a', {
+      money: 3,
+      needs: { hunger: 0.5, energy: 0.3, social: 0.4, hygiene: 0.2, fun: 0.3 },
+    })
     const mark = agent('b', { money: 50, name: 'Bob' })
     const result = detectCrisis(a, ctx({ coLocated: [mark] }))
     expect(result).not.toBeNull()
@@ -52,7 +80,8 @@ describe('detectCrisis', () => {
 
   it('does not detect theft if agent has no_theft constraint', () => {
     const a = agent('a', {
-      money: 3, constraints: ['no_theft'],
+      money: 3,
+      constraints: ['no_theft'],
       needs: { hunger: 0.5, energy: 0.3, social: 0.4, hygiene: 0.2, fun: 0.3 },
     })
     const mark = agent('b', { money: 50 })
@@ -86,7 +115,10 @@ describe('detectCrisis', () => {
 
   it('vice temptation has priority over debt', () => {
     const a = agent('a', {
-      vices: [{ kind: 'gambling', urge: 0.8 }, { kind: 'idleness', urge: 0 }],
+      vices: [
+        { kind: 'gambling', urge: 0.8 },
+        { kind: 'idleness', urge: 0 },
+      ],
       housing: { kind: 'rent', due: 25, arrears: 60 },
     })
     const result = detectCrisis(a, ctx())

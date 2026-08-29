@@ -7,7 +7,9 @@ const PORT = Number(process.env.MCP_PORT ?? 7071)
 async function handleMcp(req: IncomingMessage, res: ServerResponse) {
   const server = createMcpServer()
   const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined })
-  res.on('close', () => { void transport.close() })
+  res.on('close', () => {
+    void transport.close()
+  })
   await server.connect(transport)
   await transport.handleRequest(req, res)
 }
@@ -39,5 +41,9 @@ http.listen(PORT, () => {
   console.log(`aw-mcp on :${PORT} — streamable HTTP transport (stateless)`)
 })
 
-process.on('SIGTERM', () => { http.close(() => process.exit(0)) })
-process.on('SIGINT', () => { http.close(() => process.exit(0)) })
+process.on('SIGTERM', () => {
+  http.close(() => process.exit(0))
+})
+process.on('SIGINT', () => {
+  http.close(() => process.exit(0))
+})

@@ -81,7 +81,9 @@ function sleepPull(hour: number): number {
 }
 
 const onShift = (a: Agent, hour: number, dow: number): boolean =>
-  a.job != null && hour >= a.job.shiftStart && hour < a.job.shiftEnd &&
+  a.job != null &&
+  hour >= a.job.shiftStart &&
+  hour < a.job.shiftEnd &&
   occupationDef(a.occupation).workDays.includes(dow)
 
 /**
@@ -190,8 +192,16 @@ export function scoreActions(agent: Agent, ctx: ActionContext): ScoredAction[] {
     const barId = ctx.findLocation('bar')
     const cafeId = ctx.findLocation('cafe')
     push('eat', superId, agent.needs.hunger * 1.2 - (superId ? crowdPenalty(ctx.crowdAt(superId)) : 0))
-    push('eat', barId, agent.needs.hunger * (0.9 + v.sociability * 0.4) - (barId ? crowdPenalty(ctx.crowdAt(barId)) : 0))
-    push('eat', cafeId, agent.needs.hunger * (0.9 + v.sociability * 0.35) - (cafeId ? crowdPenalty(ctx.crowdAt(cafeId)) : 0))
+    push(
+      'eat',
+      barId,
+      agent.needs.hunger * (0.9 + v.sociability * 0.4) - (barId ? crowdPenalty(ctx.crowdAt(barId)) : 0),
+    )
+    push(
+      'eat',
+      cafeId,
+      agent.needs.hunger * (0.9 + v.sociability * 0.35) - (cafeId ? crowdPenalty(ctx.crowdAt(cafeId)) : 0),
+    )
   }
   // Tiredness *and* the hour. Either can carry it: an exhausted agent sleeps in
   // the afternoon, a rested one still turns in at night.
@@ -203,7 +213,11 @@ export function scoreActions(agent: Agent, ctx: ActionContext): ScoredAction[] {
   // Work: industriousness decides whether the shift is honoured; money need
   // can drag even the lazy in.
   if (onShift(agent, ctx.hour, ctx.dayOfWeek) && ctx.workplaceId != null) {
-    push('work', ctx.workplaceId, Math.max(0.8, 0.6 + v.industriousness * 0.5 + pressure * 0.6 + saving * 0.7))
+    push(
+      'work',
+      ctx.workplaceId,
+      Math.max(0.8, 0.6 + v.industriousness * 0.5 + pressure * 0.6 + saving * 0.7),
+    )
   }
   if (agent.job == null) {
     const hiringHall = ctx.findLocation(occupationDef(agent.occupation).worksAt)
@@ -220,8 +234,11 @@ export function scoreActions(agent: Agent, ctx: ActionContext): ScoredAction[] {
     push(
       'socialize',
       agent.location,
-      0.3 + agent.needs.social * (0.6 + v.sociability * 0.4) + seeking * 0.5
-        - v.pride * pressure * 0.2 - viceFrustration * 0.25,
+      0.3 +
+        agent.needs.social * (0.6 + v.sociability * 0.4) +
+        seeking * 0.5 -
+        v.pride * pressure * 0.2 -
+        viceFrustration * 0.25,
     )
   }
 
@@ -262,9 +279,7 @@ export function scoreActions(agent: Agent, ctx: ActionContext): ScoredAction[] {
   // reflex layer.
   // Vice frustration: a costly vice at full urge the agent can't afford is
   // desperation that feeds into theft — and dampens sociability.
-  const frustrated = agent.vices.some(
-    (vi) => vi.urge >= 0.85 && viceDef(vi.kind).moneyCost > discretionary,
-  )
+  const frustrated = agent.vices.some((vi) => vi.urge >= 0.85 && viceDef(vi.kind).moneyCost > discretionary)
 
   const starving = agent.money < EAT_COST && agent.needs.hunger >= NEED_THRESHOLD.hunger
   const theftCooledDown =
@@ -288,8 +303,12 @@ export function scoreActions(agent: Agent, ctx: ActionContext): ScoredAction[] {
   // prevents the snowball where everyone piles onto the same bar.
   for (const fl of ctx.friendLocations) {
     if (fl.locationId === agent.location) continue
-    const score = 0.3 + fl.affection * 0.5 + seeking * 0.4 + v.sociability * 0.2
-      - crowdPenalty(ctx.crowdAt(fl.locationId))
+    const score =
+      0.3 +
+      fl.affection * 0.5 +
+      seeking * 0.4 +
+      v.sociability * 0.2 -
+      crowdPenalty(ctx.crowdAt(fl.locationId))
     push('socialize', fl.locationId, score)
   }
 
@@ -298,24 +317,48 @@ export function scoreActions(agent: Agent, ctx: ActionContext): ScoredAction[] {
   // somewhere to go. Which one an agent picks falls out of thrift and sociability.
   if (agent.needs.fun >= NEED_THRESHOLD.fun) {
     const parkId = ctx.findLocation('park')
-    push('relax', parkId, agent.needs.fun * (0.8 + v.thrift * 0.3) - (parkId ? crowdPenalty(ctx.crowdAt(parkId)) : 0))
+    push(
+      'relax',
+      parkId,
+      agent.needs.fun * (0.8 + v.thrift * 0.3) - (parkId ? crowdPenalty(ctx.crowdAt(parkId)) : 0),
+    )
     if (discretionary >= 5) {
       const cafeId = ctx.findLocation('cafe')
-      push('relax', cafeId, agent.needs.fun * (0.7 + v.sociability * 0.2) - (cafeId ? crowdPenalty(ctx.crowdAt(cafeId)) : 0))
+      push(
+        'relax',
+        cafeId,
+        agent.needs.fun * (0.7 + v.sociability * 0.2) - (cafeId ? crowdPenalty(ctx.crowdAt(cafeId)) : 0),
+      )
     }
     if (discretionary >= 10) {
       const gymId = ctx.findLocation('gym')
       const bowlId = ctx.findLocation('bowling')
-      push('exercise', gymId, agent.needs.fun * (0.6 - v.thrift * 0.2) - (gymId ? crowdPenalty(ctx.crowdAt(gymId)) : 0))
-      push('exercise', bowlId, agent.needs.fun * (0.65 + v.sociability * 0.15) - (bowlId ? crowdPenalty(ctx.crowdAt(bowlId)) : 0))
+      push(
+        'exercise',
+        gymId,
+        agent.needs.fun * (0.6 - v.thrift * 0.2) - (gymId ? crowdPenalty(ctx.crowdAt(gymId)) : 0),
+      )
+      push(
+        'exercise',
+        bowlId,
+        agent.needs.fun * (0.65 + v.sociability * 0.15) - (bowlId ? crowdPenalty(ctx.crowdAt(bowlId)) : 0),
+      )
     }
     if (discretionary >= 15) {
       const cinId = ctx.findLocation('cinema')
-      push('browse', cinId, agent.needs.fun * (0.7 - v.thrift * 0.2) - (cinId ? crowdPenalty(ctx.crowdAt(cinId)) : 0))
+      push(
+        'browse',
+        cinId,
+        agent.needs.fun * (0.7 - v.thrift * 0.2) - (cinId ? crowdPenalty(ctx.crowdAt(cinId)) : 0),
+      )
     }
     if (discretionary >= 25) {
       const shopId = ctx.findLocation('shop')
-      push('browse', shopId, agent.needs.fun * (0.7 - v.thrift * 0.5) - (shopId ? crowdPenalty(ctx.crowdAt(shopId)) : 0))
+      push(
+        'browse',
+        shopId,
+        agent.needs.fun * (0.7 - v.thrift * 0.5) - (shopId ? crowdPenalty(ctx.crowdAt(shopId)) : 0),
+      )
     }
   }
   if (agent.needs.hygiene >= NEED_THRESHOLD.hygiene) {
@@ -326,7 +369,12 @@ export function scoreActions(agent: Agent, ctx: ActionContext): ScoredAction[] {
   // drifts somewhere public instead, and sociability picks where. This is the
   // cheapest way to turn dead time into co-location, which is what feeds scenes.
   // At night, boredom sends you home, not to the bar.
-  const haunt = pull >= 0.4 ? home : v.sociability > 0 ? (ctx.findLocation('cafe') ?? ctx.findLocation('bar') ?? home) : (ctx.findLocation('park') ?? home)
+  const haunt =
+    pull >= 0.4
+      ? home
+      : v.sociability > 0
+        ? (ctx.findLocation('cafe') ?? ctx.findLocation('bar') ?? home)
+        : (ctx.findLocation('park') ?? home)
   const hauntCrowd = haunt !== home ? crowdPenalty(ctx.crowdAt(haunt)) : 0
   push('idle', haunt, 0.05 + ctx.random() * 0.05 + Math.max(0, v.sociability) * 0.06 - hauntCrowd)
   push('idle', agent.location, 0.05 + ctx.random() * 0.04)

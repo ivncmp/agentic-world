@@ -141,8 +141,9 @@ function applySeekJob(agent: Agent, ctx: ApplyActionContext): Agent {
   if (ctx.deps.random() > HIRE_CHANCE) return agent
 
   const def = occupationDef(agent.occupation)
-  const vacancy = [...ctx.openings.entries()]
-    .find(([id, free]) => free > 0 && ctx.kindOf.get(id) === def.worksAt)
+  const vacancy = [...ctx.openings.entries()].find(
+    ([id, free]) => free > 0 && ctx.kindOf.get(id) === def.worksAt,
+  )
   if (vacancy == null) return agent
 
   ctx.openings.set(vacancy[0], vacancy[1] - 1)

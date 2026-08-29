@@ -6,10 +6,23 @@ import type { Location, LocationId, LocationKind, Tile } from '../world/location
 import { travelTicks, MIN_STAY_TICKS } from '../world/locations.js'
 import { occupationDef } from '../world/occupations.js'
 import { deriveGoals, HOME_DEPOSIT } from '../agents/goals.js'
-import { scoreEncounter, selectScenes, GATE_DEFAULTS, type SceneCandidate, type SceneBudget } from '../cognition/gate.js'
+import {
+  scoreEncounter,
+  selectScenes,
+  GATE_DEFAULTS,
+  type SceneCandidate,
+  type SceneBudget,
+} from '../cognition/gate.js'
 import { chooseAction, ACTION_TICKS, type Action, type FriendLocation } from './actions.js'
 import { adjustFeeling, coolFeeling } from './relationship.js'
-import { hourOfDay, isDayBoundary, dayOfWeek as dayOfWeekFn, minutes, TICKS_PER_DAY, TICKS_PER_HOUR } from './clock.js'
+import {
+  hourOfDay,
+  isDayBoundary,
+  dayOfWeek as dayOfWeekFn,
+  minutes,
+  TICKS_PER_DAY,
+  TICKS_PER_HOUR,
+} from './clock.js'
 import { detectCrisis, type CrisisJob } from './crisis-detect.js'
 import { applyAction } from './apply/action.js'
 
@@ -106,22 +119,25 @@ export const GARNISHMENT_RATE = 0.25
 /** Events worth tracking in the day's notable set. */
 const isNotable = (e: WorldEvent): AgentId[] => {
   switch (e.type) {
-    case 'theft': return [e.thief, e.victim]
-    case 'scene_started': return [e.a, e.b]
+    case 'theft':
+      return [e.thief, e.victim]
+    case 'scene_started':
+      return [e.a, e.b]
     case 'rent_missed':
     case 'rent_warning':
     case 'evicted':
     case 'wage_garnished':
     case 'hired':
-    case 'bought_home': return [e.agent]
-    default: return []
+    case 'bought_home':
+      return [e.agent]
+    default:
+      return []
   }
 }
 
 const UNINTERRUPTIBLE = new Set(['scene', 'sleep'])
 
-const interruptible = (a: Agent): boolean =>
-  a.activity == null || !UNINTERRUPTIBLE.has(a.activity.kind)
+const interruptible = (a: Agent): boolean => a.activity == null || !UNINTERRUPTIBLE.has(a.activity.kind)
 
 export const pairKey = (a: AgentId, b: AgentId): string => (a < b ? `${a}:${b}` : `${b}:${a}`)
 
@@ -188,10 +204,7 @@ export function tick(state: WorldState, deps: TickDeps): TickResult {
 
   // Working copies; effects below mutate these, never the input state.
   const draft = new Map<AgentId, Agent>(
-    state.agents.map((a) => [
-      a.id,
-      { ...a, needs: decayNeeds(a.needs), vices: growViceUrges(a) },
-    ]),
+    state.agents.map((a) => [a.id, { ...a, needs: decayNeeds(a.needs), vices: growViceUrges(a) }]),
   )
 
   // Declared before action selection because `feelingToward` reads it while
@@ -224,7 +237,12 @@ export function tick(state: WorldState, deps: TickDeps): TickResult {
       }
       // A walk lands its agent at the destination.
       const arrived = act.from != null
-      current = { ...current, location: arrived ? act.at : current.location, activity: null, arrivedTick: arrived ? nextTick : current.arrivedTick }
+      current = {
+        ...current,
+        location: arrived ? act.at : current.location,
+        activity: null,
+        arrivedTick: arrived ? nextTick : current.arrivedTick,
+      }
       draft.set(id, current)
     }
 
@@ -244,7 +262,12 @@ export function tick(state: WorldState, deps: TickDeps): TickResult {
       if (other == null || other.activity?.kind === 'travel') continue
       const otherKind = kindOf.get(other.location)
       if (otherKind == null || otherKind === 'home') continue
-      friends.push({ friendId: otherId, affection: rel.affection, locationId: other.location, locationKind: otherKind })
+      friends.push({
+        friendId: otherId,
+        affection: rel.affection,
+        locationId: other.location,
+        locationKind: otherKind,
+      })
     }
 
     const action = chooseAction(current, {
@@ -347,9 +370,18 @@ export function tick(state: WorldState, deps: TickDeps): TickResult {
         const dailyWage = preGarnish.job.wage * (preGarnish.job.shiftEnd - preGarnish.job.shiftStart)
         const garnish = Math.min(credits(dailyWage * GARNISHMENT_RATE), preGarnish.housing.arrears)
         if (garnish > 0) {
-          const paid = { ...preGarnish, housing: { ...preGarnish.housing, arrears: credits(preGarnish.housing.arrears - garnish) } }
+          const paid = {
+            ...preGarnish,
+            housing: { ...preGarnish.housing, arrears: credits(preGarnish.housing.arrears - garnish) },
+          }
           draft.set(id, paid)
-          events.push({ type: 'wage_garnished', tick: nextTick, agent: id, amount: credits(garnish), remaining: paid.housing.arrears })
+          events.push({
+            type: 'wage_garnished',
+            tick: nextTick,
+            agent: id,
+            amount: credits(garnish),
+            remaining: paid.housing.arrears,
+          })
           notable.add(id)
         }
       }
@@ -408,7 +440,10 @@ export function tick(state: WorldState, deps: TickDeps): TickResult {
         }
         continue
       }
-      const parties = key.split(':').map((id) => draft.get(id)).filter((x) => x != null)
+      const parties = key
+        .split(':')
+        .map((id) => draft.get(id))
+        .filter((x) => x != null)
       let rate = GRIEVANCE_DAILY_DECAY
       for (const who of parties) {
         const v = resolveValues(who.values, deps.now)
@@ -417,7 +452,10 @@ export function tick(state: WorldState, deps: TickDeps): TickResult {
       }
       const next = rel.grievance * Math.min(0.999, Math.max(0.7, rate))
       relationships.set(key, {
-        ...rel, affection, trust, grievance: next < 0.01 ? 0 : next,
+        ...rel,
+        affection,
+        trust,
+        grievance: next < 0.01 ? 0 : next,
       })
     }
 
@@ -519,9 +557,7 @@ export function tick(state: WorldState, deps: TickDeps): TickResult {
       relationships.set(key, {
         ...rel,
         encounters: rel.encounters + 1,
-        ...(first
-          ? { affection: adjustFeeling(rel.affection, PASSING_AFFECTION) }
-          : {}),
+        ...(first ? { affection: adjustFeeling(rel.affection, PASSING_AFFECTION) } : {}),
       })
       if (!first) continue
       passingByPair.set(key, 1)

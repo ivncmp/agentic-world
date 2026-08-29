@@ -91,5 +91,8 @@ export function savingDrive(goals: readonly Goal[]): number {
 
 /** Extra pull a goal lends to seeking company. */
 export function socialDrive(goals: readonly Goal[]): number {
-  return Math.min(1, goals.filter((g) => g.kind === 'befriend').reduce((n, g) => n + g.priority, 0))
+  return Math.min(
+    1,
+    goals.filter((g) => g.kind === 'befriend').reduce((n, g) => n + g.priority, 0),
+  )
 }

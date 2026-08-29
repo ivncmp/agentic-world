@@ -13,11 +13,7 @@ import { adjustFeeling } from '../relationship.js'
  * owner's `base`, because an agent whose life contradicts how they were written
  * is the story working rather than a bug.
  */
-export function applyReflection(
-  state: WorldState,
-  agentId: AgentId,
-  outcome: ReflectionOutcome,
-): WorldState {
+export function applyReflection(state: WorldState, agentId: AgentId, outcome: ReflectionOutcome): WorldState {
   const agents = state.agents.map((a) => {
     if (a.id !== agentId) return a
     const drift = { ...a.values.drift }

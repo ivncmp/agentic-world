@@ -16,12 +16,11 @@ export function failFrom(res: ServerResponse, err: unknown): void {
 }
 
 /** Collect a request body, then hand it to a handler. */
-export function withBody(
-  req: NodeJS.ReadableStream,
-  handler: (body: string) => Promise<void>,
-): void {
+export function withBody(req: NodeJS.ReadableStream, handler: (body: string) => Promise<void>): void {
   let body = ''
-  req.on('data', (c: Buffer) => { body += c })
+  req.on('data', (c: Buffer) => {
+    body += c
+  })
   req.on('end', () => void handler(body))
 }
 

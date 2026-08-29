@@ -87,7 +87,9 @@ export function applySkyForHour(
   }
 
   const sky = above
-    ? NIGHT_SKY.clone().lerp(DAY_SKY, Math.min(1, elevation * 2.2)).lerp(GOLDEN_SKY, warmth * 0.55)
+    ? NIGHT_SKY.clone()
+        .lerp(DAY_SKY, Math.min(1, elevation * 2.2))
+        .lerp(GOLDEN_SKY, warmth * 0.55)
     : NIGHT_SKY.clone()
 
   ;(scene.background as THREE.Color).copy(sky)

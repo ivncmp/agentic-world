@@ -37,7 +37,8 @@ const agent = (id: string, over: Partial<Agent> = {}, base: Partial<ValueVector>
   constraints: [],
   interests: [],
   deliberation: null,
-  lastDeliberationTick: 0, lastCrisisTick: 0,
+  lastDeliberationTick: 0,
+  lastCrisisTick: 0,
   ...over,
 })
 
@@ -164,10 +165,17 @@ describe('owner constraints reach the reflex layer', () => {
   it('will not rob someone it is fond of', () => {
     const thief = desperate([])
     const friendly = new Map([
-      [pairKey('thief', 'mark'), {
-        affection: 0.6, trust: 0.5, debt: 0, grievance: 0,
-        encounters: 400, lastInteractionTick: null,
-      }],
+      [
+        pairKey('thief', 'mark'),
+        {
+          affection: 0.6,
+          trust: 0.5,
+          debt: 0,
+          grievance: 0,
+          encounters: 400,
+          lastInteractionTick: null,
+        },
+      ],
     ])
     const r = tick(world([thief, mark], { relationships: friendly }), deps())
     expect(r.events.some((e) => e.type === 'theft')).toBe(false)
@@ -230,14 +238,23 @@ describe('economy and cognition queueing', () => {
   })
 
   it('never queues more scenes than the budget allows', () => {
-    const crowd = Array.from({ length: 8 }, (_, i) =>
-      agent(`a${i}`, { location: 'bar-1' }),
-    )
+    const crowd = Array.from({ length: 8 }, (_, i) => agent(`a${i}`, { location: 'bar-1' }))
     const rels = new Map(
       crowd.flatMap((a, i) =>
-        crowd.slice(i + 1).map((b) => [pairKey(a.id, b.id), {
-          affection: 0.9, trust: 0, debt: 200, grievance: 0, encounters: 0, lastInteractionTick: null,
-        }] as const),
+        crowd.slice(i + 1).map(
+          (b) =>
+            [
+              pairKey(a.id, b.id),
+              {
+                affection: 0.9,
+                trust: 0,
+                debt: 200,
+                grievance: 0,
+                encounters: 0,
+                lastInteractionTick: null,
+              },
+            ] as const,
+        ),
       ),
     )
     const r = tick(world(crowd, { relationships: rels }), deps())
@@ -306,11 +323,10 @@ describe('daily rhythm', () => {
 })
 
 describe('in-conversation state', () => {
-  const pair = () => [
-    agent('a', { location: 'bar-1' }),
-    agent('b', { location: 'bar-1' }),
-  ]
-  const tense = new Map([['a:b', { affection: 0, trust: 0, debt: 300, grievance: 0, encounters: 0, lastInteractionTick: null }]])
+  const pair = () => [agent('a', { location: 'bar-1' }), agent('b', { location: 'bar-1' })]
+  const tense = new Map([
+    ['a:b', { affection: 0, trust: 0, debt: 300, grievance: 0, encounters: 0, lastInteractionTick: null }],
+  ])
 
   it('holds both agents in place once a scene starts', () => {
     const r = tick(world(pair(), { relationships: tense }), deps())
@@ -390,7 +406,12 @@ describe('deliberation (Layer 1.5)', () => {
 
   it('expires deliberation after TTL', () => {
     const a = agent('a', {
-      deliberation: { setTick: 10, biases: [{ action: 'eat', bias: 0.8 }], seekScene: [], conversationSeed: null },
+      deliberation: {
+        setTick: 10,
+        biases: [{ action: 'eat', bias: 0.8 }],
+        seekScene: [],
+        conversationSeed: null,
+      },
       lastDeliberationTick: 10,
     })
     // tick at 10 + 144 = 154 should expire it
@@ -404,16 +425,36 @@ describe('deliberation (Layer 1.5)', () => {
     const a = agent('a', {
       needs: { hunger: 0.5, energy: 0.2, social: 0.2, hygiene: 0.2, fun: 0.2 },
       money: 50,
-      deliberation: { setTick: 100, biases: [{ action: 'eat', bias: 0.8 }], seekScene: [], conversationSeed: null },
+      deliberation: {
+        setTick: 100,
+        biases: [{ action: 'eat', bias: 0.8 }],
+        seekScene: [],
+        conversationSeed: null,
+      },
       lastDeliberationTick: 100,
     })
     const scores = scoreActions(a, {
-      tick: 101, hour: 14, dayOfWeek: 2,
-      values: { honesty: 0, industriousness: 0, thrift: 0, sociability: 0, riskTolerance: 0, loyalty: 0, pride: 0 },
+      tick: 101,
+      hour: 14,
+      dayOfWeek: 2,
+      values: {
+        honesty: 0,
+        industriousness: 0,
+        thrift: 0,
+        sociability: 0,
+        riskTolerance: 0,
+        loyalty: 0,
+        pride: 0,
+      },
       locationKindOf: () => 'bar',
-      homeId: 'home-a', workplaceId: null,
-      findLocation: (k) => k === 'supermarket' ? 'shop-1' : k === 'bar' ? 'bar-1' : null,
-      co: [], crowdAt: () => 0, feelingToward: () => 0, friendLocations: [], random: () => 0.5,
+      homeId: 'home-a',
+      workplaceId: null,
+      findLocation: (k) => (k === 'supermarket' ? 'shop-1' : k === 'bar' ? 'bar-1' : null),
+      co: [],
+      crowdAt: () => 0,
+      feelingToward: () => 0,
+      friendLocations: [],
+      random: () => 0.5,
     })
     const eatScores = scores.filter((s) => s.action.kind === 'eat')
     // Without the bias eat would score ~0.6; with +0.8 it should be ~1.4

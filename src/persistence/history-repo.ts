@@ -32,15 +32,27 @@ export class HistoryRepository {
   }
 
   private static toRow(e: WorldEvent): {
-    tick: number; day: number; kind: string
-    agent: string | null; other: string | null; location: string | null; amount: number | null
+    tick: number
+    day: number
+    kind: string
+    agent: string | null
+    other: string | null
+    location: string | null
+    amount: number | null
   } | null {
     const base = { tick: e.tick, day: HistoryRepository.day(e.tick) }
     switch (e.type) {
       case 'theft':
         return { ...base, kind: 'theft', agent: e.thief, other: e.victim, location: null, amount: e.amount }
       case 'rent_missed':
-        return { ...base, kind: 'rent_missed', agent: e.agent, other: null, location: null, amount: e.arrears }
+        return {
+          ...base,
+          kind: 'rent_missed',
+          agent: e.agent,
+          other: null,
+          location: null,
+          amount: e.arrears,
+        }
       case 'hired':
         return { ...base, kind: 'hired', agent: e.agent, other: null, location: null, amount: null }
       case 'bought_home':
@@ -69,9 +81,18 @@ export class HistoryRepository {
     await this.pool.query(
       `INSERT INTO scenes (tick, day, agent_a, agent_b, location_id, tension, dialogue, outcome, transfer, cost_usd)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
-      [input.tick, HistoryRepository.day(input.tick), input.a, input.b, input.location,
-       input.tension, JSON.stringify(input.outcome.dialogue), input.outcome.outcome,
-       input.outcome.transfer, input.costUsd],
+      [
+        input.tick,
+        HistoryRepository.day(input.tick),
+        input.a,
+        input.b,
+        input.location,
+        input.tension,
+        JSON.stringify(input.outcome.dialogue),
+        input.outcome.outcome,
+        input.outcome.transfer,
+        input.costUsd,
+      ],
     )
   }
 
@@ -97,42 +118,92 @@ export class HistoryRepository {
     await this.pool.query(
       `INSERT INTO llm_calls (tick, day, agent_id, purpose, provider, model, input_tokens, output_tokens, cost_usd, duration_ms)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
-      [input.tick, HistoryRepository.day(input.tick), input.agentId, input.purpose,
-       input.provider, input.model, input.inputTokens, input.outputTokens,
-       input.costUsd, input.durationMs],
+      [
+        input.tick,
+        HistoryRepository.day(input.tick),
+        input.agentId,
+        input.purpose,
+        input.provider,
+        input.model,
+        input.inputTokens,
+        input.outputTokens,
+        input.costUsd,
+        input.durationMs,
+      ],
     )
   }
 
   async meteringSummary(): Promise<{
     total: { calls: number; inputTokens: number; outputTokens: number; costUsd: number }
     byAgent: { agentId: string; calls: number; inputTokens: number; outputTokens: number; costUsd: number }[]
-    byPurpose: { purpose: string; calls: number; inputTokens: number; outputTokens: number; costUsd: number }[]
+    byPurpose: {
+      purpose: string
+      calls: number
+      inputTokens: number
+      outputTokens: number
+      costUsd: number
+    }[]
     byDay: { day: number; calls: number; costUsd: number }[]
   }> {
-    const total = await this.pool.query<{ calls: string; input_tokens: string; output_tokens: string; cost: string }>(
+    const total = await this.pool.query<{
+      calls: string
+      input_tokens: string
+      output_tokens: string
+      cost: string
+    }>(
       `SELECT count(*) AS calls, coalesce(sum(input_tokens),0) AS input_tokens,
               coalesce(sum(output_tokens),0) AS output_tokens, coalesce(sum(cost_usd),0) AS cost
-       FROM llm_calls`)
-    const byAgent = await this.pool.query<{ agent_id: string; calls: string; input_tokens: string; output_tokens: string; cost: string }>(
+       FROM llm_calls`,
+    )
+    const byAgent = await this.pool.query<{
+      agent_id: string
+      calls: string
+      input_tokens: string
+      output_tokens: string
+      cost: string
+    }>(
       `SELECT agent_id, count(*) AS calls, sum(input_tokens) AS input_tokens,
               sum(output_tokens) AS output_tokens, sum(cost_usd) AS cost
-       FROM llm_calls GROUP BY agent_id ORDER BY cost DESC`)
-    const byPurpose = await this.pool.query<{ purpose: string; calls: string; input_tokens: string; output_tokens: string; cost: string }>(
+       FROM llm_calls GROUP BY agent_id ORDER BY cost DESC`,
+    )
+    const byPurpose = await this.pool.query<{
+      purpose: string
+      calls: string
+      input_tokens: string
+      output_tokens: string
+      cost: string
+    }>(
       `SELECT purpose, count(*) AS calls, sum(input_tokens) AS input_tokens,
               sum(output_tokens) AS output_tokens, sum(cost_usd) AS cost
-       FROM llm_calls GROUP BY purpose ORDER BY cost DESC`)
+       FROM llm_calls GROUP BY purpose ORDER BY cost DESC`,
+    )
     const byDay = await this.pool.query<{ day: string; calls: string; cost: string }>(
       `SELECT day, count(*) AS calls, sum(cost_usd) AS cost
-       FROM llm_calls GROUP BY day ORDER BY day`)
+       FROM llm_calls GROUP BY day ORDER BY day`,
+    )
 
     const num = (s: string) => Number(s)
     return {
-      total: { calls: num(total.rows[0]!.calls), inputTokens: num(total.rows[0]!.input_tokens),
-               outputTokens: num(total.rows[0]!.output_tokens), costUsd: num(total.rows[0]!.cost) },
-      byAgent: byAgent.rows.map((r) => ({ agentId: r.agent_id, calls: num(r.calls),
-        inputTokens: num(r.input_tokens), outputTokens: num(r.output_tokens), costUsd: num(r.cost) })),
-      byPurpose: byPurpose.rows.map((r) => ({ purpose: r.purpose, calls: num(r.calls),
-        inputTokens: num(r.input_tokens), outputTokens: num(r.output_tokens), costUsd: num(r.cost) })),
+      total: {
+        calls: num(total.rows[0]!.calls),
+        inputTokens: num(total.rows[0]!.input_tokens),
+        outputTokens: num(total.rows[0]!.output_tokens),
+        costUsd: num(total.rows[0]!.cost),
+      },
+      byAgent: byAgent.rows.map((r) => ({
+        agentId: r.agent_id,
+        calls: num(r.calls),
+        inputTokens: num(r.input_tokens),
+        outputTokens: num(r.output_tokens),
+        costUsd: num(r.cost),
+      })),
+      byPurpose: byPurpose.rows.map((r) => ({
+        purpose: r.purpose,
+        calls: num(r.calls),
+        inputTokens: num(r.input_tokens),
+        outputTokens: num(r.output_tokens),
+        costUsd: num(r.cost),
+      })),
       byDay: byDay.rows.map((r) => ({ day: num(r.day), calls: num(r.calls), costUsd: num(r.cost) })),
     }
   }
@@ -140,26 +211,34 @@ export class HistoryRepository {
   // ---- reads: what the owner-facing MCP server will be built on ----
 
   async diary(agentId: AgentId, day: number): Promise<{ text: string; drift: unknown } | null> {
-    const r = await this.pool.query('SELECT text, drift FROM diaries WHERE agent_id=$1 AND day=$2',
-      [agentId, day])
+    const r = await this.pool.query('SELECT text, drift FROM diaries WHERE agent_id=$1 AND day=$2', [
+      agentId,
+      day,
+    ])
     return r.rows[0] ?? null
   }
 
   async recentDiaries(agentId: AgentId, limit = 7): Promise<{ day: number; text: string }[]> {
     const r = await this.pool.query(
-      'SELECT day, text FROM diaries WHERE agent_id=$1 ORDER BY day DESC LIMIT $2', [agentId, limit])
+      'SELECT day, text FROM diaries WHERE agent_id=$1 ORDER BY day DESC LIMIT $2',
+      [agentId, limit],
+    )
     return r.rows
   }
 
   async scenesFor(agentId: AgentId, limit = 20): Promise<unknown[]> {
     const r = await this.pool.query(
       `SELECT * FROM scenes WHERE agent_a=$1 OR agent_b=$1 ORDER BY tick DESC LIMIT $2`,
-      [agentId, limit])
+      [agentId, limit],
+    )
     return r.rows
   }
 
-  async daysMissingDiary(agentIds: readonly string[], currentDay: number, lookback = 3):
-      Promise<{ agent: string; day: number }[]> {
+  async daysMissingDiary(
+    agentIds: readonly string[],
+    currentDay: number,
+    lookback = 3,
+  ): Promise<{ agent: string; day: number }[]> {
     if (agentIds.length === 0 || currentDay <= 1) return []
     const from = Math.max(1, currentDay - lookback)
     const r = await this.pool.query<{ agent_id: string; day: number }>(
@@ -177,7 +256,9 @@ export class HistoryRepository {
   async daySummary(agentId: AgentId, day: number): Promise<Record<string, number>> {
     const r = await this.pool.query<{ kind: string; n: string }>(
       `SELECT kind, count(*) AS n FROM events
-       WHERE day=$1 AND (agent_id=$2 OR other_id=$2) GROUP BY kind`, [day, agentId])
+       WHERE day=$1 AND (agent_id=$2 OR other_id=$2) GROUP BY kind`,
+      [day, agentId],
+    )
     return Object.fromEntries(r.rows.map((x) => [x.kind, Number(x.n)]))
   }
 }

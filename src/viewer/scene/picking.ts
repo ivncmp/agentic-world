@@ -57,12 +57,12 @@ export class Picker {
   /** Resolve what is under the cursor and redraw the tooltip. Returns the cursor style. */
   update(camera: THREE.Camera, cx: number, cy: number): 'pointer' | 'default' {
     this.raycaster.setFromCamera(this.mouse, camera)
-    this.el.style.left = (cx + 14) + 'px'
-    this.el.style.top = (cy + 14) + 'px'
+    this.el.style.left = cx + 14 + 'px'
+    this.el.style.top = cy + 14 + 'px'
 
     // Agents win: an agent standing in a doorway should still be clickable
     const agentHits = this.raycaster.intersectObjects(this.targets.agents, true)
-    const agentHit = agentHits.find(h => h.object.visible && pickRoot(h.object)?.visible === true)
+    const agentHit = agentHits.find((h) => h.object.visible && pickRoot(h.object)?.visible === true)
     if (agentHit) {
       const root = pickRoot(agentHit.object)!
       const view = this.views.get(root.userData.pick.agentId as string)
@@ -84,10 +84,12 @@ export class Picker {
       const pick = root.userData.pick as BuildingPick
       this.hoveredBuilding = pick.tileKey
       this.highlighter.set(root)
-      this.show(pick.venue
-        ? this.venueHtml(pick.venue)
-        : `<div class="tt-name">${ROLE_LABEL[pick.role ?? ''] ?? 'Building'}</div>
-           <div class="tt-district">${this.tileData.get(pick.tileKey)?.district ?? ''}</div>`)
+      this.show(
+        pick.venue
+          ? this.venueHtml(pick.venue)
+          : `<div class="tt-name">${ROLE_LABEL[pick.role ?? ''] ?? 'Building'}</div>
+           <div class="tt-district">${this.tileData.get(pick.tileKey)?.district ?? ''}</div>`,
+      )
       return 'pointer'
     }
 
@@ -120,7 +122,7 @@ export class Picker {
       <div class="tt-kind">${venue.kind}</div>
       <div class="tt-district">${venue.district}</div>`
     if (occupants.length > 0) {
-      html += `<div class="tt-occ">${occupants.map(v => `<div class="tt-agent">${v.name}</div>`).join('')}</div>`
+      html += `<div class="tt-occ">${occupants.map((v) => `<div class="tt-agent">${v.name}</div>`).join('')}</div>`
     }
     return html
   }

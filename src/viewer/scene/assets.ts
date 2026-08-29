@@ -11,8 +11,7 @@ import { CHARACTER_IDS, CHARACTER_GLB } from '../core/characters-data.js'
 import { TILE } from './grid.js'
 import type { LocationInfo } from '../core/connection.js'
 
-const GLB = (pack: string, name: string) =>
-  `/assets/city/${pack}/Models/GLB format/${name}.glb`
+const GLB = (pack: string, name: string) => `/assets/city/${pack}/Models/GLB format/${name}.glb`
 
 export const MODELS_TO_LOAD: Record<string, string> = {
   'com-a': GLB('commercial', 'building-a'),
@@ -30,10 +29,10 @@ export const MODELS_TO_LOAD: Record<string, string> = {
   'low-d': GLB('commercial', 'low-detail-building-d'),
   'low-g': GLB('commercial', 'low-detail-building-g'),
   'low-j': GLB('commercial', 'low-detail-building-j'),
-  'parasol': GLB('commercial', 'detail-parasol-a'),
+  parasol: GLB('commercial', 'detail-parasol-a'),
   'parasol-b': GLB('commercial', 'detail-parasol-b'),
-  'awning': GLB('commercial', 'detail-awning'),
-  'overhang': GLB('commercial', 'detail-overhang'),
+  awning: GLB('commercial', 'detail-awning'),
+  overhang: GLB('commercial', 'detail-overhang'),
   'sub-b': GLB('suburban', 'building-type-b'),
   'sub-d': GLB('suburban', 'building-type-d'),
   'sub-f': GLB('suburban', 'building-type-f'),
@@ -46,16 +45,16 @@ export const MODELS_TO_LOAD: Record<string, string> = {
   'ind-d': GLB('industrial', 'building-d'),
   'ind-h': GLB('industrial', 'building-h'),
   'ind-l': GLB('industrial', 'building-l'),
-  'chimney': GLB('industrial', 'chimney-medium'),
+  chimney: GLB('industrial', 'chimney-medium'),
   'chimney-sm': GLB('industrial', 'chimney-small'),
-  'tank': GLB('industrial', 'detail-tank'),
+  tank: GLB('industrial', 'detail-tank'),
   'tree-lg': GLB('suburban', 'tree-large'),
   'tree-sm': GLB('suburban', 'tree-small'),
-  'fence': GLB('suburban', 'fence'),
+  fence: GLB('suburban', 'fence'),
   'fence-low': GLB('suburban', 'fence-low'),
-  'planter': GLB('suburban', 'planter'),
+  planter: GLB('suburban', 'planter'),
   'path-stones': GLB('suburban', 'path-stones-short'),
-  'driveway': GLB('suburban', 'driveway-short'),
+  driveway: GLB('suburban', 'driveway-short'),
   'rd-straight': GLB('roads', 'road-straight'),
   'rd-crossroad': GLB('roads', 'road-crossroad'),
   'rd-intersection': GLB('roads', 'road-intersection'),
@@ -65,9 +64,9 @@ export const MODELS_TO_LOAD: Record<string, string> = {
   'light-curved': GLB('roads', 'light-curved'),
   'light-square': GLB('roads', 'light-square'),
   'traffic-light': GLB('roads', 'traffic-light'),
-  'dumpster': GLB('roads', 'dumpster'),
-  'cone': GLB('roads', 'construction-cone'),
-  'barrier': GLB('roads', 'construction-barrier'),
+  dumpster: GLB('roads', 'dumpster'),
+  cone: GLB('roads', 'construction-cone'),
+  barrier: GLB('roads', 'construction-barrier'),
   'elec-pole': GLB('roads', 'electricity-pole-single'),
 }
 
@@ -94,8 +93,19 @@ export const VENUE_MODELS: Record<string, string[]> = {
 
 /** Venue kinds an agent disappears into — mesh and label hide together. */
 export const INDOOR_KINDS = new Set([
-  'home', 'bar', 'office', 'shop', 'supermarket', 'clinic', 'school',
-  'gym', 'garage', 'cinema', 'bowling', 'cafe', 'restaurant',
+  'home',
+  'bar',
+  'office',
+  'shop',
+  'supermarket',
+  'clinic',
+  'school',
+  'gym',
+  'garage',
+  'cinema',
+  'bowling',
+  'cafe',
+  'restaurant',
 ])
 
 /** Tooltip name for a filler building, which has a block role but no venue. */
@@ -155,7 +165,7 @@ export class ModelLibrary {
 
   async load(onProgress?: LoadProgress): Promise<void> {
     const loader = new GLTFLoader()
-    const charEntries: [string, string][] = CHARACTER_IDS.map(id => [`char-${id}`, CHARACTER_GLB(id)])
+    const charEntries: [string, string][] = CHARACTER_IDS.map((id) => [`char-${id}`, CHARACTER_GLB(id)])
     const entries = Object.entries(MODELS_TO_LOAD).concat(charEntries)
     // road-straight defines the scale every other road piece inherits
     entries.sort(([a], [b]) => (a === 'rd-straight' ? -1 : b === 'rd-straight' ? 1 : 0))
@@ -187,8 +197,8 @@ export class ModelLibrary {
 
     if (key.startsWith('char-')) return 0.9 / size.y
 
-    const isRoadPack = key.startsWith('rd-') || key.startsWith('light')
-      || key.startsWith('traffic') || key === 'dumpster'
+    const isRoadPack =
+      key.startsWith('rd-') || key.startsWith('light') || key.startsWith('traffic') || key === 'dumpster'
     if (isRoadPack) {
       if (key === 'rd-straight') this.roadBaseScale = TILE / maxDim
       return this.roadBaseScale ?? TILE / maxDim

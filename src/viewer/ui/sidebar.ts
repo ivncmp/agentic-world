@@ -6,19 +6,40 @@ import type { EngineConnection, WorldInfo, StateMsg, FeedItem } from '../core/co
 import { avatarImg } from './avatar.js'
 
 const STATE_COLORS: Record<string, string> = {
-  sleep: '#60a5fa', work: '#4ade80', travel: '#fbbf24', scene: '#e879f9',
-  steal: '#f87171', indulge_vice: '#fb923c', socialize: '#a78bfa',
-  eat: '#facc15', relax: '#34d399', idle: '#94a3b8', exercise: '#38bdf8',
-  seek_job: '#fb7185', browse: '#a78bfa', wash: '#67e8f9',
+  sleep: '#60a5fa',
+  work: '#4ade80',
+  travel: '#fbbf24',
+  scene: '#e879f9',
+  steal: '#f87171',
+  indulge_vice: '#fb923c',
+  socialize: '#a78bfa',
+  eat: '#facc15',
+  relax: '#34d399',
+  idle: '#94a3b8',
+  exercise: '#38bdf8',
+  seek_job: '#fb7185',
+  browse: '#a78bfa',
+  wash: '#67e8f9',
 }
 
 type Tab = 'town' | 'places' | 'feed' | 'agent' | 'graph'
 
 const KIND_LABEL: Record<string, string> = {
-  home: 'home', bar: 'bar', office: 'offices', shop: 'shop',
-  supermarket: 'supermarket', clinic: 'clinic', school: 'school',
-  gym: 'gym', garage: 'garage', park: 'park', plaza: 'plaza',
-  cinema: 'cinema', bowling: 'bowling', cafe: 'cafe', restaurant: 'restaurant',
+  home: 'home',
+  bar: 'bar',
+  office: 'offices',
+  shop: 'shop',
+  supermarket: 'supermarket',
+  clinic: 'clinic',
+  school: 'school',
+  gym: 'gym',
+  garage: 'garage',
+  park: 'park',
+  plaza: 'plaza',
+  cinema: 'cinema',
+  bowling: 'bowling',
+  cafe: 'cafe',
+  restaurant: 'restaurant',
 }
 
 let activeTab: Tab = 'town'
@@ -79,8 +100,8 @@ export function initSidebar(conn: EngineConnection, world: WorldInfo): void {
     window.dispatchEvent(new CustomEvent('aw:venue-click', { detail: { id } }))
   })
 
-  const publicPlaces = world.locations.filter(l => l.kind !== 'home')
-  const homes = world.locations.filter(l => l.kind === 'home')
+  const publicPlaces = world.locations.filter((l) => l.kind !== 'home')
+  const homes = world.locations.filter((l) => l.kind === 'home')
   const byDistrict = new Map<string, typeof world.locations>()
   for (const l of publicPlaces) {
     const list = byDistrict.get(l.district) ?? []
@@ -91,19 +112,29 @@ export function initSidebar(conn: EngineConnection, world: WorldInfo): void {
   function renderPlaces(occ: Map<string, number>): void {
     const row = (l: { id: string; name: string; kind: string }): string => {
       const n = occ.get(l.id) ?? 0
-      return `<div class="place-row${n > 0 ? ' busy' : ''}" data-place="${l.id}">` +
+      return (
+        `<div class="place-row${n > 0 ? ' busy' : ''}" data-place="${l.id}">` +
         `<span class="place-name">${esc(l.name)}</span>` +
         `<span class="place-kind">${esc(KIND_LABEL[l.kind] ?? l.kind)}</span>` +
         `<span class="place-occ">${n > 0 ? n : '·'}</span></div>`
+      )
     }
     let html = ''
     for (const [district, list] of byDistrict) {
-      html += `<div class="places-group">${esc(district)}</div>` +
-        [...list].sort((a, b) => a.name.localeCompare(b.name)).map(row).join('')
+      html +=
+        `<div class="places-group">${esc(district)}</div>` +
+        [...list]
+          .sort((a, b) => a.name.localeCompare(b.name))
+          .map(row)
+          .join('')
     }
     if (homes.length > 0) {
-      html += `<div class="places-group">Homes</div>` +
-        [...homes].sort((a, b) => a.name.localeCompare(b.name)).map(row).join('')
+      html +=
+        `<div class="places-group">Homes</div>` +
+        [...homes]
+          .sort((a, b) => a.name.localeCompare(b.name))
+          .map(row)
+          .join('')
     }
     placesEl.innerHTML = html
   }
@@ -124,24 +155,19 @@ export function initSidebar(conn: EngineConnection, world: WorldInfo): void {
     const d = new Date(gameMs)
     const h = d.getUTCHours()
     const m = d.getUTCMinutes()
-    clockEl.textContent =
-      String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0')
+    clockEl.textContent = String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0')
     const icon =
-      h >= 22 || h < 6 ? '\u{1F319}'
-        : h < 8 ? '\u{1F305}'
-          : h < 18 ? '☀️'
-            : h < 20 ? '\u{1F305}'
+      h >= 22 || h < 6
+        ? '\u{1F319}'
+        : h < 8
+          ? '\u{1F305}'
+          : h < 18
+            ? '☀️'
+            : h < 20
+              ? '\u{1F305}'
               : '\u{1F319}'
     phaseEl.textContent =
-      `${icon} ` + (
-        h >= 23 || h < 7
-          ? 'night'
-          : h < 9
-            ? 'morning'
-            : h < 18
-              ? 'working hours'
-              : 'evening'
-      )
+      `${icon} ` + (h >= 23 || h < 7 ? 'night' : h < 9 ? 'morning' : h < 18 ? 'working hours' : 'evening')
   }
 
   let lastDisplayedMinute = -1
@@ -178,7 +204,12 @@ export function initSidebar(conn: EngineConnection, world: WorldInfo): void {
     dateEl.textContent = new Date(s.time).toDateString() + ` · day ${s.day}`
 
     const c = s.cognition
-    const tk = (n: number) => n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : n >= 1_000 ? `${(n / 1_000).toFixed(1)}k` : String(n)
+    const tk = (n: number) =>
+      n >= 1_000_000
+        ? `${(n / 1_000_000).toFixed(1)}M`
+        : n >= 1_000
+          ? `${(n / 1_000).toFixed(1)}k`
+          : String(n)
 
     let tooltipHtml = ''
     if (c.breakdown && Object.keys(c.breakdown).length > 0) {
@@ -210,9 +241,7 @@ export function initSidebar(conn: EngineConnection, world: WorldInfo): void {
       .map((a) => {
         const col = STATE_COLORS[a.state] ?? '#94a3b8'
         const loc = locMap.get(a.at)
-        const money = a.arrears > 0
-          ? `${a.money}c <span class="neg">-${a.arrears}</span>`
-          : `${a.money}c`
+        const money = a.arrears > 0 ? `${a.money}c <span class="neg">-${a.arrears}</span>` : `${a.money}c`
         return (
           `<div class="agent-row" data-agent="${a.id}">` +
           `<div class="agent-row-top">` +
@@ -250,7 +279,9 @@ export function initSidebar(conn: EngineConnection, world: WorldInfo): void {
       html +=
         `<div class="head">${esc(item.text)}</div>` +
         (outcome ? `<div class="outcome">${esc(outcome)}</div>` : '') +
-        (transfer ? `<div class="xfer">\u{1F4B0} ${transfer.amount}c · ${esc(transfer.from)} → ${esc(transfer.to)}</div>` : '') +
+        (transfer
+          ? `<div class="xfer">\u{1F4B0} ${transfer.amount}c · ${esc(transfer.from)} → ${esc(transfer.to)}</div>`
+          : '') +
         (gossip ? `<div class="gossip-line">\u{1F5E3}️ ${esc(gossip)}</div>` : '') +
         `<button class="expand-btn">▸ dialogue (${dialogue.length})</button>` +
         `<div class="dialogue">${dialogue.map((x) => `<div class="line"><b>${esc(x.speaker)}:</b> ${esc(x.line)}</div>`).join('')}</div>`
@@ -270,7 +301,8 @@ export function initSidebar(conn: EngineConnection, world: WorldInfo): void {
       if (thought) html += `<div class="thought">${esc(thought)}</div>`
       if (biases?.length || seekScene?.length || seed) {
         html += '<div class="delib-detail">'
-        if (biases?.length) html += `<span>${biases.map((b) => `${b.action}${b.bias > 0 ? '+' : ''}${b.bias.toFixed(1)}`).join(', ')}</span> `
+        if (biases?.length)
+          html += `<span>${biases.map((b) => `${b.action}${b.bias > 0 ? '+' : ''}${b.bias.toFixed(1)}`).join(', ')}</span> `
         if (seekScene?.length) html += `<span>seek: ${seekScene.map((s) => esc(s.target)).join(', ')}</span> `
         if (seed) html += `<span>topic: ${esc(seed)}</span>`
         html += '</div>'
@@ -325,6 +357,5 @@ export function initSidebar(conn: EngineConnection, world: WorldInfo): void {
 export { switchTab }
 
 function esc(s: string): string {
-  return s.replace(/[&<>"]/g, (c) =>
-    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] ?? c)
+  return s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] ?? c)
 }

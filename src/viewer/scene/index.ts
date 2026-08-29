@@ -13,15 +13,26 @@ import { buildGround, animateWater, type TileInfo } from './ground.js'
 import { placeRoads } from './roads.js'
 import { placeVenues, placeFillers, placeStreetFurniture } from './buildings.js'
 import {
-  createAgents, renderPortraits, updateAgentViews, syncAnimation, isIndoors, routePoint,
+  createAgents,
+  renderPortraits,
+  updateAgentViews,
+  syncAnimation,
+  isIndoors,
+  routePoint,
   type AgentView,
 } from './agents.js'
 import { createLighting, applySkyForHour, type SkyRig } from './lighting.js'
 import { createVenueLabels, updateVenueLabels, updateAgentLabels } from './labels.js'
 import { Picker, type BuildingPick } from './picking.js'
 import {
-  createCamera, framingAllAgents, framingTile, snapTo, easeTo, zoom,
-  type CameraRig, type Focus,
+  createCamera,
+  framingAllAgents,
+  framingTile,
+  snapTo,
+  easeTo,
+  zoom,
+  type CameraRig,
+  type Focus,
 } from './camera.js'
 import type { EngineConnection, WorldInfo, StateMsg } from '../core/connection.js'
 
@@ -61,7 +72,7 @@ export class CityScene3D {
     private readonly world: WorldInfo,
   ) {
     this.grid = new CityGrid(world)
-    this.center = new THREE.Vector3(this.grid.size * TILE / 2, 0, this.grid.size * TILE / 2)
+    this.center = new THREE.Vector3((this.grid.size * TILE) / 2, 0, (this.grid.size * TILE) / 2)
 
     this.canvas = document.createElement('canvas')
     this.canvas.style.display = 'block'
@@ -121,7 +132,7 @@ export class CityScene3D {
 
     this.fitToAgents()
     this.setupEvents()
-    this.conn.onState(s => this.onState(s))
+    this.conn.onState((s) => this.onState(s))
     this.animate()
   }
 
@@ -287,8 +298,13 @@ export class CityScene3D {
       const doorTarget = wantIndoors ? 0 : 1
       const doorEase = 1 - Math.exp(-delta / 800)
       v.doorScale += (doorTarget - v.doorScale) * doorEase
-      if (v.doorScale < 0.01) { v.doorScale = 0; v.mesh.visible = false }
-      else { v.mesh.visible = true; v.mesh.scale.setScalar(v.baseScale * v.doorScale) }
+      if (v.doorScale < 0.01) {
+        v.doorScale = 0
+        v.mesh.visible = false
+      } else {
+        v.mesh.visible = true
+        v.mesh.scale.setScalar(v.baseScale * v.doorScale)
+      }
 
       const goal = v.travelling ? routePoint(v, v.p, this.grid.period) : { x: v.to.x, y: v.to.y }
       goal.x += v.spread.x
@@ -309,7 +325,11 @@ export class CityScene3D {
 
     const rect = this.renderer.domElement.getBoundingClientRect()
     updateVenueLabels(
-      this.venueLabels, this.grid, this.views, this.rig.camera, rect,
+      this.venueLabels,
+      this.grid,
+      this.views,
+      this.rig.camera,
+      rect,
       this.picker.hoveredBuilding != null,
     )
     updateAgentLabels(this.agentLabels, this.views, this.rig.camera, rect)

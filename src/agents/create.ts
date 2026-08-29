@@ -55,9 +55,7 @@ export function createAgent(input: CreateAgentInput, city: GeneratedCity): Creat
   }
 
   const def = occupationDef(input.occupation)
-  const vacancy = city.locations.find(
-    (l) => l.kind === def.worksAt && (city.openings.get(l.id) ?? 0) > 0,
-  )
+  const vacancy = city.locations.find((l) => l.kind === def.worksAt && (city.openings.get(l.id) ?? 0) > 0)
   if (vacancy != null) {
     city.openings.set(vacancy.id, (city.openings.get(vacancy.id) ?? 1) - 1)
   }

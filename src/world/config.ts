@@ -20,7 +20,10 @@ export type CityConfig = {
 
 export type WaterRegion = {
   kind: 'river' | 'sea' | 'lake'
-  x0: number; y0: number; x1: number; y1: number
+  x0: number
+  y0: number
+  x1: number
+  y1: number
 }
 
 export type CityTemplate = {
@@ -38,10 +41,11 @@ export type CityTemplate = {
 export function loadTemplate(path: string): CityTemplate {
   const raw = JSON.parse(readFileSync(path, 'utf8')) as Record<string, unknown>
   if (typeof raw.name !== 'string') throw new Error('template: missing name')
-  if (!Array.isArray(raw.venues) || raw.venues.length === 0) throw new Error('template: venues must be a non-empty array')
+  if (!Array.isArray(raw.venues) || raw.venues.length === 0)
+    throw new Error('template: venues must be a non-empty array')
   if (!Array.isArray(raw.blocks)) throw new Error('template: missing blocks')
   if (!Array.isArray(raw.homePlots)) throw new Error('template: missing homePlots')
-  const validKinds = new Set<string>(LOCATION_KINDS.filter(k => k !== 'home'))
+  const validKinds = new Set<string>(LOCATION_KINDS.filter((k) => k !== 'home'))
   for (const v of raw.venues as { kind: string }[]) {
     if (!validKinds.has(v.kind)) throw new Error(`template: unknown venue kind "${v.kind}"`)
   }

@@ -46,7 +46,8 @@ function toScreen(
   const p = pos.clone().project(camera)
   const x = p.x * (rect.width / 2) + rect.width / 2
   const y = -p.y * (rect.height / 2) + rect.height / 2
-  if (p.z > 1 || x < -MARGIN || x > rect.width + MARGIN || y < -MARGIN || y > rect.height + MARGIN) return null
+  if (p.z > 1 || x < -MARGIN || x > rect.width + MARGIN || y < -MARGIN || y > rect.height + MARGIN)
+    return null
   return { x, y }
 }
 
@@ -83,9 +84,8 @@ export function updateVenueLabels(
     pos.y = 1.8
     if (!position(label, toScreen(pos, camera, rect))) continue
 
-    const occHtml = occupants.map(v => `<span class="vl-agent">${v.name}</span>`).join('')
-    label.innerHTML =
-      `<span class="vl-name">${loc.name}</span><div class="vl-occ">${occHtml}</div><div class="vl-arrow"></div>`
+    const occHtml = occupants.map((v) => `<span class="vl-agent">${v.name}</span>`).join('')
+    label.innerHTML = `<span class="vl-name">${loc.name}</span><div class="vl-occ">${occHtml}</div><div class="vl-arrow"></div>`
   }
 }
 

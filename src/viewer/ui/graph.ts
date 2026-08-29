@@ -71,14 +71,15 @@ export function initGraph(): void {
     }
   })
   const tabContent = document.querySelector('.tab-content')
-  if (tabContent) observer.observe(tabContent, { subtree: true, attributes: true, attributeFilter: ['class'] })
+  if (tabContent)
+    observer.observe(tabContent, { subtree: true, attributes: true, attributeFilter: ['class'] })
 }
 
 async function refresh(): Promise<void> {
   try {
     resize()
     const res = await fetch(ENGINE_URL + '/rel-graph')
-    const raw = await res.json() as { nodes: { id: string; name: string }[]; edges: GraphEdge[] }
+    const raw = (await res.json()) as { nodes: { id: string; name: string }[]; edges: GraphEdge[] }
     if (!data || data.nodes.length !== raw.nodes.length) {
       const w = canvas?.clientWidth ?? 400
       const h = canvas?.clientHeight ?? 400
@@ -139,8 +140,8 @@ function resize(): void {
 }
 
 function applyForces(g: GraphData): void {
-  const w = (canvas?.clientWidth ?? 400)
-  const h = (canvas?.clientHeight ?? 400)
+  const w = canvas?.clientWidth ?? 400
+  const h = canvas?.clientHeight ?? 400
   const cx = w / 2
   const cy = h / 2
   const REPULSION = 30000
@@ -151,7 +152,8 @@ function applyForces(g: GraphData): void {
 
   for (const node of g.nodes) {
     if (node.id === dragging) continue
-    let fx = 0, fy = 0
+    let fx = 0,
+      fy = 0
 
     // Repulsion from every other node
     for (const other of g.nodes) {
@@ -227,8 +229,12 @@ function draw(g: GraphData): void {
   const NODE_R = 22
   for (const node of g.nodes) {
     const isHovered = hovered === node.id
-    const isConnected = hovered != null && g.edges.some(
-      (e) => (e.source === hovered && e.target === node.id) || (e.target === hovered && e.source === node.id))
+    const isConnected =
+      hovered != null &&
+      g.edges.some(
+        (e) =>
+          (e.source === hovered && e.target === node.id) || (e.target === hovered && e.source === node.id),
+      )
     const dimmed = hovered != null && !isHovered && !isConnected
 
     ctx.globalAlpha = dimmed ? 0.3 : 1
@@ -247,7 +253,11 @@ function draw(g: GraphData): void {
     ctx.font = `bold ${isHovered ? 11 : 10}px Inter, system-ui, sans-serif`
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
-    const initials = node.name.split(' ').map((w) => w[0]).join('').slice(0, 2)
+    const initials = node.name
+      .split(' ')
+      .map((w) => w[0])
+      .join('')
+      .slice(0, 2)
     ctx.fillText(initials, node.x, node.y)
 
     // Name below
@@ -262,12 +272,18 @@ function draw(g: GraphData): void {
   ctx.font = '10px Inter, system-ui, sans-serif'
   ctx.textAlign = 'left'
   const legendY = h - 14
-  ctx.fillStyle = colors.positive; ctx.fillRect(8, legendY - 4, 12, 3)
-  ctx.fillStyle = colors.text; ctx.fillText('positive', 24, legendY)
-  ctx.fillStyle = colors.negative; ctx.fillRect(78, legendY - 4, 12, 3)
-  ctx.fillStyle = colors.text; ctx.fillText('negative', 94, legendY)
-  ctx.fillStyle = colors.neutral; ctx.fillRect(152, legendY - 4, 12, 3)
-  ctx.fillStyle = colors.text; ctx.fillText('neutral', 168, legendY)
+  ctx.fillStyle = colors.positive
+  ctx.fillRect(8, legendY - 4, 12, 3)
+  ctx.fillStyle = colors.text
+  ctx.fillText('positive', 24, legendY)
+  ctx.fillStyle = colors.negative
+  ctx.fillRect(78, legendY - 4, 12, 3)
+  ctx.fillStyle = colors.text
+  ctx.fillText('negative', 94, legendY)
+  ctx.fillStyle = colors.neutral
+  ctx.fillRect(152, legendY - 4, 12, 3)
+  ctx.fillStyle = colors.text
+  ctx.fillText('neutral', 168, legendY)
 
   // Tooltip for hovered node
   if (hovered) {
@@ -312,7 +328,8 @@ function draw(g: GraphData): void {
           const r = related[i]!
           const ry = ty + pad + 18 + i * lineH
           const sentiment = r.aff + r.trust * 0.5 - r.griev
-          ctx.fillStyle = sentiment > 0.1 ? colors.positive : sentiment < -0.1 ? colors.negative : colors.neutral
+          ctx.fillStyle =
+            sentiment > 0.1 ? colors.positive : sentiment < -0.1 ? colors.negative : colors.neutral
           ctx.font = '11px Inter, system-ui, sans-serif'
           const firstName = r.name.split(' ')[0] ?? r.name
           ctx.fillText(`${firstName}  ${r.aff >= 0 ? '+' : ''}${r.aff.toFixed(2)}`, tx + pad, ry + 12)

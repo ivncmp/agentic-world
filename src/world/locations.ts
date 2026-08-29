@@ -52,8 +52,7 @@ export const MIN_STAY_TICKS: Partial<Record<LocationKind, number>> = {
 }
 
 /** Grid is walked in 8 directions, so diagonals cost the same as orthogonals. */
-export const tileDistance = (a: Tile, b: Tile): number =>
-  Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y))
+export const tileDistance = (a: Tile, b: Tile): number => Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y))
 
 /** Walking pace, in tiles per world hour. A tile is roughly a city block. */
 export const TILES_PER_HOUR = 12

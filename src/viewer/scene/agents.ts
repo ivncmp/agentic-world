@@ -40,10 +40,18 @@ export type AgentView = {
 
 export function animForState(state: string): string {
   switch (state) {
-    case 'travel': return 'walk'
-    case 'scene': return 'idle'
-    case 'work': case 'relax': case 'eat': case 'browse': case 'sleep': return 'sit'
-    default: return 'idle'
+    case 'travel':
+      return 'walk'
+    case 'scene':
+      return 'idle'
+    case 'work':
+    case 'relax':
+    case 'eat':
+    case 'browse':
+    case 'sleep':
+      return 'sit'
+    default:
+      return 'idle'
   }
 }
 
@@ -109,7 +117,7 @@ export function createAgents(
     group.userData = { agentId: a.id, agentName: a.name, pick: { agentId: a.id } }
     pickable.push(group)
 
-    const home = world.locations.find(l => l.id === `home-${a.id}`)
+    const home = world.locations.find((l) => l.id === `home-${a.id}`)
     const start = { x: home?.x ?? grid.size / 2, y: home?.y ?? grid.size / 2 }
     group.position.copy(grid.worldPos(start.x, start.y))
     scene.add(group)
@@ -206,8 +214,14 @@ export function routePoint(v: AgentView, p: number, period: number): { x: number
 
   const legs: [{ x: number; y: number }, { x: number; y: number }][] = [
     [from, { x: from.x, y: roadY }],
-    [{ x: from.x, y: roadY }, { x: roadX, y: roadY }],
-    [{ x: roadX, y: roadY }, { x: roadX, y: to.y }],
+    [
+      { x: from.x, y: roadY },
+      { x: roadX, y: roadY },
+    ],
+    [
+      { x: roadX, y: roadY },
+      { x: roadX, y: to.y },
+    ],
     [{ x: roadX, y: to.y }, to],
   ]
   const lengths = legs.map(([a, b]) => Math.abs(b.x - a.x) + Math.abs(b.y - a.y))
@@ -235,7 +249,7 @@ function spreadOffset(a: AgentSnapshot, here: string[]): { x: number; y: number 
     return { x: first ? -0.3 : 0.3, y: first ? 0.3 : -0.3 }
   }
   const i = here.indexOf(a.id)
-  const angle = (i / here.length) * Math.PI * 2 + ((hash(a.id) % 100) / 100)
+  const angle = (i / here.length) * Math.PI * 2 + (hash(a.id) % 100) / 100
   const r = 0.34
   return { x: Math.cos(angle) * r, y: Math.sin(angle) * r }
 }

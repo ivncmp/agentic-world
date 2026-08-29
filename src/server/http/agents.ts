@@ -60,11 +60,14 @@ export async function agentDetail(world: World, id: string): Promise<unknown | n
     money: Math.round(a.money),
     location: world.placeOf(a.location),
     activity: a.activity?.kind ?? 'idle',
-    job: a.job == null ? null : {
-      employer: world.placeOf(a.job.employerId),
-      wage: a.job.wage,
-      shift: `${a.job.shiftStart}:00–${a.job.shiftEnd}:00`,
-    },
+    job:
+      a.job == null
+        ? null
+        : {
+            employer: world.placeOf(a.job.employerId),
+            wage: a.job.wage,
+            shift: `${a.job.shiftStart}:00–${a.job.shiftEnd}:00`,
+          },
     housing: a.housing,
     needs: a.needs,
     goals: a.goals,
@@ -94,13 +97,20 @@ function parseCreateInput(world: World, raw: Record<string, unknown>): CreateAge
 
   // Exactly two vices, always: they are the designed friction against every
   // agent converging on the same agreeable personality.
-  if (!Array.isArray(raw.vices) || raw.vices.length !== 2 ||
-      !raw.vices.every((v: unknown) => typeof v === 'string' && v in VICE_CATALOG))
+  if (
+    !Array.isArray(raw.vices) ||
+    raw.vices.length !== 2 ||
+    !raw.vices.every((v: unknown) => typeof v === 'string' && v in VICE_CATALOG)
+  )
     throw new Error(`vices must be exactly 2 from: ${Object.keys(VICE_CATALOG).join(', ')}`)
 
-  const id = typeof raw.id === 'string' && raw.id.trim() !== ''
-    ? raw.id.trim()
-    : name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+  const id =
+    typeof raw.id === 'string' && raw.id.trim() !== ''
+      ? raw.id.trim()
+      : name
+          .toLowerCase()
+          .replace(/\s+/g, '-')
+          .replace(/[^a-z0-9-]/g, '')
   if (world.state.agents.some((a) => a.id === id)) throw new Error(`agent "${id}" already exists`)
 
   const base: Partial<Record<ValueAxis, number>> = {}
@@ -116,7 +126,9 @@ function parseCreateInput(world: World, raw: Record<string, unknown>): CreateAge
     Array.isArray(x) ? x.filter((s): s is string => typeof s === 'string') : []
 
   return {
-    id, name, ownerId,
+    id,
+    name,
+    ownerId,
     occupation: raw.occupation as CreateAgentInput['occupation'],
     base,
     vices: raw.vices as [ViceKind, ViceKind],
@@ -153,7 +165,10 @@ export async function addAgent(
     if (world.store instanceof DbrainStore) await world.store.ensureAgent(input.id, input.name)
     for (const fact of buildFoundingIdentity(created.agent)) {
       await world.store.remember({
-        agentId: created.agent.id, kind: 'identity', text: fact, tick: world.state.tick,
+        agentId: created.agent.id,
+        kind: 'identity',
+        text: fact,
+        tick: world.state.tick,
       })
     }
 
@@ -166,10 +181,13 @@ export async function addAgent(
       name: created.agent.name,
       home: created.home.name,
       district: created.home.district,
-      job: created.agent.job == null ? null : {
-        employer: world.placeOf(created.agent.job.employerId),
-        wage: created.agent.job.wage,
-      },
+      job:
+        created.agent.job == null
+          ? null
+          : {
+              employer: world.placeOf(created.agent.job.employerId),
+              wage: created.agent.job.wage,
+            },
       money: created.agent.money,
       ...(ownerToken != null ? { ownerToken } : {}),
     })

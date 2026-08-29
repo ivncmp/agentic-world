@@ -4,23 +4,41 @@ import { zeroVector } from '../../agents/values.js'
 import type { Agent } from '../../agents/agent.js'
 
 const agent = (over: Partial<Agent> = {}): Agent => ({
-  id: 'a', name: 'Alice', ownerId: 'o', occupation: 'clerk',
+  id: 'a',
+  name: 'Alice',
+  ownerId: 'o',
+  occupation: 'clerk',
   values: { base: { ...zeroVector(), honesty: 0.8 }, drift: zeroVector(), guidance: {} },
-  vices: [{ kind: 'gambling', urge: 0.75 }, { kind: 'idleness', urge: 0 }],
+  vices: [
+    { kind: 'gambling', urge: 0.75 },
+    { kind: 'idleness', urge: 0 },
+  ],
   needs: { hunger: 0.2, energy: 0.3, social: 0.4, hygiene: 0.2, fun: 0.3 },
-  money: 80, location: 'bar-1', job: null,
+  money: 80,
+  location: 'bar-1',
+  job: null,
   housing: { kind: 'rent', due: 25, arrears: 0 },
-  arrivedTick: null, lastTheftTick: null, lastReflectionDay: 0,
-  activity: null, goals: [], constraints: [], interests: [],
-  deliberation: null, lastDeliberationTick: 0, lastCrisisTick: 0,
+  arrivedTick: null,
+  lastTheftTick: null,
+  lastReflectionDay: 0,
+  activity: null,
+  goals: [],
+  constraints: [],
+  interests: [],
+  deliberation: null,
+  lastDeliberationTick: 0,
+  lastCrisisTick: 0,
   ...over,
 })
 
 describe('buildCrisisPrompt', () => {
   it('includes agent name and occupation', () => {
     const prompt = buildCrisisPrompt({
-      agent: agent(), values: { ...zeroVector(), honesty: 0.8 },
-      kind: 'vice_temptation', context: 'Your gambling urge is building (75%).', tick: 1,
+      agent: agent(),
+      values: { ...zeroVector(), honesty: 0.8 },
+      kind: 'vice_temptation',
+      context: 'Your gambling urge is building (75%).',
+      tick: 1,
     })
     expect(prompt).toContain('Alice')
     expect(prompt).toContain('clerk')
@@ -28,16 +46,22 @@ describe('buildCrisisPrompt', () => {
 
   it('includes crisis context', () => {
     const prompt = buildCrisisPrompt({
-      agent: agent(), values: zeroVector(),
-      kind: 'deep_debt', context: 'You owe 100 credits in unpaid rent.', tick: 1,
+      agent: agent(),
+      values: zeroVector(),
+      kind: 'deep_debt',
+      context: 'You owe 100 credits in unpaid rent.',
+      tick: 1,
     })
     expect(prompt).toContain('100 credits')
   })
 
   it('includes personality traits', () => {
     const prompt = buildCrisisPrompt({
-      agent: agent(), values: { ...zeroVector(), honesty: 0.8 },
-      kind: 'vice_temptation', context: 'test', tick: 1,
+      agent: agent(),
+      values: { ...zeroVector(), honesty: 0.8 },
+      kind: 'vice_temptation',
+      context: 'test',
+      tick: 1,
     })
     expect(prompt).toContain('high honesty')
   })

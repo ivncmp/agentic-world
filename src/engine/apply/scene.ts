@@ -44,7 +44,10 @@ export function applySceneOutcome(
   const aIsFirst = aId < bId
   const relationships = new Map(state.relationships)
   relationships.set(key, {
-    affection: adjustFeeling(prev.affection, aIsFirst ? outcome.deltas.aToB.affection : outcome.deltas.bToA.affection),
+    affection: adjustFeeling(
+      prev.affection,
+      aIsFirst ? outcome.deltas.aToB.affection : outcome.deltas.bToA.affection,
+    ),
     trust: adjustFeeling(prev.trust, aIsFirst ? outcome.deltas.aToB.trust : outcome.deltas.bToA.trust),
     // Settling reduces what is owed; lending increases it.
     debt: prev.debt + (aIsFirst ? -moved + lent : moved - lent),
@@ -65,8 +68,6 @@ export function applySceneOutcome(
 export function abandonScene(state: WorldState, aId: AgentId, bId: AgentId): WorldState {
   return {
     ...state,
-    agents: state.agents.map((x) =>
-      x.id === aId || x.id === bId ? { ...x, activity: null } : x,
-    ) as Agent[],
+    agents: state.agents.map((x) => (x.id === aId || x.id === bId ? { ...x, activity: null } : x)) as Agent[],
   }
 }

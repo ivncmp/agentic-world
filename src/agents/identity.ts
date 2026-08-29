@@ -61,7 +61,9 @@ export function buildFoundingIdentity(agent: Agent): string[] {
   }
 
   if (agent.interests.length > 0) {
-    facts.push(`I enjoy ${agent.interests.join(', ')}. These are the things I talk about when I do not know what else to say.`)
+    facts.push(
+      `I enjoy ${agent.interests.join(', ')}. These are the things I talk about when I do not know what else to say.`,
+    )
   }
 
   for (const c of agent.constraints) {

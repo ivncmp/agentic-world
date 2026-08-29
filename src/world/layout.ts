@@ -55,7 +55,14 @@ export type CityLayout = {
 
 /** Local offsets within a block, corners first then edge midpoints. */
 const PLOT_ORDER: readonly [number, number][] = [
-  [0, 0], [2, 2], [2, 0], [0, 2], [1, 0], [0, 1], [2, 1], [1, 2],
+  [0, 0],
+  [2, 2],
+  [2, 0],
+  [0, 2],
+  [1, 0],
+  [0, 1],
+  [2, 1],
+  [1, 2],
 ]
 
 /**
@@ -75,10 +82,7 @@ export function cityLayout(blocksPerSide = 5): CityLayout {
     for (let bx = 0; bx < blocksPerSide; bx++) {
       const ring = Math.max(Math.abs(bx - c), Math.abs(by - c))
       const role: BlockRole =
-        ring === 0 ? 'plaza'
-          : isGreenBlock(bx, by, c) ? 'green'
-            : ring === 1 ? 'civic'
-              : 'residential'
+        ring === 0 ? 'plaza' : isGreenBlock(bx, by, c) ? 'green' : ring === 1 ? 'civic' : 'residential'
 
       const ox = bx * period + 1
       const oy = by * period + 1

@@ -57,26 +57,30 @@ export class CognitionWorker {
       defaultJobOptions: { removeOnComplete: true, removeOnFail: 100 },
     })
 
-    this.worker = new Worker(QUEUE_NAME, async (bullJob: BullJob<Job>) => {
-      const job = bullJob.data
-      const kind = job.kind
-      this.queuedByKind[kind] = Math.max(0, (this.queuedByKind[kind] ?? 1) - 1)
-      this.runningByKind[kind] = (this.runningByKind[kind] ?? 0) + 1
-      try {
-        const result = await handler(job)
-        this.spent += result.costUsd
-        this.inputTokens += result.inputTokens
-        this.outputTokens += result.outputTokens
-        this.completed++
-        return result
-      } finally {
-        this.runningByKind[kind] = Math.max(0, (this.runningByKind[kind] ?? 1) - 1)
-        this._pending = Math.max(0, this._pending - 1)
-      }
-    }, {
-      connection: workerConn,
-      concurrency: opts.concurrency ?? MAX_CONCURRENT,
-    })
+    this.worker = new Worker(
+      QUEUE_NAME,
+      async (bullJob: BullJob<Job>) => {
+        const job = bullJob.data
+        const kind = job.kind
+        this.queuedByKind[kind] = Math.max(0, (this.queuedByKind[kind] ?? 1) - 1)
+        this.runningByKind[kind] = (this.runningByKind[kind] ?? 0) + 1
+        try {
+          const result = await handler(job)
+          this.spent += result.costUsd
+          this.inputTokens += result.inputTokens
+          this.outputTokens += result.outputTokens
+          this.completed++
+          return result
+        } finally {
+          this.runningByKind[kind] = Math.max(0, (this.runningByKind[kind] ?? 1) - 1)
+          this._pending = Math.max(0, this._pending - 1)
+        }
+      },
+      {
+        connection: workerConn,
+        concurrency: opts.concurrency ?? MAX_CONCURRENT,
+      },
+    )
 
     this.worker.on('failed', (_job, err) => {
       console.error('cognition job failed:', err.message)
@@ -108,7 +112,7 @@ export class CognitionWorker {
     }
     for (const [kind, n] of Object.entries(this.runningByKind)) {
       if (n > 0) {
-        const e = out[kind] ??= { queued: 0, running: 0 }
+        const e = (out[kind] ??= { queued: 0, running: 0 })
         e.running = n
       }
     }

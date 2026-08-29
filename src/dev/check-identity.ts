@@ -1,8 +1,21 @@
 import { DBrainClient } from '@dtoolkit/sdk'
 
-const c = new DBrainClient({ baseUrl: process.env.DBRAIN_URL ?? 'http://localhost:7978', token: process.env.DBRAIN_TOKEN ?? '' })
+const c = new DBrainClient({
+  baseUrl: process.env.DBRAIN_URL ?? 'http://localhost:7978',
+  token: process.env.DBRAIN_TOKEN ?? '',
+})
 
-const ids = ['marta-reyes','juan-ortega','lucia-chen','pedro-vasquez','sara-nilsson','michael-morris','laura-mcgonaghal','peter-file','john-beabery']
+const ids = [
+  'marta-reyes',
+  'juan-ortega',
+  'lucia-chen',
+  'pedro-vasquez',
+  'sara-nilsson',
+  'michael-morris',
+  'laura-mcgonaghal',
+  'peter-file',
+  'john-beabery',
+]
 
 async function main() {
   for (const id of ids) {

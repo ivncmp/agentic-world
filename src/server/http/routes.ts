@@ -47,7 +47,8 @@ export function createRequestHandler(deps: RouteDeps) {
         case '/guidance':
           return withBody(req, (b) => handleGuidance(world, feed, b, res))
       }
-      res.writeHead(404); res.end()
+      res.writeHead(404)
+      res.end()
       return
     }
 
@@ -55,16 +56,28 @@ export function createRequestHandler(deps: RouteDeps) {
     const token = url.searchParams.get('token') ?? ''
 
     switch (path) {
-      case '/briefing': void handleBriefing(world, id, token, res); return
-      case '/dilemmas': void handleDilemmas(world, id, token, res); return
+      case '/briefing':
+        void handleBriefing(world, id, token, res)
+        return
+      case '/dilemmas':
+        void handleDilemmas(world, id, token, res)
+        return
       case '/agent':
         void agentDetail(world, id).then((detail) => {
-          if (detail == null) { res.writeHead(404); res.end(); return }
+          if (detail == null) {
+            res.writeHead(404)
+            res.end()
+            return
+          }
           json(res, 200, detail)
         })
         return
       case '/metering':
-        if (world.history == null) { res.writeHead(503); res.end(); return }
+        if (world.history == null) {
+          res.writeHead(503)
+          res.end()
+          return
+        }
         void world.history.meteringSummary().then((data) => json(res, 200, data))
         return
       case '/health':
@@ -74,12 +87,19 @@ export function createRequestHandler(deps: RouteDeps) {
           time: worldTime(world.state.tick).toISOString(),
         })
         return
-      case '/world': json(res, 200, worldPayload(world)); return
-      case '/rel-graph': json(res, 200, relationshipGraph(world)); return
-      case '/state': json(res, 200, { state: feed.snapshot(), feed: feed.recent() }); return
+      case '/world':
+        json(res, 200, worldPayload(world))
+        return
+      case '/rel-graph':
+        json(res, 200, relationshipGraph(world))
+        return
+      case '/state':
+        json(res, 200, { state: feed.snapshot(), feed: feed.recent() })
+        return
     }
 
-    res.writeHead(404); res.end()
+    res.writeHead(404)
+    res.end()
   }
 }
 
@@ -102,11 +122,17 @@ function worldPayload(world: World): unknown {
       water: city.water,
     },
     locations: world.locations.map((l) => ({
-      id: l.id, kind: l.kind, name: l.name, district: l.district,
-      x: l.tile.x, y: l.tile.y,
+      id: l.id,
+      kind: l.kind,
+      name: l.name,
+      district: l.district,
+      x: l.tile.x,
+      y: l.tile.y,
     })),
     agents: world.state.agents.map((a) => ({
-      id: a.id, name: a.name, occupation: occupationDef(a.occupation).label,
+      id: a.id,
+      name: a.name,
+      occupation: occupationDef(a.occupation).label,
     })),
   }
 }
@@ -115,17 +141,24 @@ function worldPayload(world: World): unknown {
 function relationshipGraph(world: World): unknown {
   const nodes = world.state.agents.map((a) => ({ id: a.id, name: a.name }))
   const edges: {
-    source: string; target: string
-    affection: number; trust: number; grievance: number; encounters: number
+    source: string
+    target: string
+    affection: number
+    trust: number
+    grievance: number
+    encounters: number
   }[] = []
 
   for (const [key, rel] of world.state.relationships) {
     if (rel.encounters === 0) continue
     const parts = key.split(':')
     edges.push({
-      source: parts[0]!, target: parts[1]!,
-      affection: round2(rel.affection), trust: round2(rel.trust),
-      grievance: round2(rel.grievance), encounters: rel.encounters,
+      source: parts[0]!,
+      target: parts[1]!,
+      affection: round2(rel.affection),
+      trust: round2(rel.trust),
+      grievance: round2(rel.grievance),
+      encounters: rel.encounters,
     })
   }
   return { nodes, edges }

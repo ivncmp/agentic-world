@@ -32,8 +32,7 @@ export const stampToTick = (stamp: string): number => {
   return tickAt(ms)
 }
 
-const categoryFor = (kind: MemoryKind, secondHand: boolean): string =>
-  secondHand ? 'hearsay' : kind
+const categoryFor = (kind: MemoryKind, secondHand: boolean): string => (secondHand ? 'hearsay' : kind)
 
 export class DbrainStore implements MemoryStore {
   private readonly known = new Set<AgentId>()
@@ -109,9 +108,7 @@ export class DbrainStore implements MemoryStore {
   }
 
   async identity(who: AgentId): Promise<Memory[]> {
-    return (await this.facts(who))
-      .map((f) => DbrainStore.parse(who, f))
-      .filter((m) => m.kind === 'identity')
+    return (await this.facts(who)).map((f) => DbrainStore.parse(who, f)).filter((m) => m.kind === 'identity')
   }
 
   /**

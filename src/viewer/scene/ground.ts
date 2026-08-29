@@ -61,13 +61,22 @@ export function buildGround(scene: THREE.Scene, grid: CityGrid): Ground {
       let yOff = 0
 
       if (grid.sea.has(k)) {
-        mat = waterMat; yOff = WATER_Y; info.water = 'sea'
+        mat = waterMat
+        yOff = WATER_Y
+        info.water = 'sea'
       } else if (grid.isBridge(gx, gy)) {
-        mat = waterMat; yOff = WATER_Y; info.water = 'river'; info.bridge = true
+        mat = waterMat
+        yOff = WATER_Y
+        info.water = 'river'
+        info.bridge = true
       } else if (grid.river.has(k)) {
-        mat = waterMat; yOff = WATER_Y; info.water = 'river'
+        mat = waterMat
+        yOff = WATER_Y
+        info.water = 'river'
       } else if (grid.lake.has(k)) {
-        mat = waterMat; yOff = WATER_Y; info.water = 'lake'
+        mat = waterMat
+        yOff = WATER_Y
+        info.water = 'lake'
       } else if (grid.isStreet(gx, gy)) {
         // Roads carry their own surface; only the coastal strip needs sand under it
         if (!grid.adjSea(gx, gy)) {
@@ -79,8 +88,11 @@ export function buildGround(scene: THREE.Scene, grid: CityGrid): Ground {
         if (block.role === 'plaza') mat = MAT.dirt
         else if (block.role === 'green') mat = MAT.grassLight
         else if (block.role === 'harbor') mat = MAT.sand
-        else if (block.role === 'sea') { mat = waterMat; yOff = WATER_Y; info.water = 'sea' }
-        else mat = MAT.grass
+        else if (block.role === 'sea') {
+          mat = waterMat
+          yOff = WATER_Y
+          info.water = 'sea'
+        } else mat = MAT.grass
       } else {
         mat = MAT.grass
       }

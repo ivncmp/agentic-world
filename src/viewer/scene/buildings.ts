@@ -11,7 +11,12 @@ import { hash } from '../core/hash.js'
 import type { CityGrid } from './grid.js'
 import type { PlaceFn } from './assets.js'
 import {
-  COMMERCIAL_POOL, SKYSCRAPER_POOL, LOW_DETAIL_POOL, SUBURBAN_POOL, INDUSTRIAL_POOL, VENUE_MODELS,
+  COMMERCIAL_POOL,
+  SKYSCRAPER_POOL,
+  LOW_DETAIL_POOL,
+  SUBURBAN_POOL,
+  INDUSTRIAL_POOL,
+  VENUE_MODELS,
 } from './assets.js'
 import type { LocationInfo } from '../core/connection.js'
 
@@ -25,12 +30,16 @@ const quarterTurns = (gx: number, gy: number, salt: string): number =>
 export function placeVenues(grid: CityGrid, place: PlaceFn): Map<string, THREE.Object3D> {
   const meshes = new Map<string, THREE.Object3D>()
   for (const v of grid.locations) {
-    const obj = v.kind === 'park'
-      ? place(parkModel(v), v.x, v.y, 0, { venue: v, role: null })
-      : place(
-        pickFrom(VENUE_MODELS[v.kind] ?? COMMERCIAL_POOL, v.x, v.y, v.name),
-        v.x, v.y, quarterTurns(v.x, v.y, 'rot'), { venue: v, role: null },
-      )
+    const obj =
+      v.kind === 'park'
+        ? place(parkModel(v), v.x, v.y, 0, { venue: v, role: null })
+        : place(
+            pickFrom(VENUE_MODELS[v.kind] ?? COMMERCIAL_POOL, v.x, v.y, v.name),
+            v.x,
+            v.y,
+            quarterTurns(v.x, v.y, 'rot'),
+            { venue: v, role: null },
+          )
     if (obj) meshes.set(v.id, obj)
   }
   return meshes
@@ -64,11 +73,21 @@ export function placeFillers(grid: CityGrid, place: PlaceFn): void {
       const rot = quarterTurns(gx, gy, 'rot')
 
       switch (block.role) {
-        case 'civic': fillCivic(place, gx, gy, rot, middle); break
-        case 'residential': fillResidential(place, gx, gy, rot, grid.districtOf(bx, by)); break
-        case 'green': fillGreen(place, gx, gy, rot, middle, lx, ly); break
-        case 'plaza': fillPlaza(place, gx, gy, rot, middle, lx, ly); break
-        case 'harbor': fillHarbor(place, gx, gy, rot); break
+        case 'civic':
+          fillCivic(place, gx, gy, rot, middle)
+          break
+        case 'residential':
+          fillResidential(place, gx, gy, rot, grid.districtOf(bx, by))
+          break
+        case 'green':
+          fillGreen(place, gx, gy, rot, middle, lx, ly)
+          break
+        case 'plaza':
+          fillPlaza(place, gx, gy, rot, middle, lx, ly)
+          break
+        case 'harbor':
+          fillHarbor(place, gx, gy, rot)
+          break
       }
     }
   }
@@ -107,7 +126,13 @@ function fillResidential(place: PlaceFn, gx: number, gy: number, rot: number, di
 }
 
 function fillGreen(
-  place: PlaceFn, gx: number, gy: number, rot: number, middle: boolean, lx: number, ly: number,
+  place: PlaceFn,
+  gx: number,
+  gy: number,
+  rot: number,
+  middle: boolean,
+  lx: number,
+  ly: number,
 ): void {
   if (middle) {
     place('planter', gx, gy)
@@ -120,7 +145,13 @@ function fillGreen(
 }
 
 function fillPlaza(
-  place: PlaceFn, gx: number, gy: number, rot: number, middle: boolean, lx: number, ly: number,
+  place: PlaceFn,
+  gx: number,
+  gy: number,
+  rot: number,
+  middle: boolean,
+  lx: number,
+  ly: number,
 ): void {
   if (middle) {
     place('parasol', gx, gy)

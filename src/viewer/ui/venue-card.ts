@@ -1,23 +1,51 @@
-import type { EngineConnection, WorldInfo, LocationInfo, StateMsg, AgentSnapshot } from '../core/connection.js'
+import type {
+  EngineConnection,
+  WorldInfo,
+  LocationInfo,
+  StateMsg,
+  AgentSnapshot,
+} from '../core/connection.js'
 import { avatarImg } from './avatar.js'
 
 const KIND_LABEL: Record<string, string> = {
-  home: 'Home', bar: 'Bar', office: 'Offices', shop: 'Shop',
-  supermarket: 'Supermarket', clinic: 'Clinic', school: 'School',
-  gym: 'Gym', garage: 'Garage', park: 'Park', plaza: 'Plaza',
-  cinema: 'Cinema', bowling: 'Bowling', cafe: 'Cafe',
+  home: 'Home',
+  bar: 'Bar',
+  office: 'Offices',
+  shop: 'Shop',
+  supermarket: 'Supermarket',
+  clinic: 'Clinic',
+  school: 'School',
+  gym: 'Gym',
+  garage: 'Garage',
+  park: 'Park',
+  plaza: 'Plaza',
+  cinema: 'Cinema',
+  bowling: 'Bowling',
+  cafe: 'Cafe',
 }
 
 const ROLE_LABEL: Record<string, string> = {
-  residential: 'Residential Building', civic: 'Office Building',
-  plaza: 'Plaza', green: 'Park',
+  residential: 'Residential Building',
+  civic: 'Office Building',
+  plaza: 'Plaza',
+  green: 'Park',
 }
 
 const STATE_COLORS: Record<string, string> = {
-  sleep: '#60a5fa', work: '#4ade80', travel: '#fbbf24', scene: '#e879f9',
-  steal: '#f87171', indulge_vice: '#fb923c', socialize: '#a78bfa',
-  eat: '#facc15', relax: '#34d399', idle: '#94a3b8', exercise: '#38bdf8',
-  seek_job: '#fb7185', browse: '#a78bfa', wash: '#67e8f9',
+  sleep: '#60a5fa',
+  work: '#4ade80',
+  travel: '#fbbf24',
+  scene: '#e879f9',
+  steal: '#f87171',
+  indulge_vice: '#fb923c',
+  socialize: '#a78bfa',
+  eat: '#facc15',
+  relax: '#34d399',
+  idle: '#94a3b8',
+  exercise: '#38bdf8',
+  seek_job: '#fb7185',
+  browse: '#a78bfa',
+  wash: '#67e8f9',
 }
 
 let el: HTMLElement | null = null
@@ -30,7 +58,7 @@ export function initVenueCard(conn: EngineConnection, world: WorldInfo): void {
   el.hidden = true
   document.body.appendChild(el)
 
-  const locMap = new Map(world.locations.map(l => [l.id, l]))
+  const locMap = new Map(world.locations.map((l) => [l.id, l]))
 
   conn.onState((s: StateMsg) => {
     latestAgents = s.agents
@@ -44,7 +72,10 @@ export function initVenueCard(conn: EngineConnection, world: WorldInfo): void {
   el.addEventListener('pointerup', (ev) => ev.stopPropagation())
   el.addEventListener('click', (ev) => {
     const t = ev.target as HTMLElement
-    if (t.closest('[data-close]')) { closeCard(); return }
+    if (t.closest('[data-close]')) {
+      closeCard()
+      return
+    }
     const row = t.closest('[data-agent]')
     const agentId = row?.getAttribute('data-agent')
     if (agentId != null) {
@@ -62,7 +93,10 @@ export function initVenueCard(conn: EngineConnection, world: WorldInfo): void {
 
     if (detail.id == null) {
       const clickId = `filler-${detail.role}`
-      if (openId === clickId) { closeCard(); return }
+      if (openId === clickId) {
+        closeCard()
+        return
+      }
       openId = clickId
       el!.hidden = false
       renderFiller(detail.role ?? 'residential')
@@ -71,7 +105,10 @@ export function initVenueCard(conn: EngineConnection, world: WorldInfo): void {
 
     const loc = locMap.get(detail.id)
     if (loc == null) return
-    if (openId === detail.id) { closeCard(); return }
+    if (openId === detail.id) {
+      closeCard()
+      return
+    }
     openId = detail.id
     el!.hidden = false
     render(loc)
@@ -87,7 +124,7 @@ function closeCard(): void {
 
 function render(loc: LocationInfo): void {
   if (el == null) return
-  const occupants = latestAgents.filter(a => a.at === loc.id && a.state !== 'travel')
+  const occupants = latestAgents.filter((a) => a.at === loc.id && a.state !== 'travel')
   const kindLabel = KIND_LABEL[loc.kind] ?? loc.kind
 
   el.innerHTML = `
@@ -107,14 +144,16 @@ function occupantsBlock(occupants: AgentSnapshot[]): string {
   if (occupants.length === 0) {
     return section('inside', '<div class="dim">nobody here</div>')
   }
-  const rows = occupants.map(a => {
-    const col = STATE_COLORS[a.state] ?? '#94a3b8'
-    return `<tr data-agent="${a.id}">
+  const rows = occupants
+    .map((a) => {
+      const col = STATE_COLORS[a.state] ?? '#94a3b8'
+      return `<tr data-agent="${a.id}">
       <td>${avatarImg(a.id)}${esc(a.name)}</td>
       <td style="color:${col}">${esc(a.state)}</td>
       <td class="dim">${esc(a.occupation)}</td>
     </tr>`
-  }).join('')
+    })
+    .join('')
   return section(
     `inside <span class="hint">${occupants.length}</span>`,
     `<table class="occupants">${rows}</table>`,
@@ -137,10 +176,8 @@ function renderFiller(role: string): void {
     </div>`
 }
 
-const section = (title: string, body: string): string =>
-  `<section><h3>${title}</h3>${body}</section>`
+const section = (title: string, body: string): string => `<section><h3>${title}</h3>${body}</section>`
 
 function esc(s: string): string {
-  return s.replace(/[&<>"]/g, c =>
-    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] ?? c)
+  return s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] ?? c)
 }

@@ -16,7 +16,8 @@
  * when a task word follows it closely.
  */
 const REFUSAL_VERB = /\bi(?:'m| am)?\s*(?:can(?:no|')?t|won'?t|am not|'m not|do not|don'?t)\b/
-const TASK_WORD = /\b(?:help|assist|roleplay|role-play|write|generate|create|produce|provide|engage|comply|comfortable|appropriate)\b/
+const TASK_WORD =
+  /\b(?:help|assist|roleplay|role-play|write|generate|create|produce|provide|engage|comply|comfortable|appropriate)\b/
 
 export function looksLikeRefusal(text: string): boolean {
   const t = text.toLowerCase()
@@ -47,7 +48,10 @@ export function extractJsonObject(text: string): string {
   for (let i = start; i < text.length; i++) {
     const c = text[i]!
 
-    if (escaped) { escaped = false; continue }
+    if (escaped) {
+      escaped = false
+      continue
+    }
     if (inString) {
       if (c === '\\') escaped = true
       else if (c === '"') inString = false

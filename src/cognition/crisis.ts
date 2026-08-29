@@ -78,7 +78,6 @@ Do not open with an exclamation or an invocation — no "God", no "Christ", no "
 Respond with ONLY a JSON object: {"thought":"..."}`
 }
 
-
 /**
  * Returns `''` when there is no usable thought — the caller stores nothing
  * rather than putting a refusal in the agent's head. Crisis is the one route
@@ -93,15 +92,18 @@ export function parseCrisisResponse(text: string): string {
     try {
       const o = JSON.parse(json) as Record<string, unknown>
       if (typeof o.thought === 'string') return o.thought.trim().slice(0, 300)
-    } catch { /* fall through to raw text */ }
+    } catch {
+      /* fall through to raw text */
+    }
   }
-  return text.trim().replace(/^["']|["']$/g, '').trim().slice(0, 300)
+  return text
+    .trim()
+    .replace(/^["']|["']$/g, '')
+    .trim()
+    .slice(0, 300)
 }
 
-export async function resolveCrisis(
-  input: CrisisInput,
-  provider: ModelProvider,
-): Promise<CrisisResult> {
+export async function resolveCrisis(input: CrisisInput, provider: ModelProvider): Promise<CrisisResult> {
   const prompt = buildCrisisPrompt(input)
   const res: CompletionResult = await provider.complete({ prompt, purpose: 'crisis' })
   return {

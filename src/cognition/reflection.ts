@@ -32,8 +32,7 @@ export type ReflectionOutcome = {
 /** A day can nudge you; it cannot remake you. */
 export const MAX_DRIFT_PER_NIGHT = 0.1
 
-const traits = (v: ValueVector): string =>
-  VALUE_AXES.map((a) => `${a} ${v[a].toFixed(2)}`).join(', ')
+const traits = (v: ValueVector): string => VALUE_AXES.map((a) => `${a} ${v[a].toFixed(2)}`).join(', ')
 
 export function buildReflectionPrompt(input: {
   agent: Agent
@@ -45,9 +44,7 @@ export function buildReflectionPrompt(input: {
 }): string {
   const { agent, today } = input
   const events =
-    today.length === 0
-      ? '  (nothing of note happened today)'
-      : today.map((m) => `  - ${m.text}`).join('\n')
+    today.length === 0 ? '  (nothing of note happened today)' : today.map((m) => `  - ${m.text}`).join('\n')
   const who =
     input.relationships.length === 0
       ? '  (nobody yet)'
@@ -59,7 +56,9 @@ export function buildReflectionPrompt(input: {
           )
           .join('\n')
   const life =
-    input.identity.length === 0 ? '' : `\nWhat they carry:\n${input.identity.map((m) => `  - ${m.text}`).join('\n')}\n`
+    input.identity.length === 0
+      ? ''
+      : `\nWhat they carry:\n${input.identity.map((m) => `  - ${m.text}`).join('\n')}\n`
 
   return `End of day ${input.day}. ${agent.name}, ${occupationDef(agent.occupation).label.toLowerCase()}, is turning in.
 

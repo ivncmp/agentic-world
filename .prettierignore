@@ -1,0 +1,9 @@
+dist/
+node_modules/
+logs/
+pnpm-lock.yaml
+src/viewer/public/
+src/world/cities/
+*.sql
+*.glb
+*.png

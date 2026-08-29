@@ -4,15 +4,30 @@ import type { Agent, Relationship } from '../../agents/agent.js'
 import { zeroVector } from '../../agents/values.js'
 
 const agent = (id: string, over: Partial<Agent> = {}): Agent => ({
-  id, name: id, ownerId: 'o', occupation: 'clerk',
+  id,
+  name: id,
+  ownerId: 'o',
+  occupation: 'clerk',
   values: { base: zeroVector(), drift: zeroVector(), guidance: {} },
-  vices: [{ kind: 'grudge', urge: 0 }, { kind: 'idleness', urge: 0 }],
+  vices: [
+    { kind: 'grudge', urge: 0 },
+    { kind: 'idleness', urge: 0 },
+  ],
   needs: { hunger: 0.2, energy: 0.3, social: 0.4, hygiene: 0.2, fun: 0.3 },
-  money: 80, location: 'bar-1', job: { employerId: 'office-1', wage: 15, shiftStart: 9, shiftEnd: 17 },
+  money: 80,
+  location: 'bar-1',
+  job: { employerId: 'office-1', wage: 15, shiftStart: 9, shiftEnd: 17 },
   housing: { kind: 'rent', due: 25, arrears: 0 },
-  arrivedTick: null, lastTheftTick: null, lastReflectionDay: 0,
-  activity: null, goals: [], constraints: [], interests: ['poker', 'cooking'],
-  deliberation: null, lastDeliberationTick: 0, lastCrisisTick: 0,
+  arrivedTick: null,
+  lastTheftTick: null,
+  lastReflectionDay: 0,
+  activity: null,
+  goals: [],
+  constraints: [],
+  interests: ['poker', 'cooking'],
+  deliberation: null,
+  lastDeliberationTick: 0,
+  lastCrisisTick: 0,
   ...over,
 })
 
@@ -21,7 +36,10 @@ const validIds = new Set(['alice', 'bob', 'carol'])
 describe('parseDeliberation', () => {
   it('parses well-formed JSON', () => {
     const text = JSON.stringify({
-      biases: [{ action: 'eat', bias: 0.8 }, { action: 'work', bias: -0.3 }],
+      biases: [
+        { action: 'eat', bias: 0.8 },
+        { action: 'work', bias: -0.3 },
+      ],
       seekScene: [{ target: 'alice', reason: 'we should meet' }],
       conversationSeed: 'the new park opening',
       thought: 'I should eat something before work.',
@@ -37,8 +55,13 @@ describe('parseDeliberation', () => {
 
   it('rejects invalid action kinds', () => {
     const text = JSON.stringify({
-      biases: [{ action: 'fly_to_moon', bias: 1 }, { action: 'eat', bias: 0.5 }],
-      seekScene: [], conversationSeed: null, thought: 'hmm',
+      biases: [
+        { action: 'fly_to_moon', bias: 1 },
+        { action: 'eat', bias: 0.5 },
+      ],
+      seekScene: [],
+      conversationSeed: null,
+      thought: 'hmm',
     })
     const o = parseDeliberation(text, validIds, 'bob')
     expect(o.biases).toHaveLength(1)
@@ -47,8 +70,12 @@ describe('parseDeliberation', () => {
 
   it('rejects unknown agent ids in seekScene', () => {
     const text = JSON.stringify({
-      biases: [], thought: '',
-      seekScene: [{ target: 'unknown-agent', reason: 'why' }, { target: 'alice', reason: 'ok' }],
+      biases: [],
+      thought: '',
+      seekScene: [
+        { target: 'unknown-agent', reason: 'why' },
+        { target: 'alice', reason: 'ok' },
+      ],
       conversationSeed: null,
     })
     const o = parseDeliberation(text, validIds, 'bob')
@@ -58,7 +85,9 @@ describe('parseDeliberation', () => {
 
   it('rejects self-targeting in seekScene', () => {
     const text = JSON.stringify({
-      biases: [], thought: '', conversationSeed: null,
+      biases: [],
+      thought: '',
+      conversationSeed: null,
       seekScene: [{ target: 'bob', reason: 'talk to myself' }],
     })
     const o = parseDeliberation(text, validIds, 'bob')
@@ -67,8 +96,13 @@ describe('parseDeliberation', () => {
 
   it('clamps bias values to [-1, 1]', () => {
     const text = JSON.stringify({
-      biases: [{ action: 'work', bias: 5 }, { action: 'eat', bias: -3 }],
-      seekScene: [], conversationSeed: null, thought: '',
+      biases: [
+        { action: 'work', bias: 5 },
+        { action: 'eat', bias: -3 },
+      ],
+      seekScene: [],
+      conversationSeed: null,
+      thought: '',
     })
     const o = parseDeliberation(text, validIds, 'bob')
     expect(o.biases[0]?.bias).toBe(1)
@@ -78,11 +112,15 @@ describe('parseDeliberation', () => {
   it('limits biases to 4', () => {
     const text = JSON.stringify({
       biases: [
-        { action: 'eat', bias: 0.1 }, { action: 'work', bias: 0.2 },
-        { action: 'sleep', bias: 0.3 }, { action: 'relax', bias: 0.4 },
+        { action: 'eat', bias: 0.1 },
+        { action: 'work', bias: 0.2 },
+        { action: 'sleep', bias: 0.3 },
+        { action: 'relax', bias: 0.4 },
         { action: 'browse', bias: 0.5 },
       ],
-      seekScene: [], conversationSeed: null, thought: '',
+      seekScene: [],
+      conversationSeed: null,
+      thought: '',
     })
     const o = parseDeliberation(text, validIds, 'bob')
     expect(o.biases).toHaveLength(4)
@@ -90,7 +128,9 @@ describe('parseDeliberation', () => {
 
   it('limits seekScene to 2', () => {
     const text = JSON.stringify({
-      biases: [], thought: '', conversationSeed: null,
+      biases: [],
+      thought: '',
+      conversationSeed: null,
       seekScene: [
         { target: 'alice', reason: 'a' },
         { target: 'bob', reason: 'b' },
@@ -112,14 +152,18 @@ describe('parseDeliberation', () => {
   })
 
   it('extracts JSON from surrounding text', () => {
-    const text = 'Here is my response:\n{"biases":[],"seekScene":[],"conversationSeed":null,"thought":"test"}\nDone.'
+    const text =
+      'Here is my response:\n{"biases":[],"seekScene":[],"conversationSeed":null,"thought":"test"}\nDone.'
     const o = parseDeliberation(text, validIds, 'bob')
     expect(o.thought).toBe('test')
   })
 
   it('treats literal string "null" as null for conversationSeed', () => {
     const text = JSON.stringify({
-      biases: [], seekScene: [], conversationSeed: 'null', thought: '',
+      biases: [],
+      seekScene: [],
+      conversationSeed: 'null',
+      thought: '',
     })
     const o = parseDeliberation(text, validIds, 'bob')
     expect(o.conversationSeed).toBeNull()
@@ -128,12 +172,18 @@ describe('parseDeliberation', () => {
 
 describe('buildDeliberationPrompt', () => {
   const baseInput = (): DeliberationInput => ({
-    agent: agent('bob', { housing: { kind: 'rent', due: 25, arrears: 30 }, needs: { hunger: 0.5, energy: 0.3, social: 0.6, hygiene: 0.2, fun: 0.3 } }),
+    agent: agent('bob', {
+      housing: { kind: 'rent', due: 25, arrears: 30 },
+      needs: { hunger: 0.5, energy: 0.3, social: 0.6, hygiene: 0.2, fun: 0.3 },
+    }),
     values: zeroVector(),
     hour: 14,
     recentMemories: [],
     relationships: [],
-    allAgentNames: [{ id: 'bob', name: 'Bob' }, { id: 'alice', name: 'Alice' }],
+    allAgentNames: [
+      { id: 'bob', name: 'Bob' },
+      { id: 'alice', name: 'Alice' },
+    ],
   })
 
   it('includes arrears when present', () => {
@@ -143,7 +193,10 @@ describe('buildDeliberationPrompt', () => {
 
   it('includes hunger warning', () => {
     const input = baseInput()
-    input.agent = agent('bob', { money: 5, needs: { hunger: 0.5, energy: 0.3, social: 0.3, hygiene: 0.2, fun: 0.3 } })
+    input.agent = agent('bob', {
+      money: 5,
+      needs: { hunger: 0.5, energy: 0.3, social: 0.3, hygiene: 0.2, fun: 0.3 },
+    })
     const prompt = buildDeliberationPrompt(input)
     expect(prompt).toContain('Hungry but cannot afford food')
   })

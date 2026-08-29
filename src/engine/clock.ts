@@ -43,22 +43,19 @@ export const perDay = (amount: number): number => amount / TICKS_PER_DAY
  * Keeps vice and need tuning readable: "gambling bites twice a day" rather
  * than "0.0035, trust me".
  */
-export const timesPerDay = (times: number, threshold = 1): number =>
-  (threshold * times) / TICKS_PER_DAY
+export const timesPerDay = (times: number, threshold = 1): number => (threshold * times) / TICKS_PER_DAY
 
 export const hourOfDay = (tick: number, ticksPerDay = TICKS_PER_DAY): number =>
   Math.floor(((tick % ticksPerDay) / ticksPerDay) * 24)
 
-export const dayOf = (tick: number, ticksPerDay = TICKS_PER_DAY): number =>
-  Math.floor(tick / ticksPerDay)
+export const dayOf = (tick: number, ticksPerDay = TICKS_PER_DAY): number => Math.floor(tick / ticksPerDay)
 
 /**
  * The tick that rolls over to a new day — midnight, not dusk. Everything
  * book-keeping-shaped happens here: rent is charged, daily counters reset,
  * goals are re-derived and reflection is queued.
  */
-export const isDayBoundary = (tick: number, ticksPerDay = TICKS_PER_DAY): boolean =>
-  tick % ticksPerDay === 0
+export const isDayBoundary = (tick: number, ticksPerDay = TICKS_PER_DAY): boolean => tick % ticksPerDay === 0
 
 /** 0 = Sunday, 6 = Saturday. Derived from the epoch (Thu Dec 13, 1984). */
 export const dayOfWeek = (tick: number, ticksPerDay = TICKS_PER_DAY): number =>

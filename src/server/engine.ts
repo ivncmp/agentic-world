@@ -70,8 +70,12 @@ const world = await bootWorld({
 })
 
 const feed: LiveFeed = new LiveFeed(world, () => ({
-  pending: worker.pending, done: worker.completed, dropped: worker.dropped,
-  spentUsd: worker.spent, inputTokens: worker.inputTokens, outputTokens: worker.outputTokens,
+  pending: worker.pending,
+  done: worker.completed,
+  dropped: worker.dropped,
+  spentUsd: worker.spent,
+  inputTokens: worker.inputTokens,
+  outputTokens: worker.outputTokens,
   breakdown: worker.breakdown,
 }))
 
@@ -93,7 +97,10 @@ async function submit(job: Job): Promise<void> {
 
   if (world.history != null) {
     const today = Math.floor(world.state.tick / TICKS_PER_DAY) + 1
-    const missing = await world.history.daysMissingDiary(world.state.agents.map((a) => a.id), today)
+    const missing = await world.history.daysMissingDiary(
+      world.state.agents.map((a) => a.id),
+      today,
+    )
     for (const m of missing) {
       await submit({ kind: 'reflection', agent: m.agent, tick: m.day * TICKS_PER_DAY })
     }
@@ -158,7 +165,13 @@ function queueCognition(r: ReturnType<typeof tick>): void {
     void submit({ kind: 'deliberation', agent: id, tick: world.state.tick })
   }
   for (const c of r.crisisJobs) {
-    void submit({ kind: 'crisis', agent: c.agent, crisisKind: c.kind, context: c.context, tick: world.state.tick })
+    void submit({
+      kind: 'crisis',
+      agent: c.agent,
+      crisisKind: c.kind,
+      context: c.context,
+      tick: world.state.tick,
+    })
   }
 }
 
@@ -168,7 +181,9 @@ const http = createServer(createRequestHandler({ world, feed, adminSecret: ADMIN
 new WebSocketServer({ server: http, path: '/live' }).on('connection', (ws) => feed.attach(ws))
 
 http.listen(PORT, () => {
-  console.log(`aw-engine on :${PORT} — tick every ${TICK_MS}ms, ${USE_LLM ? 'cognition on' : 'cognition off'}`)
+  console.log(
+    `aw-engine on :${PORT} — tick every ${TICK_MS}ms, ${USE_LLM ? 'cognition on' : 'cognition off'}`,
+  )
   console.log(`scene patience ${SCENE_PATIENCE} ticks (${SCENE_TIMEOUT_MS / 1000}s real)`)
   console.log(`world time ${worldTime(world.state.tick).toISOString()}`)
 })

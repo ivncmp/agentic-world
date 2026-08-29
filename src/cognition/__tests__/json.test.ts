@@ -15,8 +15,7 @@ describe('extractJsonObject', () => {
   })
 
   it('stops at the matching brace, not the last one in the text', () => {
-    expect(extractJsonObject('```json\n{"a":1}\n```\nThe empty object {} is separate.'))
-      .toBe('{"a":1}')
+    expect(extractJsonObject('```json\n{"a":1}\n```\nThe empty object {} is separate.')).toBe('{"a":1}')
   })
 
   it('spans nested objects', () => {
@@ -55,17 +54,18 @@ describe('looksLikeRefusal', () => {
 
 describe('parseJsonResponse', () => {
   it('parses a fenced response with trailing prose', () => {
-    expect(parseJsonResponse('scene', '```json\n{"ok":true}\n```\nHope that helps.'))
-      .toEqual({ ok: true })
+    expect(parseJsonResponse('scene', '```json\n{"ok":true}\n```\nHope that helps.')).toEqual({ ok: true })
   })
 
   it('names the route and reports a refusal as such', () => {
-    expect(() => parseJsonResponse('crisis', "I'm not comfortable writing that."))
-      .toThrow(/crisis response refused/)
+    expect(() => parseJsonResponse('crisis', "I'm not comfortable writing that.")).toThrow(
+      /crisis response refused/,
+    )
   })
 
   it('distinguishes malformed output from a refusal', () => {
-    expect(() => parseJsonResponse('scene', 'no object here'))
-      .toThrow(/scene response contained no JSON object/)
+    expect(() => parseJsonResponse('scene', 'no object here')).toThrow(
+      /scene response contained no JSON object/,
+    )
   })
 })

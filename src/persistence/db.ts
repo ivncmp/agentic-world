@@ -28,7 +28,9 @@ export async function migrate(pool: Pool): Promise<string[]> {
     (await pool.query<{ name: string }>('SELECT name FROM schema_migrations')).rows.map((r) => r.name),
   )
   const ran: string[] = []
-  for (const file of readdirSync(dir).filter((f) => f.endsWith('.sql')).sort()) {
+  for (const file of readdirSync(dir)
+    .filter((f) => f.endsWith('.sql'))
+    .sort()) {
     if (applied.has(file)) continue
     await pool.query('BEGIN')
     try {

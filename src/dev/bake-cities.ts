@@ -20,8 +20,18 @@ const CITIES: { file: string; config: CityConfig; seed: number }[] = [
       blocksPerSide: 5,
       districts: ['Centro', 'Ribera', 'Altos', 'Puerto', 'Norte'],
       venues: {
-        bar: 2, office: 2, shop: 1, supermarket: 1, clinic: 1,
-        school: 1, gym: 1, park: 2, garage: 1, cinema: 1, bowling: 1, cafe: 1,
+        bar: 2,
+        office: 2,
+        shop: 1,
+        supermarket: 1,
+        clinic: 1,
+        school: 1,
+        gym: 1,
+        park: 2,
+        garage: 1,
+        cinema: 1,
+        bowling: 1,
+        cafe: 1,
       },
       openingsPerWorkplace: 3,
     },
@@ -34,8 +44,17 @@ const CITIES: { file: string; config: CityConfig; seed: number }[] = [
       blocksPerSide: 4,
       districts: ['Old Quarter', 'Dockside', 'Hillcrest', 'Ironworks'],
       venues: {
-        bar: 3, office: 1, shop: 2, supermarket: 1, clinic: 1,
-        school: 1, gym: 1, park: 1, garage: 1, cinema: 1, cafe: 2,
+        bar: 3,
+        office: 1,
+        shop: 2,
+        supermarket: 1,
+        clinic: 1,
+        school: 1,
+        gym: 1,
+        park: 1,
+        garage: 1,
+        cinema: 1,
+        cafe: 2,
       },
       openingsPerWorkplace: 2,
     },
@@ -79,5 +98,7 @@ for (const { file, config, seed } of CITIES) {
   const template = exportTemplate(city, seed)
   const path = resolve(citiesDir, file)
   writeFileSync(path, JSON.stringify(template, null, 2) + '\n')
-  console.log(`${file}: ${template.venues.length} venues, ${template.homePlots.length} home plots, ${template.blocks.length} blocks`)
+  console.log(
+    `${file}: ${template.venues.length} venues, ${template.homePlots.length} home plots, ${template.blocks.length} blocks`,
+  )
 }

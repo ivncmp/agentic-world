@@ -33,7 +33,8 @@ const agent = (id: string, over: Partial<Agent> = {}): Agent => ({
   constraints: [],
   interests: [],
   deliberation: null,
-  lastDeliberationTick: 0, lastCrisisTick: 0,
+  lastDeliberationTick: 0,
+  lastCrisisTick: 0,
   ...over,
 })
 
@@ -94,7 +95,12 @@ describe('scene gate', () => {
   })
 
   it('a vice only counts where it is triggered', () => {
-    const a = agent('a', { vices: [{ kind: 'gambling', urge: 1 }, { kind: 'envy', urge: 0 }] })
+    const a = agent('a', {
+      vices: [
+        { kind: 'gambling', urge: 1 },
+        { kind: 'envy', urge: 0 },
+      ],
+    })
     const atBar = scoreEncounter(a, agent('b'), rel(), ctx({ locationKind: 'bar' }))
     const atShop = scoreEncounter(a, agent('b'), rel(), ctx({ locationKind: 'shop' }))
     expect(atBar).toBeGreaterThan(atShop)
@@ -128,9 +134,7 @@ describe('scene budget', () => {
 
   it('never exceeds the per-tick cap', () => {
     const many = Array.from({ length: 20 }, (_, i) => cand(`a${i}`, `b${i}`, i, `loc-${i}`))
-    expect(selectScenes(many, new Map(), GATE_DEFAULTS)).toHaveLength(
-      GATE_DEFAULTS.maxScenesPerTick,
-    )
+    expect(selectScenes(many, new Map(), GATE_DEFAULTS)).toHaveLength(GATE_DEFAULTS.maxScenesPerTick)
   })
 
   it('skips an agent who has used up their day', () => {
@@ -144,7 +148,12 @@ describe('scene budget', () => {
 
   it('caps scenes per location to prevent crowd lock-in', () => {
     const picked = selectScenes(
-      [cand('a', 'b', 10, 'bar-1'), cand('c', 'd', 9, 'bar-1'), cand('e', 'f', 8, 'bar-1'), cand('g', 'h', 7, 'park-1')],
+      [
+        cand('a', 'b', 10, 'bar-1'),
+        cand('c', 'd', 9, 'bar-1'),
+        cand('e', 'f', 8, 'bar-1'),
+        cand('g', 'h', 7, 'park-1'),
+      ],
       new Map(),
       { maxScenesPerTick: 6, maxScenesPerAgentPerDay: 6, maxScenesPerLocationPerTick: 2 },
     )
@@ -154,11 +163,11 @@ describe('scene budget', () => {
   })
 
   it('counts both participants against their daily allowance', () => {
-    const picked = selectScenes(
-      [cand('a', 'b', 9, 'loc-1'), cand('a', 'c', 8, 'loc-2')],
-      new Map(),
-      { maxScenesPerTick: 5, maxScenesPerAgentPerDay: 1, maxScenesPerLocationPerTick: 5 },
-    )
+    const picked = selectScenes([cand('a', 'b', 9, 'loc-1'), cand('a', 'c', 8, 'loc-2')], new Map(), {
+      maxScenesPerTick: 5,
+      maxScenesPerAgentPerDay: 1,
+      maxScenesPerLocationPerTick: 5,
+    })
     expect(picked).toHaveLength(1)
   })
 })
@@ -189,9 +198,7 @@ describe('a scene needs a reason, not just a score', () => {
 
   it('fires when a debt sits between two people who know each other', () => {
     const owed = rel({ debt: 60, encounters: 300, affection: -0.3, lastInteractionTick: 99 })
-    expect(scoreEncounter(agent('a'), agent('b'), owed, ctx())).toBeGreaterThan(
-      GATE_DEFAULTS.threshold,
-    )
+    expect(scoreEncounter(agent('a'), agent('b'), owed, ctx())).toBeGreaterThan(GATE_DEFAULTS.threshold)
   })
 
   it('counts a strong bond as substance, not just a grievance', () => {
@@ -203,9 +210,7 @@ describe('a scene needs a reason, not just a score', () => {
 describe('a wrong is not a debt', () => {
   it('bad blood is substance on its own, with no money involved', () => {
     const wronged = rel({ grievance: 0.4 })
-    expect(scoreEncounter(agent('a'), agent('b'), wronged, ctx())).toBeGreaterThan(
-      GATE_DEFAULTS.threshold,
-    )
+    expect(scoreEncounter(agent('a'), agent('b'), wronged, ctx())).toBeGreaterThan(GATE_DEFAULTS.threshold)
     expect(wronged.debt).toBe(0)
   })
 

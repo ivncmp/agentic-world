@@ -31,8 +31,16 @@ export class WorldRepository {
           `INSERT INTO locations (id, kind, name, district, x, y, resident_id, openings)
            VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
            ON CONFLICT (id) DO UPDATE SET openings = $8`,
-          [l.id, l.kind, l.name, l.district, l.tile.x, l.tile.y, l.residentId ?? null,
-           state.openings.has(l.id) ? state.openings.get(l.id) : null],
+          [
+            l.id,
+            l.kind,
+            l.name,
+            l.district,
+            l.tile.x,
+            l.tile.y,
+            l.residentId ?? null,
+            state.openings.has(l.id) ? state.openings.get(l.id) : null,
+          ],
         )
       }
 
@@ -47,13 +55,29 @@ export class WorldRepository {
              values_json=$10, vices=$11, needs=$12, job=$13, housing=$14, activity=$15,
              goals=$16, constraints_json=$17, interests=$18, deliberation=$19, last_deliberation_tick=$20,
              last_crisis_tick=$21`,
-          [a.id, a.name, a.ownerId, a.occupation, a.money, a.location, a.arrivedTick, a.lastTheftTick,
-           a.lastReflectionDay, JSON.stringify(a.values), JSON.stringify(a.vices),
-           JSON.stringify(a.needs), a.job == null ? null : JSON.stringify(a.job),
-           JSON.stringify(a.housing), a.activity == null ? null : JSON.stringify(a.activity),
-           JSON.stringify(a.goals), JSON.stringify(a.constraints), JSON.stringify(a.interests),
-           a.deliberation == null ? null : JSON.stringify(a.deliberation), a.lastDeliberationTick,
-           a.lastCrisisTick],
+          [
+            a.id,
+            a.name,
+            a.ownerId,
+            a.occupation,
+            a.money,
+            a.location,
+            a.arrivedTick,
+            a.lastTheftTick,
+            a.lastReflectionDay,
+            JSON.stringify(a.values),
+            JSON.stringify(a.vices),
+            JSON.stringify(a.needs),
+            a.job == null ? null : JSON.stringify(a.job),
+            JSON.stringify(a.housing),
+            a.activity == null ? null : JSON.stringify(a.activity),
+            JSON.stringify(a.goals),
+            JSON.stringify(a.constraints),
+            JSON.stringify(a.interests),
+            a.deliberation == null ? null : JSON.stringify(a.deliberation),
+            a.lastDeliberationTick,
+            a.lastCrisisTick,
+          ],
         )
       }
 
@@ -102,7 +126,10 @@ export class WorldRepository {
 
     const locs = await this.pool.query('SELECT * FROM locations')
     const locations: Location[] = locs.rows.map((l) => ({
-      id: l.id, kind: l.kind, name: l.name, district: l.district,
+      id: l.id,
+      kind: l.kind,
+      name: l.name,
+      district: l.district,
       tile: { x: l.x, y: l.y },
       ...(l.resident_id == null ? {} : { residentId: l.resident_id }),
     }))
@@ -112,14 +139,23 @@ export class WorldRepository {
 
     const ags = await this.pool.query('SELECT * FROM agents')
     const agents: Agent[] = ags.rows.map((a) => ({
-      id: a.id, name: a.name, ownerId: a.owner_id, occupation: a.occupation,
-      values: a.values_json, vices: a.vices, needs: a.needs,
-      money: Number(a.money), location: a.location_id,
-      job: a.job, housing: a.housing, activity: a.activity,
+      id: a.id,
+      name: a.name,
+      ownerId: a.owner_id,
+      occupation: a.occupation,
+      values: a.values_json,
+      vices: a.vices,
+      needs: a.needs,
+      money: Number(a.money),
+      location: a.location_id,
+      job: a.job,
+      housing: a.housing,
+      activity: a.activity,
       arrivedTick: a.arrived_tick == null ? null : Number(a.arrived_tick),
       lastTheftTick: a.last_theft_tick == null ? null : Number(a.last_theft_tick),
       lastReflectionDay: a.last_reflection_day,
-      goals: a.goals, constraints: a.constraints_json,
+      goals: a.goals,
+      constraints: a.constraints_json,
       interests: a.interests ?? [],
       deliberation: a.deliberation ?? null,
       lastDeliberationTick: a.last_deliberation_tick ?? 0,
@@ -128,10 +164,17 @@ export class WorldRepository {
 
     const rels = await this.pool.query('SELECT * FROM relationships')
     const relationships = new Map<string, Relationship>(
-      rels.rows.map((r) => [r.pair_key, {
-        affection: r.affection, trust: r.trust, debt: Number(r.debt), grievance: r.grievance, encounters: r.encounters,
-        lastInteractionTick: r.last_interaction_tick == null ? null : Number(r.last_interaction_tick),
-      }]),
+      rels.rows.map((r) => [
+        r.pair_key,
+        {
+          affection: r.affection,
+          trust: r.trust,
+          debt: Number(r.debt),
+          grievance: r.grievance,
+          encounters: r.encounters,
+          lastInteractionTick: r.last_interaction_tick == null ? null : Number(r.last_interaction_tick),
+        },
+      ]),
     )
 
     const counters = await this.pool.query('SELECT * FROM daily_counters')
@@ -157,9 +200,7 @@ export class WorldRepository {
 
   /** Convenience for tests and a fresh start. */
   async reset(): Promise<void> {
-    await this.pool.query(
-      'TRUNCATE world, locations, agents, relationships, daily_counters RESTART IDENTITY',
-    )
+    await this.pool.query('TRUNCATE world, locations, agents, relationships, daily_counters RESTART IDENTITY')
   }
 }
 

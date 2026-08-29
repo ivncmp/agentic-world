@@ -81,20 +81,32 @@ export async function bootWorld(opts: BootOptions): Promise<World> {
 
   const world: World = {
     state: {
-      tick: 0, agents: [], locations: [...city.locations], relationships: new Map(),
-      scenesTodayByAgent: new Map(), scenesTodayByPair: new Map(),
-      passingTodayByPair: new Map(), notableToday: new Set(), openings: city.openings,
+      tick: 0,
+      agents: [],
+      locations: [...city.locations],
+      relationships: new Map(),
+      scenesTodayByAgent: new Map(),
+      scenesTodayByPair: new Map(),
+      passingTodayByPair: new Map(),
+      notableToday: new Set(),
+      openings: city.openings,
     },
     city,
     locations: [...city.locations],
     byId: new Map(city.locations.map((l) => [l.id, l])),
-    store, provider: opts.provider,
-    worldRepo, history, owners, pool,
+    store,
+    provider: opts.provider,
+    worldRepo,
+    history,
+    owners,
+    pool,
     seed: opts.seed,
     now: opts.now,
     nameOf: (id) => world.state.agents.find((a) => a.id === id)?.name ?? id,
     placeOf: (id) => world.byId.get(id)?.name ?? id,
-    save: async () => { await worldRepo?.save(world.state, opts.seed, city.config) },
+    save: async () => {
+      await worldRepo?.save(world.state, opts.seed, city.config)
+    },
     addLocation: (loc) => {
       world.byId.set(loc.id, loc)
       world.locations = [...world.state.locations, loc]
@@ -143,9 +155,9 @@ function relayCity(world: World): void {
 
   // Tell the home allocator which tiles are taken so the next create_agent call
   // gets a fresh plot instead of a collision.
-  world.city.markOccupied(new Set(
-    world.state.locations.filter((l) => l.kind === 'home').map((l) => `${l.tile.x},${l.tile.y}`),
-  ))
+  world.city.markOccupied(
+    new Set(world.state.locations.filter((l) => l.kind === 'home').map((l) => `${l.tile.x},${l.tile.y}`)),
+  )
 
   // Repair homes that ended up sharing a tile — an earlier bug handed out the
   // same plot twice when the server restarted between two creations.
@@ -155,7 +167,9 @@ function relayCity(world: World): void {
     const key = `${loc.tile.x},${loc.tile.y}`
     if (seen.has(key)) {
       const fresh = world.city.allocateHome()
-      console.log(`collision: ${loc.id} was at (${loc.tile.x},${loc.tile.y}), moved to (${fresh.tile.x},${fresh.tile.y})`)
+      console.log(
+        `collision: ${loc.id} was at (${loc.tile.x},${loc.tile.y}), moved to (${fresh.tile.x},${fresh.tile.y})`,
+      )
       loc.tile = fresh.tile
       loc.district = fresh.district
     }

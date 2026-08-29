@@ -1,8 +1,7 @@
 import { createHash, randomBytes } from 'node:crypto'
 import type { Pool } from 'pg'
 
-const hash = (token: string): string =>
-  createHash('sha256').update(token).digest('hex')
+const hash = (token: string): string => createHash('sha256').update(token).digest('hex')
 
 export class OwnerRepository {
   constructor(private readonly pool: Pool) {}
@@ -28,10 +27,9 @@ export class OwnerRepository {
   }
 
   async validate(id: string, token: string): Promise<boolean> {
-    const r = await this.pool.query<{ secret_hash: string }>(
-      'SELECT secret_hash FROM owners WHERE id = $1',
-      [id],
-    )
+    const r = await this.pool.query<{ secret_hash: string }>('SELECT secret_hash FROM owners WHERE id = $1', [
+      id,
+    ])
     const row = r.rows[0]
     if (row == null) return false
     return row.secret_hash === hash(token)
@@ -39,10 +37,7 @@ export class OwnerRepository {
 
   /** Which agents does this owner control? */
   async agentIds(ownerId: string): Promise<string[]> {
-    const r = await this.pool.query<{ id: string }>(
-      'SELECT id FROM agents WHERE owner_id = $1',
-      [ownerId],
-    )
+    const r = await this.pool.query<{ id: string }>('SELECT id FROM agents WHERE owner_id = $1', [ownerId])
     return r.rows.map((row) => row.id)
   }
 }

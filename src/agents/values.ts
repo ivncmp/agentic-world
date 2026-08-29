@@ -4,13 +4,13 @@
  * here — an axis earns its place only if some decision branches on it.
  */
 export const VALUE_AXES = [
-  'honesty',          // lie or steal when cornered
-  'industriousness',  // work vs slack off
-  'thrift',           // save vs spend
-  'sociability',      // seek company vs avoid it
-  'riskTolerance',    // gamble, borrow, take chances
-  'loyalty',          // honour debts and friendships vs self-interest
-  'pride',            // refuse help vs ask for it
+  'honesty', // lie or steal when cornered
+  'industriousness', // work vs slack off
+  'thrift', // save vs spend
+  'sociability', // seek company vs avoid it
+  'riskTolerance', // gamble, borrow, take chances
+  'loyalty', // honour debts and friendships vs self-interest
+  'pride', // refuse help vs ask for it
 ] as const
 
 export type ValueAxis = (typeof VALUE_AXES)[number]
@@ -63,9 +63,7 @@ export function resolveValues(v: PersonalityValues, now: number): ValueVector {
   const out = zeroVector()
   for (const axis of VALUE_AXES) {
     const g = v.guidance[axis]
-    out[axis] = clampAxis(
-      v.base[axis] + v.drift[axis] + (g ? decayedGuidance(g, now) : 0),
-    )
+    out[axis] = clampAxis(v.base[axis] + v.drift[axis] + (g ? decayedGuidance(g, now) : 0))
   }
   return out
 }

@@ -39,7 +39,10 @@ export type BlockInfo = {
 
 export type WaterRegion = {
   kind: 'river' | 'sea' | 'lake'
-  x0: number; y0: number; x1: number; y1: number
+  x0: number
+  y0: number
+  x1: number
+  y1: number
 }
 
 export type WorldInfo = {
@@ -64,7 +67,12 @@ export type StateMsg = {
   minute: number
   agents: AgentSnapshot[]
   cognition: {
-    pending: number; done: number; dropped: number; spentUsd: number; inputTokens: number; outputTokens: number
+    pending: number
+    done: number
+    dropped: number
+    spentUsd: number
+    inputTokens: number
+    outputTokens: number
     breakdown?: Record<string, { queued: number; running: number }>
   }
 }
@@ -108,8 +116,13 @@ export type AgentDetail = {
   values: { axis: string; base: number; drift: number; effective: number }[]
   vices: { kind: string; label: string; urge: number }[]
   relationships: {
-    id: string; name: string; affection: number; trust: number
-    debt: number; grievance: number; encounters: number
+    id: string
+    name: string
+    affection: number
+    trust: number
+    debt: number
+    grievance: number
+    encounters: number
   }[]
   diaries: { day: number; text: string }[]
 }
@@ -151,9 +164,15 @@ export class EngineConnection {
     }
   }
 
-  onState(fn: Listener<StateMsg>): void { this.stateListeners.push(fn) }
-  onFeed(fn: Listener<FeedItem>): void { this.feedListeners.push(fn) }
-  onConnection(fn: Listener<boolean>): void { this.connListeners.push(fn) }
+  onState(fn: Listener<StateMsg>): void {
+    this.stateListeners.push(fn)
+  }
+  onFeed(fn: Listener<FeedItem>): void {
+    this.feedListeners.push(fn)
+  }
+  onConnection(fn: Listener<boolean>): void {
+    this.connListeners.push(fn)
+  }
 
   async fetchWorld(): Promise<WorldInfo> {
     const res = await fetch(this.engineUrl + '/world')

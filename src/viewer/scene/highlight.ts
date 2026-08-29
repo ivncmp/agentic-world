@@ -28,7 +28,7 @@ export class Highlighter {
       if (!mesh.isMesh || mesh.material == null) return
       this.restore.push({ mesh, mat: mesh.material })
       mesh.material = Array.isArray(mesh.material)
-        ? mesh.material.map(m => this.variant(m))
+        ? mesh.material.map((m) => this.variant(m))
         : this.variant(mesh.material)
     })
   }

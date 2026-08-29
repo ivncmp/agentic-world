@@ -51,10 +51,14 @@ export type JobDeps = {
 /** Routes a job to its handler. This is the callback the worker runs. */
 export async function handleJob(job: Job, deps: JobDeps): Promise<CallResult> {
   switch (job.kind) {
-    case 'scene': return handleScene(job, deps)
-    case 'deliberation': return handleDeliberation(job, deps)
-    case 'crisis': return handleCrisis(job, deps)
-    case 'reflection': return handleReflection(job, deps)
+    case 'scene':
+      return handleScene(job, deps)
+    case 'deliberation':
+      return handleDeliberation(job, deps)
+    case 'crisis':
+      return handleCrisis(job, deps)
+    case 'reflection':
+      return handleReflection(job, deps)
   }
 }
 
@@ -91,39 +95,74 @@ async function handleScene(
   if (a == null || b == null) return ZERO
 
   const rel = world.state.relationships.get(pairKey(a.id, b.id)) ?? {
-    affection: 0, trust: 0, debt: 0, grievance: 0, encounters: 0, lastInteractionTick: null,
+    affection: 0,
+    trust: 0,
+    debt: 0,
+    grievance: 0,
+    encounters: 0,
+    lastInteractionTick: null,
   }
 
   try {
-    const res = await resolveScene({
-      a, b, rel,
-      aboutB: await world.store.recall(a.id, b.id),
-      aboutA: await world.store.recall(b.id, a.id),
-      place: world.placeOf(a.location),
-      hour: hourOfDay(job.tick),
-      now: world.now,
-      knownInCommon: gossipSubjects(world, a, b),
-    }, world.provider)
+    const res = await resolveScene(
+      {
+        a,
+        b,
+        rel,
+        aboutB: await world.store.recall(a.id, b.id),
+        aboutA: await world.store.recall(b.id, a.id),
+        place: world.placeOf(a.location),
+        hour: hourOfDay(job.tick),
+        now: world.now,
+        knownInCommon: gossipSubjects(world, a, b),
+      },
+      world.provider,
+    )
 
     await persistScene(world.store, a, b, res.outcome, job.tick)
     world.state = applySceneOutcome(world.state, a.id, b.id, res.outcome)
 
-    await world.history?.recordScene({ tick: job.tick, a: a.id, b: b.id, location: a.location,
-      tension: job.tension, outcome: res.outcome, costUsd: res.costUsd })
+    await world.history?.recordScene({
+      tick: job.tick,
+      a: a.id,
+      b: b.id,
+      location: a.location,
+      tension: job.tension,
+      outcome: res.outcome,
+      costUsd: res.costUsd,
+    })
 
     // A scene is attributed to both participants, so each carries half the cost
-    const callBase = { tick: job.tick, purpose: 'scene', provider: world.provider.name,
-      model: res.model, inputTokens: res.inputTokens, outputTokens: res.outputTokens,
-      costUsd: res.costUsd / 2, durationMs: res.durationMs }
+    const callBase = {
+      tick: job.tick,
+      purpose: 'scene',
+      provider: world.provider.name,
+      model: res.model,
+      inputTokens: res.inputTokens,
+      outputTokens: res.outputTokens,
+      costUsd: res.costUsd / 2,
+      durationMs: res.durationMs,
+    }
     await world.history?.recordCall({ ...callBase, agentId: a.id })
     await world.history?.recordCall({ ...callBase, agentId: b.id })
-    void logLlmCall({ agent: `${a.name} × ${b.name}`, purpose: 'scene', model: res.model,
-      inputTokens: res.inputTokens, outputTokens: res.outputTokens,
-      costUsd: res.costUsd, durationMs: res.durationMs, tick: job.tick,
-      prompt: res.prompt, response: res.rawResponse })
+    void logLlmCall({
+      agent: `${a.name} × ${b.name}`,
+      purpose: 'scene',
+      model: res.model,
+      inputTokens: res.inputTokens,
+      outputTokens: res.outputTokens,
+      costUsd: res.costUsd,
+      durationMs: res.durationMs,
+      tick: job.tick,
+      prompt: res.prompt,
+      response: res.rawResponse,
+    })
 
-    const intensity = job.tension + Math.abs(res.outcome.transfer) / 50
-      + Math.abs(res.outcome.deltas.aToB.trust) + Math.abs(res.outcome.deltas.bToA.trust)
+    const intensity =
+      job.tension +
+      Math.abs(res.outcome.transfer) / 50 +
+      Math.abs(res.outcome.deltas.aToB.trust) +
+      Math.abs(res.outcome.deltas.bToA.trust)
     if (intensity > REACTIVE_DELIBERATION_THRESHOLD) {
       for (const who of [a, b]) {
         if (world.state.tick - who.lastDeliberationTick > DELIBERATION_COOLDOWN_TICKS) {
@@ -137,14 +176,18 @@ async function handleScene(
       ...res.outcome.gossipB.map((g) => ({ from: b.name, about: world.nameOf(g.about), text: g.text })),
     ]
     feed.publish('scene', `${a.name} × ${b.name} · ${world.placeOf(a.location)}`, {
-      a: a.id, b: b.id,
+      a: a.id,
+      b: b.id,
       dialogue: res.outcome.dialogue,
       outcome: res.outcome.outcome,
-      transfer: res.outcome.transfer === 0 ? null : {
-        amount: Math.abs(res.outcome.transfer),
-        from: res.outcome.transfer > 0 ? a.name : b.name,
-        to: res.outcome.transfer > 0 ? b.name : a.name,
-      },
+      transfer:
+        res.outcome.transfer === 0
+          ? null
+          : {
+              amount: Math.abs(res.outcome.transfer),
+              from: res.outcome.transfer > 0 ? a.name : b.name,
+              to: res.outcome.transfer > 0 ? b.name : a.name,
+            },
       ...(gossip.length > 0 ? { gossip } : {}),
     })
 
@@ -166,28 +209,52 @@ async function handleDeliberation(
   if (a == null) return ZERO
 
   try {
-    const res = await deliberate({
-      agent: a,
-      values: resolveValues(a.values, world.now),
-      hour: hourOfDay(job.tick),
-      recentMemories: await world.store.since(a.id, job.tick - Math.floor(TICKS_PER_DAY / 2)),
-      relationships: knownTo(world, a.id),
-      allAgentNames: world.state.agents.map((x) => ({ id: x.id, name: x.name })),
-    }, world.provider, new Set(world.state.agents.map((x) => x.id)))
+    const res = await deliberate(
+      {
+        agent: a,
+        values: resolveValues(a.values, world.now),
+        hour: hourOfDay(job.tick),
+        recentMemories: await world.store.since(a.id, job.tick - Math.floor(TICKS_PER_DAY / 2)),
+        relationships: knownTo(world, a.id),
+        allAgentNames: world.state.agents.map((x) => ({ id: x.id, name: x.name })),
+      },
+      world.provider,
+      new Set(world.state.agents.map((x) => x.id)),
+    )
 
     if (res.outcome.thought !== '') {
-      await world.store.remember({ agentId: a.id, kind: 'episodic',
-        text: `[deliberation] ${res.outcome.thought}`, tick: job.tick })
+      await world.store.remember({
+        agentId: a.id,
+        kind: 'episodic',
+        text: `[deliberation] ${res.outcome.thought}`,
+        tick: job.tick,
+      })
     }
     world.state = applyDeliberation(world.state, a.id, res.outcome, job.tick)
 
-    await world.history?.recordCall({ tick: job.tick, agentId: a.id, purpose: 'deliberation',
-      provider: world.provider.name, model: res.model, inputTokens: res.inputTokens,
-      outputTokens: res.outputTokens, costUsd: res.costUsd, durationMs: res.durationMs })
-    void logLlmCall({ agent: a.name, purpose: 'deliberation', model: res.model,
-      inputTokens: res.inputTokens, outputTokens: res.outputTokens,
-      costUsd: res.costUsd, durationMs: res.durationMs, tick: job.tick,
-      prompt: res.prompt, response: res.rawResponse })
+    await world.history?.recordCall({
+      tick: job.tick,
+      agentId: a.id,
+      purpose: 'deliberation',
+      provider: world.provider.name,
+      model: res.model,
+      inputTokens: res.inputTokens,
+      outputTokens: res.outputTokens,
+      costUsd: res.costUsd,
+      durationMs: res.durationMs,
+    })
+    void logLlmCall({
+      agent: a.name,
+      purpose: 'deliberation',
+      model: res.model,
+      inputTokens: res.inputTokens,
+      outputTokens: res.outputTokens,
+      costUsd: res.costUsd,
+      durationMs: res.durationMs,
+      tick: job.tick,
+      prompt: res.prompt,
+      response: res.rawResponse,
+    })
 
     feed.publish('deliberation', `${a.name} — thinking`, {
       biases: res.outcome.biases,
@@ -209,31 +276,55 @@ async function handleCrisis(
   if (a == null) return ZERO
 
   try {
-    const res = await resolveCrisis({
-      agent: a,
-      values: resolveValues(a.values, world.now),
-      kind: job.crisisKind as 'vice_temptation',
-      tick: job.tick,
-      context: job.context,
-    }, world.provider)
+    const res = await resolveCrisis(
+      {
+        agent: a,
+        values: resolveValues(a.values, world.now),
+        kind: job.crisisKind as 'vice_temptation',
+        tick: job.tick,
+        context: job.context,
+      },
+      world.provider,
+    )
 
     // An empty thought means the model declined. The call still happened and
     // still cost money, so it is metered — but nothing reaches the agent.
     if (res.thought !== '') {
-      await world.store.remember({ agentId: a.id, kind: 'episodic',
-        text: `[crisis] ${res.thought}`, tick: job.tick })
+      await world.store.remember({
+        agentId: a.id,
+        kind: 'episodic',
+        text: `[crisis] ${res.thought}`,
+        tick: job.tick,
+      })
     }
-    await world.history?.recordCall({ tick: job.tick, agentId: a.id, purpose: 'crisis',
-      provider: world.provider.name, model: res.model, inputTokens: res.inputTokens,
-      outputTokens: res.outputTokens, costUsd: res.costUsd, durationMs: res.durationMs })
-    void logLlmCall({ agent: a.name, purpose: 'crisis', model: res.model,
-      inputTokens: res.inputTokens, outputTokens: res.outputTokens,
-      costUsd: res.costUsd, durationMs: res.durationMs, tick: job.tick,
-      prompt: res.prompt, response: res.rawResponse })
+    await world.history?.recordCall({
+      tick: job.tick,
+      agentId: a.id,
+      purpose: 'crisis',
+      provider: world.provider.name,
+      model: res.model,
+      inputTokens: res.inputTokens,
+      outputTokens: res.outputTokens,
+      costUsd: res.costUsd,
+      durationMs: res.durationMs,
+    })
+    void logLlmCall({
+      agent: a.name,
+      purpose: 'crisis',
+      model: res.model,
+      inputTokens: res.inputTokens,
+      outputTokens: res.outputTokens,
+      costUsd: res.costUsd,
+      durationMs: res.durationMs,
+      tick: job.tick,
+      prompt: res.prompt,
+      response: res.rawResponse,
+    })
 
     if (res.thought !== '') {
       feed.publish('crisis', `${a.name} — inner voice (${job.crisisKind.replace('_', ' ')})`, {
-        thought: res.thought, crisisKind: job.crisisKind,
+        thought: res.thought,
+        crisisKind: job.crisisKind,
       })
     }
     return { costUsd: res.costUsd, inputTokens: res.inputTokens, outputTokens: res.outputTokens }
@@ -252,27 +343,46 @@ async function handleReflection(
 
   const dayStart = job.tick - TICKS_PER_DAY
   try {
-    const res = await reflect({
-      agent: a,
-      values: resolveValues(a.values, world.now),
-      today: await world.store.since(a.id, dayStart),
-      identity: await world.store.identity(a.id),
-      relationships: knownTo(world, a.id),
-      day: Math.floor(job.tick / TICKS_PER_DAY),
-    }, world.provider)
+    const res = await reflect(
+      {
+        agent: a,
+        values: resolveValues(a.values, world.now),
+        today: await world.store.since(a.id, dayStart),
+        identity: await world.store.identity(a.id),
+        relationships: knownTo(world, a.id),
+        day: Math.floor(job.tick / TICKS_PER_DAY),
+      },
+      world.provider,
+    )
 
     // Consolidation is also decay: this forgets the day's episodic noise.
     await persistReflection(world.store, a, res.outcome, job.tick, dayStart)
     world.state = applyReflection(world.state, a.id, res.outcome)
 
     await world.history?.recordDiary(a.id, job.tick, res.outcome)
-    await world.history?.recordCall({ tick: job.tick, agentId: a.id, purpose: 'reflection',
-      provider: world.provider.name, model: res.model, inputTokens: res.inputTokens,
-      outputTokens: res.outputTokens, costUsd: res.costUsd, durationMs: res.durationMs })
-    void logLlmCall({ agent: a.name, purpose: 'reflection', model: res.model,
-      inputTokens: res.inputTokens, outputTokens: res.outputTokens,
-      costUsd: res.costUsd, durationMs: res.durationMs, tick: job.tick,
-      prompt: res.prompt, response: res.rawResponse })
+    await world.history?.recordCall({
+      tick: job.tick,
+      agentId: a.id,
+      purpose: 'reflection',
+      provider: world.provider.name,
+      model: res.model,
+      inputTokens: res.inputTokens,
+      outputTokens: res.outputTokens,
+      costUsd: res.costUsd,
+      durationMs: res.durationMs,
+    })
+    void logLlmCall({
+      agent: a.name,
+      purpose: 'reflection',
+      model: res.model,
+      inputTokens: res.inputTokens,
+      outputTokens: res.outputTokens,
+      costUsd: res.costUsd,
+      durationMs: res.durationMs,
+      tick: job.tick,
+      prompt: res.prompt,
+      response: res.rawResponse,
+    })
 
     feed.publish('diary', `${a.name} — diary`, { text: res.outcome.diary, drift: res.outcome.drift })
     return { costUsd: res.costUsd, inputTokens: res.inputTokens, outputTokens: res.outputTokens }
