@@ -1,10 +1,15 @@
 /**
  * Bakes Kenney's rigged Mini Characters into isometric sprite sheets.
  *
- * The models are glTF with real skeletal animation, and the viewer is 2D — so
- * somebody has to turn one into the other. Doing it here, once, keeps the
- * runtime free of a 3D dependency and keeps the output in version control
- * where an open-source adopter gets it without a toolchain.
+ * **Nothing consumes the output any more.** This was written when the viewer
+ * was a 2D isometric renderer that needed sprites baked ahead of time. The
+ * viewer is now Three.js and loads the same rigged GLBs directly, and sidebar
+ * portraits are rendered off-screen at load by `renderPortraits` in
+ * `src/viewer/scene/agents.ts`.
+ *
+ * It is kept as the quickest way to look at every character, animation and
+ * angle on one page, and as a working reference for driving these models. See
+ * tools/README.md.
  *
  * A browser does the rendering because it is the one WebGL runtime everybody
  * already has. This server hands it the page, three.js and the models, then

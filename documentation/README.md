@@ -8,6 +8,15 @@
 | [deployment.md](./deployment.md) | Services, every environment variable, resume behaviour, migrations |
 | [viewer.md](./viewer.md) | The Three.js scene, determinism by hash, label rules, the asset gotcha |
 
+Each `src/` subdirectory has its own README covering what lives there and the
+rules specific to it — [agents](../src/agents/README.md),
+[cognition](../src/cognition/README.md), [engine](../src/engine/README.md),
+[memory](../src/memory/README.md), [persistence](../src/persistence/README.md),
+[world](../src/world/README.md), [server](../src/server/README.md),
+[viewer](../src/viewer/README.md), [mcp](../src/mcp/README.md),
+[shared](../src/shared/README.md), [dev](../src/dev/README.md). The standalone
+browser tools are documented in [tools/](../tools/README.md).
+
 Elsewhere in the repo:
 
 - **[README.md](../README.md)** — what this is and how to run it

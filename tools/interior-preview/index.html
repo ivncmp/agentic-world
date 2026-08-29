@@ -122,10 +122,21 @@ let BASE_SCALE = 1
 
 async function calibrate() {
   const floor = await ensureModel('floorFull')
+  const wall = await ensureModel('wall')
+  const chair = await ensureModel('chair')
+  const sizes = {}
+  for (const [name, model] of [['floor', floor], ['wall', wall], ['chair', chair]]) {
+    if (!model) continue
+    const box = new THREE.Box3().setFromObject(model)
+    const sz = new THREE.Vector3(); box.getSize(sz)
+    sizes[name] = { x: sz.x.toFixed(3), y: sz.y.toFixed(3), z: sz.z.toFixed(3) }
+  }
+  console.table(sizes)
   if (!floor) return
   const box = new THREE.Box3().setFromObject(floor)
   const sz = new THREE.Vector3(); box.getSize(sz)
   BASE_SCALE = TILE / Math.max(sz.x, sz.z)
+  console.log('BASE_SCALE:', BASE_SCALE, 'floor footprint:', Math.max(sz.x, sz.z))
 }
 
 function placeModel(model, x, z, rotY, extraScale) {
@@ -166,43 +177,36 @@ async function buildRoom(layout) {
     for (let z = 0; z < depth; z++) {
       const tile = cloneModel('floorFull')
       if (tile) {
-        fitToTile(tile, TILE * 0.98)
-        tile.position.set((x + 0.5) * TILE, 0, (z + 0.5) * TILE)
+        placeModel(tile, (x + 0.5) * TILE, (z + 0.5) * TILE, 0)
         roomGroup.add(tile)
       }
     }
   }
 
   // Walls
-  function placeWall(type, x, z, rotY) {
-    const w = cloneModel(type)
-    if (!w) return
-    fitToTile(w, TILE, WALL_H)
-    w.position.set(x * TILE, 0, z * TILE)
-    w.rotation.y = rotY
-    roomGroup.add(w)
-  }
-
   for (let x = 0; x < width; x++) {
     const sType = (door.wall === 's' && x === door.pos) ? 'wallDoorway' : winSet.has(`s-${x}`) ? 'wallWindow' : 'wall'
-    placeWall(sType, x + 0.5, 0, 0)
+    const sW = cloneModel(sType)
+    if (sW) { placeModel(sW, (x + 0.5) * TILE, 0, 0); roomGroup.add(sW) }
     const nType = (door.wall === 'n' && x === door.pos) ? 'wallDoorway' : winSet.has(`n-${x}`) ? 'wallWindow' : 'wall'
-    placeWall(nType, x + 0.5, depth, Math.PI)
+    const nW = cloneModel(nType)
+    if (nW) { placeModel(nW, (x + 0.5) * TILE, depth * TILE, Math.PI); roomGroup.add(nW) }
   }
   for (let z = 0; z < depth; z++) {
     const wType = (door.wall === 'w' && z === door.pos) ? 'wallDoorway' : winSet.has(`w-${z}`) ? 'wallWindow' : 'wall'
-    placeWall(wType, 0, z + 0.5, Math.PI / 2)
+    const wW = cloneModel(wType)
+    if (wW) { placeModel(wW, 0, (z + 0.5) * TILE, Math.PI / 2); roomGroup.add(wW) }
     const eType = (door.wall === 'e' && z === door.pos) ? 'wallDoorway' : winSet.has(`e-${z}`) ? 'wallWindow' : 'wall'
-    placeWall(eType, width, z + 0.5, -Math.PI / 2)
+    const eW = cloneModel(eType)
+    if (eW) { placeModel(eW, width * TILE, (z + 0.5) * TILE, -Math.PI / 2); roomGroup.add(eW) }
   }
 
   // Furniture
   for (const item of items) {
     const obj = cloneModel(item.model)
     if (!obj) continue
-    fitFurniture(obj, TILE * 0.85 * (item.scale ?? 1))
-    obj.position.set(item.x * TILE, item.yOffset ?? 0, item.z * TILE)
-    obj.rotation.y = item.rotY ?? 0
+    placeModel(obj, item.x * TILE, item.z * TILE, item.rotY ?? 0, item.scale)
+    if (item.yOffset) obj.position.y += item.yOffset
     roomGroup.add(obj)
   }
 
@@ -248,6 +252,8 @@ for (let i = 0; i < rooms.length; i++) {
 
 select.addEventListener('change', () => buildRoom(rooms[Number(select.value)]))
 
+info.textContent = 'Calibrating scale…'
+await calibrate()
 await buildRoom(rooms[0])
 animate()
 </script>
