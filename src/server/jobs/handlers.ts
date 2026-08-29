@@ -216,6 +216,8 @@ async function handleCrisis(
       context: job.context,
     }, world.provider)
 
+    // An empty thought means the model declined. The call still happened and
+    // still cost money, so it is metered — but nothing reaches the agent.
     if (res.thought !== '') {
       await world.store.remember({ agentId: a.id, kind: 'episodic',
         text: `[crisis] ${res.thought}`, tick: job.tick })
@@ -228,9 +230,11 @@ async function handleCrisis(
       costUsd: res.costUsd, durationMs: res.durationMs, tick: job.tick,
       prompt: res.prompt, response: res.rawResponse })
 
-    feed.publish('crisis', `${a.name} — inner voice (${job.crisisKind.replace('_', ' ')})`, {
-      thought: res.thought, crisisKind: job.crisisKind,
-    })
+    if (res.thought !== '') {
+      feed.publish('crisis', `${a.name} — inner voice (${job.crisisKind.replace('_', ' ')})`, {
+        thought: res.thought, crisisKind: job.crisisKind,
+      })
+    }
     return { costUsd: res.costUsd, inputTokens: res.inputTokens, outputTokens: res.outputTokens }
   } catch (err) {
     feed.publish('error', `crisis ${a.name} failed: ${String(err).slice(0, 60)}`)

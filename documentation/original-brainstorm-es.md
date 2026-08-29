@@ -1,8 +1,8 @@
 # agentic-world — Documento de diseño (brainstorm inicial)
 
-> **Este documento es el registro de origen, no el estado actual.** El cuerpo se conserva tal como se escribió el 2026-08-19, antes de que existiera una línea de código: su valor es el *porqué*, y reescribirlo para que encaje con lo construido destruiría justo eso.
+> **Documento histórico, en español. No describe el estado actual y no se mantiene al día.** El cuerpo se conserva tal como se escribió el 2026-08-19, antes de que existiera una línea de código: su valor es el *porqué*, y reescribirlo para que encaje con lo construido destruiría justo eso.
 >
-> Para lo que hay hoy: [README.md](./README.md) (qué es y cómo se levanta) y [CLAUDE.md](./CLAUDE.md) (decisiones de arquitectura vigentes). Al final de este documento, [Qué pasó realmente](#qué-pasó-realmente) contrasta cada apuesta de aquel día con el resultado.
+> El documento de diseño vigente, en inglés, es **[DESIGN.md](../DESIGN.md)**. Para lo que hay hoy: [README.md](../README.md) (qué es y cómo se levanta) y [CLAUDE.md](../CLAUDE.md) (decisiones de arquitectura vigentes). Al final de este documento, [Qué pasó realmente](#qué-pasó-realmente) contrasta cada apuesta de aquel día con el resultado.
 >
 > Origen: sesión de brainstorm sobre proyectos personales con IA. Esta idea ganó.
 

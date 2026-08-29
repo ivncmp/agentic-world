@@ -98,12 +98,16 @@ export function updateAgentLabels(
   for (const v of views.values()) {
     const label = labels.get(v.id)
     if (!label) continue
-    if (!v.mesh.visible) {
+    if (!v.mesh.visible || v.doorScale < 0.5) {
       label.style.display = 'none'
       continue
     }
     const pos = v.mesh.position.clone()
     pos.y = 1.1
-    position(label, toScreen(pos, camera, rect))
+    if (position(label, toScreen(pos, camera, rect)) && v.doorScale < 1) {
+      label.style.opacity = String(v.doorScale)
+    } else {
+      label.style.opacity = ''
+    }
   }
 }

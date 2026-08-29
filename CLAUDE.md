@@ -10,9 +10,9 @@ Relationships, rivalries, gossip and conflict are **emergent**, not scripted. Th
 
 The owner never enters the world. They connect from outside with their own Claude, get asked a few pointed questions about who their agent should *be*, and send back guidance — never orders. See [The owner loop](#the-owner-loop); it is the differentiator.
 
-Original concept and rationale: **[DESIGN.md](./DESIGN.md)** — the founding brainstorm, preserved as written, with a closing section contrasting each bet against what got built. Read it for *why the project is shaped like this*; read this file for what is true now.
+Design rationale: **[DESIGN.md](./DESIGN.md)** — the bets the project is built on and what long runs taught us about them. Read it for *why the project is shaped like this*; read this file for what is true now. The original Spanish brainstorm is archived at [documentation/original-brainstorm-es.md](./documentation/original-brainstorm-es.md).
 
-**Status: v0 runs end to end.** `docker compose up -d` brings up a world that ticks, persists, calls models and can be watched in 3D: tick loop with utility AI and economy (`src/engine`), four cognition routes (`src/cognition`), a Redis-backed worker (`src/server/cognition-worker.ts`), Postgres + dbrain persistence, the owner-loop MCP server (`src/mcp`), and a Three.js viewer (`src/viewer`). Long-running worlds resume from Postgres at the tick they stopped.
+**Status: v0 runs end to end.** `docker compose up -d` brings up a world that ticks, persists, calls models and can be watched in 3D: tick loop with utility AI and economy (`src/engine`), four cognition routes (`src/cognition`), a Redis-backed worker (`src/server/jobs/`), Postgres + dbrain persistence, the owner-loop MCP server (`src/mcp`), and a Three.js viewer (`src/viewer`). Long-running worlds resume from Postgres at the tick they stopped.
 
 What is still open: arrears have no consequence (see below), moderation of owner-authored personalities does not exist, and there is no deployment beyond a single box.
 
@@ -37,7 +37,7 @@ Two more routes were added once the world ran long enough to feel mechanical. Bo
 
 **Deliberation is the pattern to copy when adding cognition.** It does not decide anything; it biases the free layer that decides everything. A route that returns an action instead of a disposition has broken the cost model, because it must then run every tick.
 
-Per-route model IDs come from `SCENE_MODEL` / `REFLECTION_MODEL` / `DELIBERATION_MODEL` / `CRISIS_MODEL` env vars, resolved in `src/server/engine.ts`. Unset means the provider default.
+Per-route model IDs come from `SCENE_MODEL` / `REFLECTION_MODEL` / `DELIBERATION_MODEL` / `CRISIS_MODEL`, resolved in `src/server/engine.ts`. **Unset means the provider's default, which is its most expensive model** — and a variable set in `.env` reaches the engine only if `docker-compose.yml` also forwards it. Both halves have to be there.
 
 ### Hard rules
 
@@ -46,7 +46,7 @@ These are not style preferences — violating them breaks the project's economic
 - **Never call an LLM inside the tick loop.** The tick loop is synchronous, deterministic, pure TypeScript. LLM work is queued and resolved out-of-band.
 - **A scene must be gated before it costs anything.** The gate (`shouldTriggerScene`) is pure TS and runs on co-location. Only if it passes does a layer-2 call happen. Tune the gate before tuning the prompt.
 - **Every LLM call is metered.** Log model, route, token usage and the agent it was attributed to. Cost *and* calls-per-window per agent are first-class metrics from v0, not an afterthought — see Risks below.
-- **LLM resolution is a bounded queue.** `CognitionWorker` (`src/server/cognition-worker.ts`) is a BullMQ queue on Redis, capped at `MAX_CONCURRENT = 6`. Via dproxy each call spawns a `claude` CLI process (seconds, not milliseconds). Never fan out unbounded parallel resolutions — cap concurrency and let the backlog drain across ticks. Redis outliving the process is deliberate: pending jobs survive a restart, and the engine reports them on boot.
+- **LLM resolution is a bounded queue.** `CognitionWorker` (`src/server/jobs/worker.ts`) is a BullMQ queue on Redis, capped at `MAX_CONCURRENT = 6`. Via dproxy each call spawns a `claude` CLI process (seconds, not milliseconds). Never fan out unbounded parallel resolutions — cap concurrency and let the backlog drain across ticks. Redis outliving the process is deliberate: pending jobs survive a restart, and the engine reports them on boot.
 - **A tick must never block on the queue.** If scene resolution lags behind the tick rate, the world keeps ticking on layer 1 and the scene resolves late. Falling behind degrades richness, never correctness.
 - **A queued scene has a deadline.** `SCENE_TIMEOUT_MS` (default 120s → `SCENE_PATIENCE` ticks) bounds how long a pair stands around waiting. Shorter than a real dproxy call (15-40s) and every conversation is abandoned before it arrives, then applied to two agents who already walked away.
 - **Layer 1 must be able to run the whole world alone.** If the LLM provider is down, agents keep eating, working and paying rent. Cognition degrades; the simulation does not stop.
@@ -118,7 +118,7 @@ Two stores, split by what the data is for — not by convenience.
 
 A world must survive a restart in two senses: state identical after reload, *and* 50 further ticks agreeing with a run that never stopped. The second matters more — divergent evolution is worse than lost data. Gotchas, all paid for once: JSONB reorders keys (canonicalise before comparing), `openings` must be nullable (`NULL` = not a workplace, `0` = full), Postgres `NUMERIC` returns strings.
 
-Migrations in `src/persistence/migrations/` are numbered and applied in order at boot. Note `007` is used twice (`007_owners.sql`, `007_drop_cognition_jobs.sql`) — the queue moved to Redis mid-flight. Number new ones from `012`.
+Migrations in `src/persistence/migrations/` are numbered, tracked by filename in `schema_migrations`, and applied in lexicographic order at boot. Number new ones from `013`. Because the runner keys on the filename, renaming an applied migration re-runs it — `012_owners.sql` is written to be idempotent for exactly that reason.
 
 The engine also re-lays the city on boot when the street plan has changed, moving any place that ended up on a road; it logs each move. A resumed world is not guaranteed to have its buildings on the same tiles as the run that created it.
 
@@ -258,16 +258,15 @@ All found by watching long runs and reading diaries, all fixed. The recurring sh
 
 | Directory | Holds |
 |---|---|
-| `src/engine/` | `tick.ts` (the pure loop), `actions.ts` (utility AI), `clock.ts`, `relationship.ts`, `crisis-detect.ts`, and the `apply-*.ts` reducers that fold cognition results back into state |
+| `src/engine/` | `tick.ts` (the pure loop), `actions.ts` (utility AI), `clock.ts`, `relationship.ts`, `crisis-detect.ts`, and `apply/` — the reducers that fold an action or a cognition result back into state |
 | `src/agents/` | Schema, values, needs, vices, goals, identity, creation |
 | `src/cognition/` | `gate.ts` plus the four routes (`scene`, `reflection`, `deliberation`, `crisis`) and `provider.ts` |
 | `src/memory/` | `store.ts` interface with dbrain and in-memory implementations |
 | `src/world/` | City generator, layout, locations, occupations, and baked cities in `cities/` |
 | `src/persistence/` | Pool, three repositories (world / history / owner), numbered SQL migrations |
-| `src/server/` | `engine.ts` (tick host + HTTP + WebSocket), `cognition-worker.ts` (BullMQ), `llm-logger.ts` |
+| `src/server/` | `engine.ts` (entry: boot, tick loop, shutdown), `world/` (shared context + live feed), `http/` (routes, agents, owner loop), `jobs/` (BullMQ worker, the four job handlers, LLM logger) |
 | `src/mcp/` | Owner-facing MCP server |
-| `src/viewer/` | Three.js city viewer and its DOM panels |
-| `src/replay/` | Recorder and self-contained HTML replay of a run |
+| `src/viewer/` | `scene/` (Three.js, one module per concern), `core/` (engine connection, hash, character mapping), `ui/` (DOM panels) |
 | `src/dev/` | One-off maintenance scripts |
 
 There is no `economy/` directory — money lives in the agent row and is moved by `applyAction` in the tick loop.
@@ -284,7 +283,9 @@ Node 22 + TypeScript, Postgres 16, Redis (BullMQ), dbrain, dproxy/direct API, Th
 
 ## The viewer
 
-`src/viewer/`, Three.js over Kenney GLB packs (`city/` commercial · suburban · industrial · roads, `people/` 18 rigged characters). It replaced a Phaser 3 isometric renderer; nothing Phaser-shaped remains.
+`src/viewer/`, Three.js over Kenney GLB packs (`city/` commercial · suburban · industrial · roads, `people/` 18 rigged characters). Three subfolders: `scene/` (the Three.js scene, one module per concern, `index.ts` orchestrates), `core/` (engine connection, hash, character mapping), `ui/` (DOM panels).
+
+**The people packs' GLBs reference `Models/GLB format/Textures/*.png` externally.** Delete those PNGs and every agent renders untextured white. They are deliberately not covered by the asset-pack ignore rules.
 
 **The viewer is a spectator with no authority.** Everything it draws comes from `GET /world` once plus the `/live` WebSocket each tick. It never writes, and it never decides anything the engine would have to agree with later.
 
@@ -328,5 +329,5 @@ Portability rules (this ships open source):
 ## Conventions
 
 - Commit messages in English, no `Co-Authored-By` lines, no GPG signing.
-- Code and identifiers in English; the DESIGN.md and conversation are in Spanish.
+- All documentation, code and identifiers in English. The conversation is in Spanish; `documentation/original-brainstorm-es.md` is a preserved historical document and is the one exception.
 - The tick loop is hot — keep it allocation-light and free of async I/O.

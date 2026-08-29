@@ -1,6 +1,6 @@
 /**
  * Tab-based sidebar: Town (roster), Feed (rich events), Agent (detail panel).
- * Driven by the same EngineConnection the Phaser scene uses.
+ * Driven by the same EngineConnection the 3D scene uses.
  */
 import type { EngineConnection, WorldInfo, StateMsg, FeedItem } from '../core/connection.js'
 import { avatarImg } from './avatar.js'

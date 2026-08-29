@@ -1,5 +1,5 @@
 /**
- * WebSocket connection to the engine. Emits typed events so the Phaser scene
+ * WebSocket connection to the engine. Emits typed events so the 3D scene
  * and DOM sidebar can both subscribe.
  */
 

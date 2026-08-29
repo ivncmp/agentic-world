@@ -283,7 +283,12 @@ export class CityScene3D {
         v.p = Math.min(v.p + Math.abs(step), v.targetP)
       }
 
-      v.mesh.visible = !isIndoors(this.grid, v)
+      const wantIndoors = isIndoors(this.grid, v)
+      const doorTarget = wantIndoors ? 0 : 1
+      const doorEase = 1 - Math.exp(-delta / 800)
+      v.doorScale += (doorTarget - v.doorScale) * doorEase
+      if (v.doorScale < 0.01) { v.doorScale = 0; v.mesh.visible = false }
+      else { v.mesh.visible = true; v.mesh.scale.setScalar(v.baseScale * v.doorScale) }
 
       const goal = v.travelling ? routePoint(v, v.p, this.grid.period) : { x: v.to.x, y: v.to.y }
       goal.x += v.spread.x

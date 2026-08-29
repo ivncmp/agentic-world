@@ -32,6 +32,10 @@ export type AgentView = {
   state: string
   partner: string | null
   at: string
+  /** The scale set by ModelLibrary normalisation, preserved for door animation. */
+  baseScale: number
+  /** 1 = fully visible outdoors, 0 = hidden indoors. Animated smoothly. */
+  doorScale: number
 }
 
 export function animForState(state: string): string {
@@ -137,6 +141,8 @@ export function createAgents(
       state: 'idle',
       partner: null,
       at: home?.id ?? '',
+      baseScale: group.scale.x,
+      doorScale: 1,
     })
   }
 
