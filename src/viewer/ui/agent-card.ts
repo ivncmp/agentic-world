@@ -2,7 +2,7 @@
  * Agent detail panel — renders into the sidebar's Agent tab when an agent is
  * clicked in the roster or on the map. No longer a floating card.
  */
-import type { EngineConnection, AgentDetail } from './connection.js'
+import type { EngineConnection, AgentDetail } from '../core/connection.js'
 import { avatarImg } from './avatar.js'
 import { switchTab } from './sidebar.js'
 

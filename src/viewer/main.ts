@@ -1,9 +1,9 @@
-import { EngineConnection } from './connection.js'
-import { CityScene3D } from './scene-3d.js'
-import { initSidebar } from './sidebar.js'
-import { initAgentCard } from './agent-card.js'
-import { initVenueCard } from './venue-card.js'
-import { initGraph } from './graph.js'
+import { EngineConnection } from './core/connection.js'
+import { CityScene3D } from './scene/index.js'
+import { initSidebar } from './ui/sidebar.js'
+import { initAgentCard } from './ui/agent-card.js'
+import { initVenueCard } from './ui/venue-card.js'
+import { initGraph } from './ui/graph.js'
 
 const engineUrl =
   new URLSearchParams(location.search).get('engine') ?? location.origin

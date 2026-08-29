@@ -1,4 +1,4 @@
-import type { EngineConnection, WorldInfo, LocationInfo, StateMsg, AgentSnapshot } from './connection.js'
+import type { EngineConnection, WorldInfo, LocationInfo, StateMsg, AgentSnapshot } from '../core/connection.js'
 import { avatarImg } from './avatar.js'
 
 const KIND_LABEL: Record<string, string> = {

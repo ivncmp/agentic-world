@@ -5,7 +5,7 @@
  * uses (see `CityScene3D.renderPortraits`), keyed by character id — so a face
  * in the sidebar is always the character walking around the city.
  */
-import { characterIdFor } from './characters-data.js'
+import { characterIdFor } from '../core/characters-data.js'
 
 const portraits = new Map<string, string>()
 
