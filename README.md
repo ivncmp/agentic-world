@@ -73,6 +73,24 @@ The differentiator: owners connect from outside via MCP, receive briefings and o
 
 Guidance is typed (`valueDeltas`, `priorities`, `constraints`, plus a prose `note`) so it can feed the free reflex layer every tick instead of costing a call to interpret. It decays on a half-life, so raising is continuous, and an absent owner means the agent falls back to its authored personality.
 
+## Documentation
+
+| | |
+|---|---|
+| [DESIGN.md](./DESIGN.md) | Why the project is shaped like this, and what long runs taught us |
+| [documentation/architecture.md](./documentation/architecture.md) | How a tick becomes a model call and comes back |
+| [documentation/economy.md](./documentation/economy.md) | Sources, sinks, goals, and the arrears hole |
+| [documentation/owner-loop.md](./documentation/owner-loop.md) | MCP tools, typed guidance, decay, dilemmas |
+| [documentation/deployment.md](./documentation/deployment.md) | Services, environment variables, migrations |
+| [documentation/viewer.md](./documentation/viewer.md) | The Three.js scene and its determinism rules |
+
+## Contributing
+
+Start with [CONTRIBUTING.md](./CONTRIBUTING.md) — it covers setup, the handful
+of rules that are not style preferences, and a list of known gaps that are good
+places to start. By participating you agree to the
+[Code of Conduct](./CODE_OF_CONDUCT.md).
+
 ## License
 
-MIT
+MIT — see [LICENSE](./LICENSE).
