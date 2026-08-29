@@ -1,0 +1,37 @@
+CODE_OF_CONDUCT.md
+  s_0c69fc4bd2bb00::t_548ccbc58e1d61 1-126
+CONTRIBUTING.md
+  s_0c69fc4bd2bb00::t_cc5778ab77813e 1-99
+README.md
+  s_0c69fc4bd2bb00::t_025d8b7a26b9ba 76-93,96
+documentation/README.md
+  s_0c69fc4bd2bb00::t_14abf4ea6f511d 1-18
+documentation/architecture.md
+  s_0c69fc4bd2bb00::t_0173c5fcef4b6c 1-147
+documentation/deployment.md
+  s_0c69fc4bd2bb00::t_d585e83802ca85 1-142
+documentation/economy.md
+  s_0c69fc4bd2bb00::t_e1c8b896bafa34 1-93
+documentation/owner-loop.md
+  s_0c69fc4bd2bb00::t_03f7b24d222d07 1-134
+documentation/viewer.md
+  s_0c69fc4bd2bb00::t_4cf067187cf2eb 1-119
+src/viewer/public/assets/furniture/Patreon.url
+  s_0c69fc4bd2bb00::t_7d4f6143c759bf 1-2
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "fe2347729234e20a2122b791cb2d530b35862b46",
+  "prompts": {},
+  "sessions": {
+    "s_0c69fc4bd2bb00": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fbf4acf4-b682-40d7-8694-7837a363537f",
+        "model": "unknown"
+      },
+      "human_author": "Iván Campillo <ivncmp@gmail.com>"
+    }
+  }
+}
