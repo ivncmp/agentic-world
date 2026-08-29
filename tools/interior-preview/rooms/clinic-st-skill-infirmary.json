@@ -1,0 +1,94 @@
+{
+  "id": "clinic-1",
+  "kind": "clinic",
+  "name": "St. Skill Infirmary",
+  "width": 6,
+  "depth": 5,
+  "door": {
+    "wall": "s",
+    "pos": 2
+  },
+  "windows": [
+    {
+      "wall": "n",
+      "pos": 1
+    },
+    {
+      "wall": "n",
+      "pos": 4
+    },
+    {
+      "wall": "e",
+      "pos": 2
+    }
+  ],
+  "items": [
+    {
+      "model": "bedSingle",
+      "x": 4.5,
+      "z": 4,
+      "rotY": -1.5708
+    },
+    {
+      "model": "cabinetBedDrawer",
+      "x": 5.5,
+      "z": 4.5,
+      "rotY": 3.14159
+    },
+    {
+      "model": "desk",
+      "x": 1.5,
+      "z": 4,
+      "rotY": 3.14159
+    },
+    {
+      "model": "chairDesk",
+      "x": 1.5,
+      "z": 4.5,
+      "rotY": 3.14159
+    },
+    {
+      "model": "computerScreen",
+      "x": 1.5,
+      "z": 3.8,
+      "rotY": 3.14159
+    },
+    {
+      "model": "chair",
+      "x": 0.5,
+      "z": 1,
+      "rotY": 1.5708
+    },
+    {
+      "model": "chair",
+      "x": 0.5,
+      "z": 2,
+      "rotY": 1.5708
+    },
+    {
+      "model": "chair",
+      "x": 0.5,
+      "z": 3,
+      "rotY": 1.5708
+    },
+    {
+      "model": "bathroomSink",
+      "x": 5.5,
+      "z": 2.5,
+      "rotY": -1.5708
+    },
+    {
+      "model": "bathroomMirror",
+      "x": 5.5,
+      "z": 2.5,
+      "rotY": -1.5708,
+      "yOffset": 0.8
+    },
+    {
+      "model": "sideTable",
+      "x": 3.5,
+      "z": 4.5,
+      "rotY": 0
+    }
+  ]
+}

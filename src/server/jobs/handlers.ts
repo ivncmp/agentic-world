@@ -213,6 +213,7 @@ async function handleCrisis(
       agent: a,
       values: resolveValues(a.values, world.now),
       kind: job.crisisKind as 'vice_temptation',
+      tick: job.tick,
       context: job.context,
     }, world.provider)
 

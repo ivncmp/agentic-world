@@ -1,0 +1,127 @@
+{
+  "id": "school-1",
+  "kind": "school",
+  "name": "Ironworks Academy",
+  "width": 7,
+  "depth": 5,
+  "door": {
+    "wall": "s",
+    "pos": 3
+  },
+  "windows": [
+    {
+      "wall": "n",
+      "pos": 1
+    },
+    {
+      "wall": "n",
+      "pos": 3
+    },
+    {
+      "wall": "n",
+      "pos": 5
+    },
+    {
+      "wall": "w",
+      "pos": 2
+    }
+  ],
+  "items": [
+    {
+      "model": "desk",
+      "x": 3.5,
+      "z": 4,
+      "rotY": 3.14159
+    },
+    {
+      "model": "chairDesk",
+      "x": 3.5,
+      "z": 4.5,
+      "rotY": 3.14159
+    },
+    {
+      "model": "computerScreen",
+      "x": 3.5,
+      "z": 3.8,
+      "rotY": 3.14159
+    },
+    {
+      "model": "desk",
+      "x": 1.5,
+      "z": 2.5,
+      "rotY": 0
+    },
+    {
+      "model": "chair",
+      "x": 1.5,
+      "z": 2,
+      "rotY": 0
+    },
+    {
+      "model": "desk",
+      "x": 3.5,
+      "z": 2.5,
+      "rotY": 0
+    },
+    {
+      "model": "chair",
+      "x": 3.5,
+      "z": 2,
+      "rotY": 0
+    },
+    {
+      "model": "desk",
+      "x": 5.5,
+      "z": 2.5,
+      "rotY": 0
+    },
+    {
+      "model": "chair",
+      "x": 5.5,
+      "z": 2,
+      "rotY": 0
+    },
+    {
+      "model": "desk",
+      "x": 1.5,
+      "z": 0.8,
+      "rotY": 0
+    },
+    {
+      "model": "chair",
+      "x": 1.5,
+      "z": 0.3,
+      "rotY": 0
+    },
+    {
+      "model": "desk",
+      "x": 3.5,
+      "z": 0.8,
+      "rotY": 0
+    },
+    {
+      "model": "chair",
+      "x": 3.5,
+      "z": 0.3,
+      "rotY": 0
+    },
+    {
+      "model": "desk",
+      "x": 5.5,
+      "z": 0.8,
+      "rotY": 0
+    },
+    {
+      "model": "chair",
+      "x": 5.5,
+      "z": 0.3,
+      "rotY": 0
+    },
+    {
+      "model": "bookcaseOpen",
+      "x": 0.4,
+      "z": 4.5,
+      "rotY": 0
+    }
+  ]
+}

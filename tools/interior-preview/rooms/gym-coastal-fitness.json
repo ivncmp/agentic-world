@@ -1,0 +1,75 @@
+{
+  "id": "gym-2",
+  "kind": "gym",
+  "name": "Coastal Fitness",
+  "width": 6,
+  "depth": 5,
+  "door": {
+    "wall": "s",
+    "pos": 4
+  },
+  "windows": [
+    {
+      "wall": "w",
+      "pos": 1
+    },
+    {
+      "wall": "w",
+      "pos": 3
+    },
+    {
+      "wall": "n",
+      "pos": 3
+    }
+  ],
+  "items": [
+    {
+      "model": "benchCushion",
+      "x": 1,
+      "z": 4,
+      "rotY": 1.5708
+    },
+    {
+      "model": "benchCushion",
+      "x": 1,
+      "z": 2,
+      "rotY": 1.5708
+    },
+    {
+      "model": "rugRectangle",
+      "x": 3.5,
+      "z": 3.5,
+      "rotY": 1.5708
+    },
+    {
+      "model": "rugRectangle",
+      "x": 3.5,
+      "z": 1.5,
+      "rotY": 1.5708
+    },
+    {
+      "model": "bookcaseClosedDoors",
+      "x": 5.5,
+      "z": 4.5,
+      "rotY": 3.14159
+    },
+    {
+      "model": "bookcaseClosedDoors",
+      "x": 5.5,
+      "z": 3,
+      "rotY": 3.14159
+    },
+    {
+      "model": "bench",
+      "x": 5,
+      "z": 1,
+      "rotY": 0
+    },
+    {
+      "model": "radio",
+      "x": 0.4,
+      "z": 4.5,
+      "rotY": 0
+    }
+  ]
+}

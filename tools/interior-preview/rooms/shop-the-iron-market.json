@@ -1,0 +1,71 @@
+{
+  "id": "shop-2",
+  "kind": "shop",
+  "name": "The Iron Market",
+  "width": 5,
+  "depth": 5,
+  "door": {
+    "wall": "s",
+    "pos": 2
+  },
+  "windows": [
+    {
+      "wall": "n",
+      "pos": 1
+    },
+    {
+      "wall": "e",
+      "pos": 2
+    }
+  ],
+  "items": [
+    {
+      "model": "kitchenBar",
+      "x": 0.5,
+      "z": 4,
+      "rotY": 3.14159
+    },
+    {
+      "model": "kitchenBarEnd",
+      "x": 1.5,
+      "z": 4,
+      "rotY": 0
+    },
+    {
+      "model": "chairRounded",
+      "x": 0.5,
+      "z": 3.5,
+      "rotY": 3.14159
+    },
+    {
+      "model": "bookcaseOpen",
+      "x": 3.5,
+      "z": 4.5,
+      "rotY": 3.14159
+    },
+    {
+      "model": "bookcaseOpen",
+      "x": 3.5,
+      "z": 3,
+      "rotY": 0
+    },
+    {
+      "model": "bookcaseOpenLow",
+      "x": 1.5,
+      "z": 2,
+      "rotY": 0
+    },
+    {
+      "model": "bookcaseOpenLow",
+      "x": 3.5,
+      "z": 1.5,
+      "rotY": 0
+    },
+    {
+      "model": "cardboardBoxClosed",
+      "x": 4.5,
+      "z": 0.3,
+      "rotY": 0.5
+    }
+  ]
+}

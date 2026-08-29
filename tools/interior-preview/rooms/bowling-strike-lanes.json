@@ -1,0 +1,92 @@
+{
+  "id": "bowling-1",
+  "kind": "bowling",
+  "name": "Strike Lanes",
+  "width": 8,
+  "depth": 5,
+  "door": {
+    "wall": "s",
+    "pos": 4
+  },
+  "windows": [
+    {
+      "wall": "n",
+      "pos": 2
+    },
+    {
+      "wall": "n",
+      "pos": 6
+    }
+  ],
+  "items": [
+    {
+      "model": "rugRectangle",
+      "x": 2,
+      "z": 3.5,
+      "rotY": 0,
+      "scale": 2
+    },
+    {
+      "model": "rugRectangle",
+      "x": 4.5,
+      "z": 3.5,
+      "rotY": 0,
+      "scale": 2
+    },
+    {
+      "model": "rugRectangle",
+      "x": 7,
+      "z": 3.5,
+      "rotY": 0,
+      "scale": 2
+    },
+    {
+      "model": "loungeSofa",
+      "x": 2,
+      "z": 1,
+      "rotY": 0
+    },
+    {
+      "model": "loungeSofa",
+      "x": 4.5,
+      "z": 1,
+      "rotY": 0
+    },
+    {
+      "model": "loungeSofa",
+      "x": 7,
+      "z": 1,
+      "rotY": 0
+    },
+    {
+      "model": "tableCoffee",
+      "x": 2,
+      "z": 1.8,
+      "rotY": 0
+    },
+    {
+      "model": "tableCoffee",
+      "x": 4.5,
+      "z": 1.8,
+      "rotY": 0
+    },
+    {
+      "model": "tableCoffee",
+      "x": 7,
+      "z": 1.8,
+      "rotY": 0
+    },
+    {
+      "model": "bookcaseOpen",
+      "x": 0.4,
+      "z": 1,
+      "rotY": 1.5708
+    },
+    {
+      "model": "bookcaseOpenLow",
+      "x": 0.4,
+      "z": 2.5,
+      "rotY": 1.5708
+    }
+  ]
+}

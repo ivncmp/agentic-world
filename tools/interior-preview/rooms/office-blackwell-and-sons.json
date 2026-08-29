@@ -1,0 +1,105 @@
+{
+  "id": "office-1",
+  "kind": "office",
+  "name": "Blackwell & Sons",
+  "width": 6,
+  "depth": 5,
+  "door": {
+    "wall": "s",
+    "pos": 2
+  },
+  "windows": [
+    {
+      "wall": "n",
+      "pos": 1
+    },
+    {
+      "wall": "n",
+      "pos": 4
+    },
+    {
+      "wall": "e",
+      "pos": 2
+    }
+  ],
+  "items": [
+    {
+      "model": "desk",
+      "x": 3,
+      "z": 4,
+      "rotY": 3.14159
+    },
+    {
+      "model": "chairDesk",
+      "x": 3,
+      "z": 4.5,
+      "rotY": 3.14159
+    },
+    {
+      "model": "computerScreen",
+      "x": 3,
+      "z": 3.8,
+      "rotY": 3.14159
+    },
+    {
+      "model": "computerKeyboard",
+      "x": 3,
+      "z": 3.5,
+      "rotY": 3.14159
+    },
+    {
+      "model": "desk",
+      "x": 1,
+      "z": 2,
+      "rotY": 0
+    },
+    {
+      "model": "chairDesk",
+      "x": 1,
+      "z": 1.5,
+      "rotY": 0
+    },
+    {
+      "model": "computerScreen",
+      "x": 1,
+      "z": 2.2,
+      "rotY": 0
+    },
+    {
+      "model": "desk",
+      "x": 3.5,
+      "z": 2,
+      "rotY": 0
+    },
+    {
+      "model": "chairDesk",
+      "x": 3.5,
+      "z": 1.5,
+      "rotY": 0
+    },
+    {
+      "model": "computerScreen",
+      "x": 3.5,
+      "z": 2.2,
+      "rotY": 0
+    },
+    {
+      "model": "bookcaseClosedWide",
+      "x": 5.5,
+      "z": 4.5,
+      "rotY": 3.14159
+    },
+    {
+      "model": "bookcaseClosed",
+      "x": 0.4,
+      "z": 4.5,
+      "rotY": 0
+    },
+    {
+      "model": "pottedPlant",
+      "x": 5.5,
+      "z": 0.3,
+      "rotY": 0
+    }
+  ]
+}

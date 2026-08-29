@@ -1,0 +1,95 @@
+{
+  "id": "cafe-1",
+  "kind": "cafe",
+  "name": "Bean & Anvil",
+  "width": 5,
+  "depth": 4,
+  "door": {
+    "wall": "s",
+    "pos": 2
+  },
+  "windows": [
+    {
+      "wall": "e",
+      "pos": 1
+    },
+    {
+      "wall": "w",
+      "pos": 2
+    }
+  ],
+  "items": [
+    {
+      "model": "kitchenBar",
+      "x": 1,
+      "z": 3.5,
+      "rotY": 3.14159
+    },
+    {
+      "model": "kitchenBarEnd",
+      "x": 2,
+      "z": 3.5,
+      "rotY": 0
+    },
+    {
+      "model": "stoolBar",
+      "x": 1,
+      "z": 2.5,
+      "rotY": 0
+    },
+    {
+      "model": "stoolBar",
+      "x": 2,
+      "z": 2.5,
+      "rotY": 0
+    },
+    {
+      "model": "tableCoffee",
+      "x": 4,
+      "z": 3,
+      "rotY": 0
+    },
+    {
+      "model": "chairModernCushion",
+      "x": 3.3,
+      "z": 3,
+      "rotY": 1.5708
+    },
+    {
+      "model": "chairModernCushion",
+      "x": 4,
+      "z": 2.3,
+      "rotY": 0
+    },
+    {
+      "model": "tableCoffee",
+      "x": 1.5,
+      "z": 1,
+      "rotY": 0
+    },
+    {
+      "model": "chairModernCushion",
+      "x": 0.8,
+      "z": 1,
+      "rotY": 1.5708
+    },
+    {
+      "model": "chairModernCushion",
+      "x": 2.2,
+      "z": 1,
+      "rotY": -1.5708
+    },
+    {
+      "model": "plantSmall1",
+      "x": 4.5,
+      "z": 0.3,
+      "rotY": 0
+    },
+    {
+      "model": "books",
+      "x": 0.3,
+      "z": 3.5,
+      "rotY": 0.3
+    }
+  ]
+}

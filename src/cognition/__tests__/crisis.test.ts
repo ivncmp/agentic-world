@@ -20,7 +20,7 @@ describe('buildCrisisPrompt', () => {
   it('includes agent name and occupation', () => {
     const prompt = buildCrisisPrompt({
       agent: agent(), values: { ...zeroVector(), honesty: 0.8 },
-      kind: 'vice_temptation', context: 'Your gambling urge is building (75%).',
+      kind: 'vice_temptation', context: 'Your gambling urge is building (75%).', tick: 1,
     })
     expect(prompt).toContain('Alice')
     expect(prompt).toContain('clerk')
@@ -29,7 +29,7 @@ describe('buildCrisisPrompt', () => {
   it('includes crisis context', () => {
     const prompt = buildCrisisPrompt({
       agent: agent(), values: zeroVector(),
-      kind: 'deep_debt', context: 'You owe 100 credits in unpaid rent.',
+      kind: 'deep_debt', context: 'You owe 100 credits in unpaid rent.', tick: 1,
     })
     expect(prompt).toContain('100 credits')
   })
@@ -37,7 +37,7 @@ describe('buildCrisisPrompt', () => {
   it('includes personality traits', () => {
     const prompt = buildCrisisPrompt({
       agent: agent(), values: { ...zeroVector(), honesty: 0.8 },
-      kind: 'vice_temptation', context: 'test',
+      kind: 'vice_temptation', context: 'test', tick: 1,
     })
     expect(prompt).toContain('high honesty')
   })
@@ -73,5 +73,40 @@ describe('parseCrisisResponse', () => {
   it('handles empty thought gracefully', () => {
     const result = parseCrisisResponse('{"thought":""}')
     expect(result).toBe('')
+  })
+})
+
+describe('buildCrisisPrompt entry points', () => {
+  const promptAt = (tick: number, id = 'alice') =>
+    buildCrisisPrompt({
+      agent: { ...agent(), id },
+      values: zeroVector(),
+      kind: 'vice_temptation',
+      context: 'test',
+      tick,
+    })
+
+  it('bans the invocation the model keeps reaching for', () => {
+    expect(promptAt(1)).toContain('no "God"')
+  })
+
+  it('is deterministic — the same agent and tick give the same prompt', () => {
+    expect(promptAt(42)).toBe(promptAt(42))
+  })
+
+  it('varies the entry point across ticks', () => {
+    const seen = new Set<string>()
+    for (let tick = 0; tick < 200; tick++) {
+      seen.add(promptAt(tick).match(/Begin from (.+?)\. Write in/)![1]!)
+    }
+    expect(seen.size).toBeGreaterThan(4)
+  })
+
+  it('varies the entry point across agents at the same tick', () => {
+    const seen = new Set<string>()
+    for (const id of ['alice', 'bob', 'carol', 'dave', 'erin', 'frank']) {
+      seen.add(promptAt(7, id).match(/Begin from (.+?)\. Write in/)![1]!)
+    }
+    expect(seen.size).toBeGreaterThan(1)
   })
 })

@@ -4,12 +4,15 @@ import { occupationDef } from '../world/occupations.js'
 import type { CrisisKind } from '../engine/crisis-detect.js'
 import type { ModelProvider, CompletionResult } from './provider.js'
 import { extractJsonObject, looksLikeRefusal } from './json.js'
+import { pickBy } from '../shared/hash.js'
 
 export type CrisisInput = {
   agent: Agent
   values: ValueVector
   kind: CrisisKind
   context: string
+  /** Varies the prompt's entry point. The tick, so the choice is reproducible. */
+  tick: number
 }
 
 export type CrisisResult = {
@@ -29,6 +32,26 @@ const traitLine = (v: ValueVector): string =>
     .join(', ') || 'unremarkable'
 
 /**
+ * Where the thought starts. Rotated per call because this route collapses hard
+ * without it: given the same shape of prompt, the model opens three monologues
+ * in five with the same invocation and the same sensory craving — "God, I can
+ * already taste it". Crisis fires several times a day per agent, so a single
+ * repeated opening is the most visible tic in the whole feed. A varying entry
+ * point gives the model somewhere else to begin; the ban below closes the door
+ * it keeps reaching for.
+ */
+const ENTRY_POINTS = [
+  'a physical sensation, located somewhere specific in the body',
+  'the excuse they are making to themselves right now',
+  'an object in front of them they cannot stop looking at',
+  'another person, and what that person would say if they saw this',
+  'the last time this happened, and how it went',
+  'the thing they are deliberately not thinking about',
+  'a bargain they are striking with themselves about tomorrow',
+  'the hour, the light, or the state of the room around them',
+] as const
+
+/**
  * Framed as fiction writing rather than first-person roleplay.
  *
  * The obvious phrasing — "You are X, your urge is building, what goes through
@@ -37,8 +60,9 @@ const traitLine = (v: ValueVector): string =>
  * ebb is the same output with an honest frame, and it does not trip refusals.
  */
 export function buildCrisisPrompt(input: CrisisInput): string {
-  const { agent, values, context } = input
+  const { agent, values, context, tick } = input
   const occ = occupationDef(agent.occupation).label.toLowerCase()
+  const entry = pickBy(ENTRY_POINTS, agent.id, tick, input.kind)
 
   return `You are writing one beat of interior monologue for a character in a fictional social simulation — the close-third-person moment a novelist writes when a character is at a low ebb.
 
@@ -46,6 +70,10 @@ Character: ${agent.name}, a ${occ}. Traits: ${traitLine(values)}.
 Situation: ${context}
 
 Write what passes through their head. One or two raw, honest sentences, first person, present tense. It is a feeling, not a decision — they are not resolving anything, only registering the pull. Flawed characters are the point; do not have them talk themselves out of it or moralise.
+
+Begin from ${entry}. Write in this character's own idiom, not a generic one.
+
+Do not open with an exclamation or an invocation — no "God", no "Christ", no "Jesus". Do not open by naming the craving itself; arrive at it.
 
 Respond with ONLY a JSON object: {"thought":"..."}`
 }

@@ -1,0 +1,89 @@
+{
+  "id": "supermarket-2",
+  "kind": "supermarket",
+  "name": "North Market",
+  "width": 7,
+  "depth": 5,
+  "door": {
+    "wall": "s",
+    "pos": 2
+  },
+  "windows": [
+    {
+      "wall": "e",
+      "pos": 1
+    },
+    {
+      "wall": "e",
+      "pos": 3
+    }
+  ],
+  "items": [
+    {
+      "model": "kitchenBar",
+      "x": 0.5,
+      "z": 1,
+      "rotY": 1.5708
+    },
+    {
+      "model": "kitchenBarEnd",
+      "x": 0.5,
+      "z": 0.5,
+      "rotY": 1.5708
+    },
+    {
+      "model": "chairRounded",
+      "x": 0.3,
+      "z": 1,
+      "rotY": 1.5708
+    },
+    {
+      "model": "bookcaseOpen",
+      "x": 2.5,
+      "z": 4.5,
+      "rotY": 3.14159
+    },
+    {
+      "model": "bookcaseOpen",
+      "x": 2.5,
+      "z": 3,
+      "rotY": 0
+    },
+    {
+      "model": "bookcaseOpen",
+      "x": 2.5,
+      "z": 1.5,
+      "rotY": 0
+    },
+    {
+      "model": "bookcaseOpen",
+      "x": 4.5,
+      "z": 4.5,
+      "rotY": 3.14159
+    },
+    {
+      "model": "bookcaseOpen",
+      "x": 4.5,
+      "z": 3,
+      "rotY": 0
+    },
+    {
+      "model": "bookcaseOpen",
+      "x": 4.5,
+      "z": 1.5,
+      "rotY": 0
+    },
+    {
+      "model": "kitchenCabinet",
+      "x": 6,
+      "z": 4.5,
+      "rotY": 3.14159
+    },
+    {
+      "model": "kitchenCabinetDrawer",
+      "x": 6,
+      "z": 3,
+      "rotY": 3.14159
+    }
+  ]
+}

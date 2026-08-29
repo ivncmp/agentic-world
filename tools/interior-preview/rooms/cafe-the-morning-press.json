@@ -1,0 +1,83 @@
+{
+  "id": "cafe-2",
+  "kind": "cafe",
+  "name": "The Morning Press",
+  "width": 5,
+  "depth": 4,
+  "door": {
+    "wall": "s",
+    "pos": 1
+  },
+  "windows": [
+    {
+      "wall": "n",
+      "pos": 2
+    },
+    {
+      "wall": "e",
+      "pos": 2
+    }
+  ],
+  "items": [
+    {
+      "model": "kitchenBar",
+      "x": 3.5,
+      "z": 3.5,
+      "rotY": 3.14159
+    },
+    {
+      "model": "kitchenBarEnd",
+      "x": 4,
+      "z": 3.5,
+      "rotY": 0
+    },
+    {
+      "model": "stoolBar",
+      "x": 3.5,
+      "z": 2.5,
+      "rotY": 0
+    },
+    {
+      "model": "tableCoffeeSquare",
+      "x": 1.5,
+      "z": 2.5,
+      "rotY": 0
+    },
+    {
+      "model": "chairModernFrameCushion",
+      "x": 1.5,
+      "z": 1.8,
+      "rotY": 0
+    },
+    {
+      "model": "chairModernFrameCushion",
+      "x": 1.5,
+      "z": 3.2,
+      "rotY": 3.14159
+    },
+    {
+      "model": "tableCoffeeSquare",
+      "x": 1.5,
+      "z": 0.8,
+      "rotY": 0
+    },
+    {
+      "model": "chairModernFrameCushion",
+      "x": 0.8,
+      "z": 0.8,
+      "rotY": 1.5708
+    },
+    {
+      "model": "chairModernFrameCushion",
+      "x": 2.2,
+      "z": 0.8,
+      "rotY": -1.5708
+    },
+    {
+      "model": "plantSmall2",
+      "x": 0.3,
+      "z": 3.5,
+      "rotY": 0
+    }
+  ]
+}

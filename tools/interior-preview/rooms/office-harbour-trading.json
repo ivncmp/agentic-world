@@ -1,0 +1,93 @@
+{
+  "id": "office-2",
+  "kind": "office",
+  "name": "Harbour Trading",
+  "width": 6,
+  "depth": 4,
+  "door": {
+    "wall": "s",
+    "pos": 1
+  },
+  "windows": [
+    {
+      "wall": "n",
+      "pos": 2
+    },
+    {
+      "wall": "n",
+      "pos": 4
+    },
+    {
+      "wall": "e",
+      "pos": 1
+    }
+  ],
+  "items": [
+    {
+      "model": "deskCorner",
+      "x": 5,
+      "z": 3.5,
+      "rotY": 3.14159
+    },
+    {
+      "model": "chairDesk",
+      "x": 5,
+      "z": 3,
+      "rotY": 3.14159
+    },
+    {
+      "model": "computerScreen",
+      "x": 5,
+      "z": 3.3,
+      "rotY": 3.14159
+    },
+    {
+      "model": "computerKeyboard",
+      "x": 4.7,
+      "z": 3,
+      "rotY": 3.14159
+    },
+    {
+      "model": "desk",
+      "x": 1.5,
+      "z": 2,
+      "rotY": 0
+    },
+    {
+      "model": "chairDesk",
+      "x": 1.5,
+      "z": 1.5,
+      "rotY": 0
+    },
+    {
+      "model": "computerScreen",
+      "x": 1.5,
+      "z": 2.2,
+      "rotY": 0
+    },
+    {
+      "model": "desk",
+      "x": 4,
+      "z": 2,
+      "rotY": 0
+    },
+    {
+      "model": "chairDesk",
+      "x": 4,
+      "z": 1.5,
+      "rotY": 0
+    },
+    {
+      "model": "bookcaseOpen",
+      "x": 0.4,
+      "z": 3.5,
+      "rotY": 0
+    },
+    {
+      "model": "trashcan",
+      "x": 0.3,
+      "z": 0.3,
+      "rotY": 0
+    }
+  ]
+}

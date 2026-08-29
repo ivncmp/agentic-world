@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Interior Preview — agentic-world</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #1a1a2e; color: #e0e0e0; font-family: system-ui, sans-serif; overflow: hidden; }
+  #ui {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 10;
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 16px;
+    background: rgba(20, 20, 40, 0.92); backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  #ui h1 { font-size: 14px; font-weight: 600; white-space: nowrap; }
+  #venue-select {
+    background: #2a2a4a; color: #e0e0e0; border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 6px; padding: 6px 10px; font-size: 13px; min-width: 240px;
+  }
+  #info { font-size: 11px; color: #888; margin-left: auto; white-space: nowrap; }
+  canvas { display: block; width: 100vw; height: 100vh; }
+</style>
+</head>
+<body>
+<div id="ui">
+  <h1>Interior Preview</h1>
+  <select id="venue-select"></select>
+  <span id="info">loading…</span>
+</div>
+<script type="importmap">
+{
+  "imports": {
+    "three": "/three/build/three.module.js",
+    "three/addons/": "/three/examples/jsm/"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from 'three'
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
+
+const TILE = 1.0
+const WALL_H = 1.6
+const FURNITURE_BASE = '/furniture/'
+
+// ── Scene ────────────────────────────────────────────────────────────
+const canvas = document.createElement('canvas')
+canvas.style.cssText = 'display:block;width:100vw;height:100vh'
+document.body.appendChild(canvas)
+
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true })
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2))
+renderer.setSize(innerWidth, innerHeight)
+renderer.shadowMap.enabled = true
+renderer.shadowMap.type = THREE.PCFShadowMap
+renderer.toneMapping = THREE.ACESFilmicToneMapping
+renderer.toneMappingExposure = 1.2
+
+const scene = new THREE.Scene()
+scene.background = new THREE.Color(0x1a1a2e)
+
+const camera = new THREE.PerspectiveCamera(35, innerWidth / innerHeight, 0.1, 100)
+camera.position.set(8, 8, 8)
+
+const controls = new OrbitControls(camera, canvas)
+controls.enableDamping = true
+controls.dampingFactor = 0.08
+controls.target.set(3, 0, 2)
+controls.minDistance = 3
+controls.maxDistance = 25
+controls.maxPolarAngle = Math.PI / 2.1
+
+scene.add(new THREE.AmbientLight(0xffffff, 0.6))
+const sun = new THREE.DirectionalLight(0xfff4e5, 1.8)
+sun.position.set(6, 10, 8)
+sun.castShadow = true
+sun.shadow.mapSize.set(1024, 1024)
+sun.shadow.camera.left = -10; sun.shadow.camera.right = 10
+sun.shadow.camera.top = 10; sun.shadow.camera.bottom = -10
+scene.add(sun)
+scene.add(new THREE.DirectionalLight(0xc8d8ff, 0.4).translateX(-4).translateY(6).translateZ(-2))
+
+const groundMesh = new THREE.Mesh(
+  new THREE.PlaneGeometry(30, 30),
+  new THREE.MeshStandardMaterial({ color: 0x2a2a3e }),
+)
+groundMesh.rotation.x = -Math.PI / 2
+groundMesh.position.y = -0.01
+groundMesh.receiveShadow = true
+scene.add(groundMesh)
+
+// ── Model loading ────────────────────────────────────────────────────
+const loader = new GLTFLoader()
+const modelCache = new Map()
+
+async function ensureModel(name) {
+  if (modelCache.has(name)) return modelCache.get(name)
+  try {
+    const gltf = await loader.loadAsync(FURNITURE_BASE + name + '.glb')
+    gltf.scene.traverse(c => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = true } })
+    modelCache.set(name, gltf.scene)
+    return gltf.scene
+  } catch (e) {
+    console.warn(`Failed to load ${name}:`, e)
+    modelCache.set(name, null)
+    return null
+  }
+}
+
+function cloneModel(name) {
+  const t = modelCache.get(name)
+  return t ? t.clone() : null
+}
+
+// ── Unified scaling ──────────────────────────────────────────────────
+// All Kenney Furniture Kit models share the same authoring scale.
+// We measure floorFull once and derive a single scale factor so that
+// one floor tile = one TILE unit. Everything else inherits that factor.
+let BASE_SCALE = 1
+
+async function calibrate() {
+  const floor = await ensureModel('floorFull')
+  if (!floor) return
+  const box = new THREE.Box3().setFromObject(floor)
+  const sz = new THREE.Vector3(); box.getSize(sz)
+  BASE_SCALE = TILE / Math.max(sz.x, sz.z)
+}
+
+function placeModel(model, x, z, rotY, extraScale) {
+  const s = BASE_SCALE * (extraScale ?? 1)
+  model.scale.setScalar(s)
+  const box = new THREE.Box3().setFromObject(model)
+  const c = new THREE.Vector3(); box.getCenter(c)
+  model.position.set(x - c.x, -box.min.y, z - c.z)
+  model.rotation.y = rotY ?? 0
+}
+
+// ── Room builder ─────────────────────────────────────────────────────
+let roomGroup = null
+
+async function buildRoom(layout) {
+  const info = document.getElementById('info')
+  info.textContent = `Building ${layout.name}…`
+
+  // Collect all model names needed
+  const needed = new Set(['floorFull', 'wall', 'wallDoorway', 'wallWindow', 'wallCorner'])
+  for (const it of layout.items) needed.add(it.model)
+
+  // Load any models not yet cached
+  const toLoad = [...needed].filter(n => !modelCache.has(n))
+  for (let i = 0; i < toLoad.length; i++) {
+    info.textContent = `Loading ${toLoad[i]} (${i + 1}/${toLoad.length})`
+    await ensureModel(toLoad[i])
+  }
+
+  if (roomGroup) scene.remove(roomGroup)
+  roomGroup = new THREE.Group()
+
+  const { width, depth, door, windows, items } = layout
+  const winSet = new Set((windows || []).map(w => `${w.wall}-${w.pos}`))
+
+  // Floor
+  for (let x = 0; x < width; x++) {
+    for (let z = 0; z < depth; z++) {
+      const tile = cloneModel('floorFull')
+      if (tile) {
+        fitToTile(tile, TILE * 0.98)
+        tile.position.set((x + 0.5) * TILE, 0, (z + 0.5) * TILE)
+        roomGroup.add(tile)
+      }
+    }
+  }
+
+  // Walls
+  function placeWall(type, x, z, rotY) {
+    const w = cloneModel(type)
+    if (!w) return
+    fitToTile(w, TILE, WALL_H)
+    w.position.set(x * TILE, 0, z * TILE)
+    w.rotation.y = rotY
+    roomGroup.add(w)
+  }
+
+  for (let x = 0; x < width; x++) {
+    const sType = (door.wall === 's' && x === door.pos) ? 'wallDoorway' : winSet.has(`s-${x}`) ? 'wallWindow' : 'wall'
+    placeWall(sType, x + 0.5, 0, 0)
+    const nType = (door.wall === 'n' && x === door.pos) ? 'wallDoorway' : winSet.has(`n-${x}`) ? 'wallWindow' : 'wall'
+    placeWall(nType, x + 0.5, depth, Math.PI)
+  }
+  for (let z = 0; z < depth; z++) {
+    const wType = (door.wall === 'w' && z === door.pos) ? 'wallDoorway' : winSet.has(`w-${z}`) ? 'wallWindow' : 'wall'
+    placeWall(wType, 0, z + 0.5, Math.PI / 2)
+    const eType = (door.wall === 'e' && z === door.pos) ? 'wallDoorway' : winSet.has(`e-${z}`) ? 'wallWindow' : 'wall'
+    placeWall(eType, width, z + 0.5, -Math.PI / 2)
+  }
+
+  // Furniture
+  for (const item of items) {
+    const obj = cloneModel(item.model)
+    if (!obj) continue
+    fitFurniture(obj, TILE * 0.85 * (item.scale ?? 1))
+    obj.position.set(item.x * TILE, item.yOffset ?? 0, item.z * TILE)
+    obj.rotation.y = item.rotY ?? 0
+    roomGroup.add(obj)
+  }
+
+  scene.add(roomGroup)
+
+  const cx = (width / 2) * TILE
+  const cz = (depth / 2) * TILE
+  controls.target.set(cx, 0, cz)
+  const dist = Math.max(width, depth) * TILE * 1.2
+  camera.position.set(cx + dist, dist * 0.8, cz + dist)
+
+  info.textContent = `${layout.id} — ${width}×${depth} — ${items.length} items`
+}
+
+// ── UI ───────────────────────────────────────────────────────────────
+const select = document.getElementById('venue-select')
+
+window.addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight
+  camera.updateProjectionMatrix()
+  renderer.setSize(innerWidth, innerHeight)
+})
+
+function animate() {
+  requestAnimationFrame(animate)
+  controls.update()
+  renderer.render(scene, camera)
+}
+
+// ── Init: load room list from server ─────────────────────────────────
+const info = document.getElementById('info')
+info.textContent = 'Loading rooms…'
+
+const rooms = await fetch('/rooms').then(r => r.json())
+
+for (let i = 0; i < rooms.length; i++) {
+  const r = rooms[i]
+  const opt = document.createElement('option')
+  opt.value = String(i)
+  opt.textContent = `[${r.id}] ${r.name}`
+  select.appendChild(opt)
+}
+
+select.addEventListener('change', () => buildRoom(rooms[Number(select.value)]))
+
+await buildRoom(rooms[0])
+animate()
+</script>
+</body>
+</html>

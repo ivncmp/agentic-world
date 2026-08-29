@@ -1,0 +1,65 @@
+{
+  "id": "shop-3",
+  "kind": "shop",
+  "name": "The Compass Rose",
+  "width": 5,
+  "depth": 4,
+  "door": {
+    "wall": "s",
+    "pos": 1
+  },
+  "windows": [
+    {
+      "wall": "e",
+      "pos": 1
+    },
+    {
+      "wall": "n",
+      "pos": 2
+    }
+  ],
+  "items": [
+    {
+      "model": "kitchenBar",
+      "x": 3.5,
+      "z": 3.5,
+      "rotY": 3.14159
+    },
+    {
+      "model": "chairRounded",
+      "x": 3.5,
+      "z": 3,
+      "rotY": 3.14159
+    },
+    {
+      "model": "bookcaseOpen",
+      "x": 0.5,
+      "z": 3.5,
+      "rotY": 0
+    },
+    {
+      "model": "bookcaseOpen",
+      "x": 0.5,
+      "z": 2,
+      "rotY": 0
+    },
+    {
+      "model": "bookcaseOpenLow",
+      "x": 2,
+      "z": 2,
+      "rotY": 0
+    },
+    {
+      "model": "bookcaseOpenLow",
+      "x": 2,
+      "z": 1,
+      "rotY": 0
+    },
+    {
+      "model": "pottedPlant",
+      "x": 4.5,
+      "z": 0.3,
+      "rotY": 0
+    }
+  ]
+}

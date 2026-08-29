@@ -79,6 +79,42 @@ answering, and that reasoning is billed as output, so it is both slower and more
 expensive per call while producing flatter dialogue. Sonnet is the default
 recommendation for every route.
 
+### What the clock costs
+
+`TICK_MS` is the single largest lever on spend, and it is easy to miss because
+it does not look like a cost setting.
+
+A game day is 288 ticks. At the development default of `TICK_MS=2000` that is
+9.6 real minutes, so the world runs **150 game days per real day** — and
+cognition cost scales with game days, not with wall time.
+
+Measured on a 10-agent world with Sonnet on every route:
+
+| Route | Calls per agent per game day | Design target | Cost per game day |
+|---|---|---|---|
+| scene | 4.2 | ≤ 14 | $2.87 (59%) |
+| crisis | 6.2 | 1-3 | $0.72 |
+| deliberation | 3.3 | 2, plus reactive | $0.93 |
+| reflection | 0.9 | 1 | $0.36 |
+| | | | **$4.87** |
+
+Under $5 per game day is reasonable. Multiplied by 150, it is not. **For
+anything left running 24/7, raise `TICK_MS`** — 30s per tick gives a game day
+every 2.4 hours and divides the daily cost by fifteen.
+
+Two figures in that table are worth knowing about:
+
+- **Scenes are 59% of spend** on 4.2 calls per agent per day, well under their
+  cap. The driver is size, not volume: the prompt asks for 12-18 dialogue lines
+  and a scene runs about 2,800 output tokens.
+- **Crisis fires roughly twice its design target.** `CRISIS_COOLDOWN` is 48
+  ticks — four game hours — which permits six firings a day per agent against a
+  documented target of one to three. The cooldown is the binding constraint.
+
+Costs reported through dproxy are **API-equivalent, not money spent**: it runs
+on a Claude subscription. The figures still matter for subscription quota, and
+they are the bill if you switch to the direct API.
+
 ### dbrain
 
 ```bash

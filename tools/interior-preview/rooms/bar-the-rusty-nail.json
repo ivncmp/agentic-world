@@ -1,0 +1,141 @@
+{
+  "id": "bar-1",
+  "kind": "bar",
+  "name": "The Rusty Nail",
+  "width": 7,
+  "depth": 5,
+  "door": {
+    "wall": "s",
+    "pos": 3
+  },
+  "windows": [
+    {
+      "wall": "e",
+      "pos": 1
+    },
+    {
+      "wall": "e",
+      "pos": 3
+    },
+    {
+      "wall": "w",
+      "pos": 2
+    }
+  ],
+  "items": [
+    {
+      "model": "kitchenBarEnd",
+      "x": 1.5,
+      "z": 4,
+      "rotY": 3.14159
+    },
+    {
+      "model": "kitchenBar",
+      "x": 2.5,
+      "z": 4,
+      "rotY": 3.14159
+    },
+    {
+      "model": "kitchenBar",
+      "x": 3.5,
+      "z": 4,
+      "rotY": 3.14159
+    },
+    {
+      "model": "kitchenBar",
+      "x": 4.5,
+      "z": 4,
+      "rotY": 3.14159
+    },
+    {
+      "model": "kitchenBarEnd",
+      "x": 5.5,
+      "z": 4,
+      "rotY": 0
+    },
+    {
+      "model": "stoolBar",
+      "x": 2,
+      "z": 3,
+      "rotY": 0
+    },
+    {
+      "model": "stoolBar",
+      "x": 3,
+      "z": 3,
+      "rotY": 0
+    },
+    {
+      "model": "stoolBar",
+      "x": 4,
+      "z": 3,
+      "rotY": 0
+    },
+    {
+      "model": "stoolBar",
+      "x": 5,
+      "z": 3,
+      "rotY": 0
+    },
+    {
+      "model": "tableRound",
+      "x": 1.5,
+      "z": 1.5,
+      "rotY": 0
+    },
+    {
+      "model": "chair",
+      "x": 1.5,
+      "z": 0.8,
+      "rotY": 0
+    },
+    {
+      "model": "chair",
+      "x": 0.8,
+      "z": 1.5,
+      "rotY": 1.5708
+    },
+    {
+      "model": "chair",
+      "x": 1.5,
+      "z": 2.2,
+      "rotY": 3.14159
+    },
+    {
+      "model": "tableRound",
+      "x": 5.5,
+      "z": 1.5,
+      "rotY": 0
+    },
+    {
+      "model": "chair",
+      "x": 5.5,
+      "z": 0.8,
+      "rotY": 0
+    },
+    {
+      "model": "chair",
+      "x": 6.2,
+      "z": 1.5,
+      "rotY": -1.5708
+    },
+    {
+      "model": "chair",
+      "x": 5.5,
+      "z": 2.2,
+      "rotY": 3.14159
+    },
+    {
+      "model": "speaker",
+      "x": 0.3,
+      "z": 4.5,
+      "rotY": 0
+    },
+    {
+      "model": "speakerSmall",
+      "x": 6.7,
+      "z": 4.5,
+      "rotY": 0
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "id": "shop-1",
+  "kind": "shop",
+  "name": "Hillcrest Goods",
+  "width": 5,
+  "depth": 4,
+  "door": {
+    "wall": "s",
+    "pos": 2
+  },
+  "windows": [
+    {
+      "wall": "w",
+      "pos": 1
+    },
+    {
+      "wall": "e",
+      "pos": 2
+    }
+  ],
+  "items": [
+    {
+      "model": "kitchenBar",
+      "x": 4,
+      "z": 3.5,
+      "rotY": 3.14159
+    },
+    {
+      "model": "chairRounded",
+      "x": 4,
+      "z": 3,
+      "rotY": 3.14159
+    },
+    {
+      "model": "bookcaseOpen",
+      "x": 1,
+      "z": 3.5,
+      "rotY": 0
+    },
+    {
+      "model": "bookcaseOpen",
+      "x": 1,
+      "z": 2,
+      "rotY": 0
+    },
+    {
+      "model": "bookcaseOpenLow",
+      "x": 3,
+      "z": 2,
+      "rotY": 0
+    },
+    {
+      "model": "bookcaseOpenLow",
+      "x": 3,
+      "z": 1,
+      "rotY": 0
+    },
+    {
+      "model": "cardboardBoxClosed",
+      "x": 0.3,
+      "z": 0.3,
+      "rotY": 0.4
+    },
+    {
+      "model": "cardboardBoxOpen",
+      "x": 0.7,
+      "z": 0.5,
+      "rotY": -0.2
+    }
+  ]
+}

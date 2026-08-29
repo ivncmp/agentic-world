@@ -1,10 +1,7 @@
-/** Stable per-id hash: the same venue draws the same building every reload. */
-export function hash(...parts: (string | number)[]): number {
-  let h = 2166136261
-  const s = parts.join('|')
-  for (let i = 0; i < s.length; i++) {
-    h ^= s.charCodeAt(i)
-    h = Math.imul(h, 16777619) >>> 0
-  }
-  return h >>> 0
-}
+/**
+ * Stable per-id hash: the same venue draws the same building every reload.
+ *
+ * Re-exported from the shared implementation so the viewer and the cognition
+ * prompts cannot drift into two different hashes.
+ */
+export { hash, pickBy } from '../../shared/hash.js'

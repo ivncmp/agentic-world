@@ -1,0 +1,139 @@
+{
+  "id": "restaurant-1",
+  "kind": "restaurant",
+  "name": "The Captain's Table",
+  "width": 7,
+  "depth": 5,
+  "door": {
+    "wall": "s",
+    "pos": 3
+  },
+  "windows": [
+    {
+      "wall": "e",
+      "pos": 1
+    },
+    {
+      "wall": "e",
+      "pos": 3
+    },
+    {
+      "wall": "w",
+      "pos": 1
+    },
+    {
+      "wall": "w",
+      "pos": 3
+    }
+  ],
+  "items": [
+    {
+      "model": "tableCrossCloth",
+      "x": 1.5,
+      "z": 1.5,
+      "rotY": 0
+    },
+    {
+      "model": "chairCushion",
+      "x": 1.5,
+      "z": 0.7,
+      "rotY": 0
+    },
+    {
+      "model": "chairCushion",
+      "x": 0.7,
+      "z": 1.5,
+      "rotY": 1.5708
+    },
+    {
+      "model": "chairCushion",
+      "x": 2.3,
+      "z": 1.5,
+      "rotY": -1.5708
+    },
+    {
+      "model": "chairCushion",
+      "x": 1.5,
+      "z": 2.3,
+      "rotY": 3.14159
+    },
+    {
+      "model": "tableCrossCloth",
+      "x": 5.5,
+      "z": 1.5,
+      "rotY": 0
+    },
+    {
+      "model": "chairCushion",
+      "x": 5.5,
+      "z": 0.7,
+      "rotY": 0
+    },
+    {
+      "model": "chairCushion",
+      "x": 4.7,
+      "z": 1.5,
+      "rotY": 1.5708
+    },
+    {
+      "model": "chairCushion",
+      "x": 6.3,
+      "z": 1.5,
+      "rotY": -1.5708
+    },
+    {
+      "model": "chairCushion",
+      "x": 5.5,
+      "z": 2.3,
+      "rotY": 3.14159
+    },
+    {
+      "model": "tableCrossCloth",
+      "x": 3.5,
+      "z": 3.5,
+      "rotY": 0
+    },
+    {
+      "model": "chairCushion",
+      "x": 3.5,
+      "z": 2.7,
+      "rotY": 0
+    },
+    {
+      "model": "chairCushion",
+      "x": 2.7,
+      "z": 3.5,
+      "rotY": 1.5708
+    },
+    {
+      "model": "chairCushion",
+      "x": 4.3,
+      "z": 3.5,
+      "rotY": -1.5708
+    },
+    {
+      "model": "chairCushion",
+      "x": 3.5,
+      "z": 4.3,
+      "rotY": 3.14159
+    },
+    {
+      "model": "pottedPlant",
+      "x": 0.3,
+      "z": 4.7,
+      "rotY": 0
+    },
+    {
+      "model": "pottedPlant",
+      "x": 6.7,
+      "z": 4.7,
+      "rotY": 0
+    },
+    {
+      "model": "rugRectangle",
+      "x": 3.5,
+      "z": 1.5,
+      "rotY": 0
+    }
+  ]
+}

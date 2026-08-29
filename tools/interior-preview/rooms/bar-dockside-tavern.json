@@ -1,0 +1,107 @@
+{
+  "id": "bar-2",
+  "kind": "bar",
+  "name": "Dockside Tavern",
+  "width": 6,
+  "depth": 5,
+  "door": {
+    "wall": "s",
+    "pos": 1
+  },
+  "windows": [
+    {
+      "wall": "n",
+      "pos": 2
+    },
+    {
+      "wall": "n",
+      "pos": 4
+    }
+  ],
+  "items": [
+    {
+      "model": "kitchenBarEnd",
+      "x": 4.5,
+      "z": 4,
+      "rotY": 3.14159
+    },
+    {
+      "model": "kitchenBar",
+      "x": 4.5,
+      "z": 3,
+      "rotY": 1.5708
+    },
+    {
+      "model": "kitchenBar",
+      "x": 4.5,
+      "z": 2,
+      "rotY": 1.5708
+    },
+    {
+      "model": "kitchenBarEnd",
+      "x": 4.5,
+      "z": 1,
+      "rotY": 1.5708
+    },
+    {
+      "model": "stoolBar",
+      "x": 3.5,
+      "z": 3.5,
+      "rotY": -1.5708
+    },
+    {
+      "model": "stoolBar",
+      "x": 3.5,
+      "z": 2.5,
+      "rotY": -1.5708
+    },
+    {
+      "model": "stoolBar",
+      "x": 3.5,
+      "z": 1.5,
+      "rotY": -1.5708
+    },
+    {
+      "model": "tableRound",
+      "x": 1.5,
+      "z": 3.5,
+      "rotY": 0
+    },
+    {
+      "model": "chair",
+      "x": 0.8,
+      "z": 3.5,
+      "rotY": 1.5708
+    },
+    {
+      "model": "chair",
+      "x": 2.2,
+      "z": 3.5,
+      "rotY": -1.5708
+    },
+    {
+      "model": "tableRound",
+      "x": 1.5,
+      "z": 1.5,
+      "rotY": 0
+    },
+    {
+      "model": "chair",
+      "x": 0.8,
+      "z": 1.5,
+      "rotY": 1.5708
+    },
+    {
+      "model": "chair",
+      "x": 2.2,
+      "z": 1.5,
+      "rotY": -1.5708
+    },
+    {
+      "model": "rugRound",
+      "x": 1.5,
+      "z": 2.5,
+      "rotY": 0
+    }
+  ]
+}
