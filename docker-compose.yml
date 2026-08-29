@@ -129,6 +129,12 @@ services:
       LOG_DIR: /app/logs
       DPROXY_URL: ${DPROXY_URL:-http://host.docker.internal:7880}
       DPROXY_API_KEY: ${DPROXY_API_KEY:-}
+      # Unset means "the provider's default", which is the most expensive model.
+      # Scenes are the high-volume route, so spend lives or dies on this block.
+      SCENE_MODEL: ${SCENE_MODEL:-}
+      REFLECTION_MODEL: ${REFLECTION_MODEL:-}
+      DELIBERATION_MODEL: ${DELIBERATION_MODEL:-}
+      CRISIS_MODEL: ${CRISIS_MODEL:-}
       CITY_TEMPLATE: ${CITY_TEMPLATE:-}
       ADMIN_SECRET: ${ADMIN_SECRET:?set ADMIN_SECRET in .env}
     volumes:
