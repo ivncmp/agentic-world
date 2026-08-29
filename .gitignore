@@ -17,6 +17,12 @@ src/dev/executions/
 __trash/
 preview/
 
-# 3D model binaries (Kenney CC0 — re-download from kenney.nl)
+# Kenney asset packs — only GLB format is used; re-download others from kenney.nl
+src/viewer/public/assets/**/FBX format/
+src/viewer/public/assets/**/OBJ format/
+src/viewer/public/assets/**/Previews/
+src/viewer/public/assets/**/Textures/
 tools/render-characters/models/*.glb
-logs
+
+# logs
+logs/
