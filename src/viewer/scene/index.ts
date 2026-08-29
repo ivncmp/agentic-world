@@ -32,7 +32,7 @@ export class CityScene3D {
   private readonly canvas: HTMLCanvasElement
   private readonly renderer: THREE.WebGLRenderer
   private readonly scene = new THREE.Scene()
-  private readonly clock = new THREE.Clock()
+  private readonly timer = new THREE.Timer()
   private readonly grid: CityGrid
   private readonly models = new ModelLibrary()
   private readonly rig: CameraRig
@@ -71,7 +71,7 @@ export class CityScene3D {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     this.renderer.setSize(container.clientWidth, container.clientHeight)
     this.renderer.shadowMap.enabled = true
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap
+    this.renderer.shadowMap.type = THREE.PCFShadowMap
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping
     this.renderer.toneMappingExposure = 1.1
 
@@ -272,7 +272,8 @@ export class CityScene3D {
     requestAnimationFrame(this.animate)
     this.rig.controls.update()
 
-    const delta = this.clock.getDelta() * 1000
+    this.timer.update()
+    const delta = this.timer.getDelta() * 1000
     const posEase = 1 - Math.exp(-delta / 400)
 
     for (const v of this.views.values()) {
@@ -318,7 +319,7 @@ export class CityScene3D {
 
     if (this.focus && easeTo(this.rig, this.focus)) this.focus = null
 
-    animateWater(this.scene, this.waterMat, this.clock.elapsedTime)
+    animateWater(this.scene, this.waterMat, this.timer.getElapsed())
     this.renderer.render(this.scene, this.rig.camera)
   }
 }
