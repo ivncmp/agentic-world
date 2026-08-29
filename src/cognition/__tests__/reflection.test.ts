@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { parseReflection, MAX_DRIFT_PER_NIGHT } from '../reflection.js'
-import { applyReflection } from '../../engine/apply-reflection.js'
+import { applyReflection } from '../../engine/apply/reflection.js'
 import { zeroVector } from '../../agents/values.js'
 import type { Agent } from '../../agents/agent.js'
 import type { WorldState } from '../../engine/tick.js'

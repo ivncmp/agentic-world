@@ -1,7 +1,7 @@
-import type { Agent, AgentId, Relationship } from '../agents/agent.js'
-import type { SceneOutcome } from '../cognition/scene.js'
-import { pairKey, type WorldState } from './tick.js'
-import { adjustFeeling } from './relationship.js'
+import type { Agent, AgentId, Relationship } from '../../agents/agent.js'
+import type { SceneOutcome } from '../../cognition/scene.js'
+import { pairKey, type WorldState } from '../tick.js'
+import { adjustFeeling } from '../relationship.js'
 
 /**
  * Closes the loop: what cognition decided becomes world state. Until this runs

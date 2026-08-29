@@ -40,7 +40,7 @@ export type FriendLocation = {
   locationKind: LocationKind
 }
 
-export type ActionContext = {
+type ActionContext = {
   tick: number
   hour: number
   /** 0 = Sunday, 6 = Saturday. */
@@ -74,7 +74,7 @@ export type ActionContext = {
  * never sleep through the night, and spend the small hours milling about in
  * public — which is where the midnight crowd came from.
  */
-export function sleepPull(hour: number): number {
+function sleepPull(hour: number): number {
   if (hour >= 23 || hour < 7) return 1 // night: turn in even if not tired
   if (hour === 22) return 0.3 // winding down
   return -0.8 // any waking hour: resist. Evenings are for living, not napping.
@@ -88,7 +88,7 @@ const onShift = (a: Agent, hour: number, dow: number): boolean =>
  * How badly the agent is short of what they owe. Drives work, job-seeking and —
  * for the dishonest — theft. This is the economy feeding the drama.
  */
-export function moneyPressure(a: Agent): number {
+function moneyPressure(a: Agent): number {
   const owed = a.housing.due + a.housing.arrears
   if (owed <= 0) return 0
   return Math.max(0, Math.min(1, (owed - a.money) / Math.max(owed, 1)))
@@ -99,7 +99,7 @@ export function moneyPressure(a: Agent): number {
  * Work stays at one tick on purpose: it is continuous, and re-deciding each
  * tick is what lets someone leave for lunch or walk out of a bad shift.
  */
-export const ACTION_HOURS: Record<ActionKind, number> = {
+const ACTION_HOURS: Record<ActionKind, number> = {
   sleep: 2, // a block; a night is several
   eat: 0.25,
   work: 0, // continuous — re-decided each tick so someone can leave for lunch
@@ -126,7 +126,7 @@ export const ACTION_TICKS = Object.fromEntries(
  * day forever; three days makes it something that happens to a relationship
  * rather than something that describes it.
  */
-export const THEFT_COOLDOWN_TICKS = hours(72)
+const THEFT_COOLDOWN_TICKS = hours(72)
 
 /**
  * A vice must actually build before it wins a tick. Without this an urge of
@@ -140,7 +140,7 @@ export const VICE_URGE_THRESHOLD = 0.5
  * trivial need level — an agent 8% hungry eats, 13 times a day, and the economy
  * drains. A need must actually bite before it is worth acting on.
  */
-export const NEED_THRESHOLD = {
+const NEED_THRESHOLD = {
   hunger: 0.45,
   energy: 0.5,
   social: 0.2,

@@ -11,6 +11,7 @@ import { chooseAction, ACTION_TICKS, type Action, type FriendLocation } from './
 import { adjustFeeling, coolFeeling } from './relationship.js'
 import { hourOfDay, isDayBoundary, dayOfWeek as dayOfWeekFn, minutes, TICKS_PER_DAY, TICKS_PER_HOUR } from './clock.js'
 import { detectCrisis, type CrisisJob } from './crisis-detect.js'
+import { applyAction } from './apply/action.js'
 
 export type WorldEvent =
   | { type: 'scene_started'; tick: number; a: AgentId; b: AgentId }
@@ -283,7 +284,7 @@ export function tick(state: WorldState, deps: TickDeps): TickResult {
       continue
     }
 
-    const after = applyAction(current, action, draft, events, nextTick, deps, openings, kindOf)
+    const after = applyAction(current, action, { draft, events, tick: nextTick, deps, openings, kindOf })
     const duration = ACTION_TICKS[action.kind] ?? 1
     draft.set(id, {
       ...after,
@@ -565,118 +566,5 @@ export function tick(state: WorldState, deps: TickDeps): TickResult {
     reflectionJobs,
     deliberationJobs,
     crisisJobs,
-  }
-}
-
-function applyAction(
-  agent: Agent,
-  action: Action,
-  draft: Map<AgentId, Agent>,
-  events: WorldEvent[],
-  tickNo: number,
-  deps: TickDeps,
-  openings: Map<LocationId, number>,
-  kindOf: ReadonlyMap<LocationId, LocationKind>,
-): Agent {
-  switch (action.kind) {
-    case 'eat':
-      return { ...agent, needs: { ...agent.needs, hunger: clamp01(agent.needs.hunger - 0.6) }, money: agent.money - 8 }
-
-    case 'sleep':
-      return { ...agent, needs: { ...agent.needs, energy: clamp01(agent.needs.energy - 0.7) } }
-
-    case 'work': {
-      if (agent.job == null) return agent
-      const hasCoworkers = [...draft.values()].some((o) => o.id !== agent.id && o.location === agent.location)
-      return {
-        ...agent,
-        money: credits(agent.money + agent.job.wage / TICKS_PER_HOUR),
-        needs: {
-          ...agent.needs,
-          energy: clamp01(agent.needs.energy + 0.04),
-          fun: clamp01(agent.needs.fun + 0.015),
-          social: clamp01(agent.needs.social - (hasCoworkers ? 0.01 : 0)),
-        },
-      }
-    }
-
-    case 'seek_job': {
-      if (deps.random() > 0.06) return agent
-      const def = occupationDef(agent.occupation)
-      // An engineer looks for engineering work; wages differ by occupation.
-      const vacancy = [...openings.entries()].find(
-        ([id, free]) => free > 0 && kindOf.get(id) === def.worksAt,
-      )
-      if (vacancy == null) return agent
-      openings.set(vacancy[0], vacancy[1] - 1)
-      events.push({ type: 'hired', tick: tickNo, agent: agent.id })
-      return {
-        ...agent,
-        job: {
-          employerId: vacancy[0],
-          wage: def.wage,
-          shiftStart: def.shiftStart,
-          shiftEnd: def.shiftEnd,
-        },
-      }
-    }
-
-    case 'relax': {
-      const coLocated = [...draft.values()].some((o) => o.id !== agent.id && o.location === agent.location)
-      return { ...agent, needs: { ...agent.needs, fun: clamp01(agent.needs.fun - 0.5), social: clamp01(agent.needs.social - (coLocated ? 0.1 : 0)) } }
-    }
-
-    case 'exercise': {
-      const coLocated = [...draft.values()].some((o) => o.id !== agent.id && o.location === agent.location)
-      return {
-        ...agent,
-        money: agent.money - 10,
-        needs: {
-          ...agent.needs,
-          fun: clamp01(agent.needs.fun - 0.45),
-          hygiene: clamp01(agent.needs.hygiene + 0.2),
-          social: clamp01(agent.needs.social - (coLocated ? 0.1 : 0)),
-        },
-      }
-    }
-
-    case 'browse': {
-      const coLocated = [...draft.values()].some((o) => o.id !== agent.id && o.location === agent.location)
-      return {
-        ...agent,
-        money: agent.money - 25,
-        needs: { ...agent.needs, fun: clamp01(agent.needs.fun - 0.6), social: clamp01(agent.needs.social - (coLocated ? 0.1 : 0)) },
-      }
-    }
-
-    case 'wash':
-      return { ...agent, needs: { ...agent.needs, hygiene: clamp01(agent.needs.hygiene - 0.8) } }
-
-    case 'socialize':
-      return { ...agent, needs: { ...agent.needs, social: clamp01(agent.needs.social - 0.3), fun: clamp01(agent.needs.fun - 0.15) } }
-
-    case 'indulge_vice': {
-      const kind = action.targetAgent
-      const indulged = agent.vices.find((v) => v.kind === kind) ?? agent.vices[0]
-      const fullCost = viceDef(indulged.kind).moneyCost
-      const cost = Math.min(fullCost, agent.money)
-      const vices = agent.vices.map((v) =>
-        v.kind === indulged.kind ? { ...v, urge: cost >= fullCost ? 0 : v.urge * 0.3 } : v,
-      ) as Agent['vices']
-      return { ...agent, vices, money: agent.money - cost }
-    }
-
-    case 'steal': {
-      const victim = action.targetAgent == null ? undefined : draft.get(action.targetAgent)
-      if (victim == null) return agent
-      const amount = Math.floor(Math.min(victim.money, 30))
-      if (amount <= 0) return agent
-      draft.set(victim.id, { ...victim, money: victim.money - amount })
-      events.push({ type: 'theft', tick: tickNo, thief: agent.id, victim: victim.id, amount })
-      return { ...agent, money: agent.money + amount, lastTheftTick: tickNo }
-    }
-
-    default:
-      return agent
   }
 }

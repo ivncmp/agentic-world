@@ -7,9 +7,9 @@
  * dropped scene degrades richness, and the world keeps ticking on layer 1.
  */
 import { pairKey } from '../../engine/tick.js'
-import { applySceneOutcome, abandonScene } from '../../engine/apply-scene.js'
-import { applyReflection } from '../../engine/apply-reflection.js'
-import { applyDeliberation } from '../../engine/apply-deliberation.js'
+import { applySceneOutcome, abandonScene } from '../../engine/apply/scene.js'
+import { applyReflection } from '../../engine/apply/reflection.js'
+import { applyDeliberation } from '../../engine/apply/deliberation.js'
 import { TICKS_PER_DAY, TICKS_PER_HOUR, hourOfDay } from '../../engine/clock.js'
 import { resolveValues } from '../../agents/values.js'
 import { resolveScene, persistScene, type ThirdParty } from '../../cognition/scene.js'

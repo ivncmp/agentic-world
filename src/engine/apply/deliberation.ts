@@ -1,5 +1,5 @@
-import type { AgentId, Deliberation } from '../agents/agent.js'
-import type { WorldState } from './tick.js'
+import type { AgentId, Deliberation } from '../../agents/agent.js'
+import type { WorldState } from '../tick.js'
 
 export type DeliberationOutcome = {
   biases: Deliberation['biases']

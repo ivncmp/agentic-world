@@ -1,8 +1,8 @@
-import type { AgentId, Relationship } from '../agents/agent.js'
-import type { ReflectionOutcome } from '../cognition/reflection.js'
-import { clampAxis } from '../agents/values.js'
-import { pairKey, type WorldState } from './tick.js'
-import { adjustFeeling } from './relationship.js'
+import type { AgentId, Relationship } from '../../agents/agent.js'
+import type { ReflectionOutcome } from '../../cognition/reflection.js'
+import { clampAxis } from '../../agents/values.js'
+import { pairKey, type WorldState } from '../tick.js'
+import { adjustFeeling } from '../relationship.js'
 
 /**
  * Writes a night's conclusions into the world. This is the only place
