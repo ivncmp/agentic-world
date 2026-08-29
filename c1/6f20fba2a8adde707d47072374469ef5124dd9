@@ -1,0 +1,63 @@
+src/cognition/__tests__/deliberation.test.ts
+  s_0c69fc4bd2bb00::t_08842b7db1fc16 3
+src/dev/check-identity.ts
+  s_0c69fc4bd2bb00::t_10b63f26fe7aec 24,31
+src/cognition/scene.ts
+  s_0c69fc4bd2bb00::t_28752d08a5bc2b 206
+src/cognition/crisis.ts
+  s_0c69fc4bd2bb00::t_6b3ba4c16b32b2 2
+CLAUDE.md
+  s_0c69fc4bd2bb00::t_5e718566f5e64f 19
+src/cognition/deliberation.ts
+  s_0c69fc4bd2bb00::t_97cd8e04a0bbc1 3,6,135,138,147,152
+src/engine/__tests__/tick.test.ts
+  s_0c69fc4bd2bb00::t_c274b7fc27fd9e 372
+src/server/http/respond.ts
+  s_0c69fc4bd2bb00::t_bf9d88ef2e3142 22
+src/cognition/__tests__/gate.test.ts
+  s_0c69fc4bd2bb00::t_9994ae4ca5b4da 2
+src/mcp/server.ts
+  s_0c69fc4bd2bb00::t_dbf080ef657670 3,219-221,245
+src/engine/apply/scene.ts
+  s_0c69fc4bd2bb00::t_1e110f664877b8 1,71
+src/dev/enrich-identity.ts
+  s_0c69fc4bd2bb00::t_507cbc73e4830b 37
+src/cognition/reflection.ts
+  s_0c69fc4bd2bb00::t_8313c5ebcd15cf 3,6,108
+src/world/generator.ts
+  s_0c69fc4bd2bb00::t_81ee47358f83b8 4,241
+src/engine/actions.ts
+  s_0c69fc4bd2bb00::t_c861c8a0f5b44e 262
+src/viewer/ui/sidebar.ts
+  s_0c69fc4bd2bb00::t_8895253114444a 267,273-275,286-287,293-296,308-309,315,320,322
+eslint.config.js
+  s_0c69fc4bd2bb00::t_5095424e84a81f 1-100
+pnpm-lock.yaml
+  s_0c69fc4bd2bb00::t_002f41755f7979 30-32,45-50,57-59,236-274,281-300,583-585,589-591,610-668,702-711,720-722,730-733,738-741,833-835,882-923,927-930,960-965,981-984,989-999,1024-1027,1052-1063,1079-1086,1099-1104,1111-1120,1191-1194,1228-1231,1247-1249,1276-1287,1292-1295,1375-1383,1388-1391,1525-1530,1534-1537,1542-1548,1561-1563,1694-1697,1717-1720,1819-1852,1857-1872,2053-2054,2057-2058,2086-2176,2224-2229,2234-2240,2250-2251,2266-2269,2338-2339,2397-2460,2465-2466,2520-2523,2532-2535,2547-2558,2586-2589,2612-2617,2635-2640,2649-2652,2657-2667,2717-2720,2743-2746,2767-2768,2792-2808,2811-2812,2878-2881,2887-2888,3072-3075,3078-3081,3088-3098,3105-3108,3207-3208,3215-3216
+CONTRIBUTING.md
+  s_0c69fc4bd2bb00::t_5155ce42c47077 32,35-41
+src/cognition/json.ts
+  s_0c69fc4bd2bb00::t_4b6435e4c5e54c 81-91
+package.json
+  s_0c69fc4bd2bb00::t_10de479145552e 13,16-22,25,30-31,34
+src/server/http/agents.ts
+  s_0c69fc4bd2bb00::t_581bbe2a7b1276 28
+src/engine/apply/action.ts
+  s_0c69fc4bd2bb00::t_6e15644ab07a83 168
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "c16f20fba2a8adde707d47072374469ef5124dd9",
+  "prompts": {},
+  "sessions": {
+    "s_0c69fc4bd2bb00": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fbf4acf4-b682-40d7-8694-7837a363537f",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Iván Campillo <ivncmp@gmail.com>"
+    }
+  }
+}
