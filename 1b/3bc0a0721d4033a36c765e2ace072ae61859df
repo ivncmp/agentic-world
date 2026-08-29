@@ -1,0 +1,151 @@
+src/agents/create.ts
+  s_0c69fc4bd2bb00::t_8559ec4d6d0f76 58
+src/agents/goals.ts
+  s_0c69fc4bd2bb00::t_057ca29245271d 94-97
+src/agents/identity.ts
+  s_0c69fc4bd2bb00::t_f3e26accb0dbf9 64-66
+src/agents/values.ts
+  s_0c69fc4bd2bb00::t_03f89ebc03ff47 7-13,66
+src/cognition/__tests__/crisis.test.ts
+  s_0c69fc4bd2bb00::t_3dcc3ce2cdc5b8 7-10,12-15,17-19,21-30,37-41,49-53,60-64
+src/cognition/__tests__/deliberation.test.ts
+  s_0c69fc4bd2bb00::t_f6d0f6248986e7 7-10,12-15,17-19,21-30,39-42,58-64,73-78,88-90,99-105,115-118,121-123,131-133,155-156,163-166,175-178,183-186,196-199
+src/cognition/__tests__/gate.test.ts
+  s_0c69fc4bd2bb00::t_b70a83c548b32f 36-37,98-103,137,151-156,166-170,201,213
+src/cognition/__tests__/json.test.ts
+  s_0c69fc4bd2bb00::t_c80f0f09f7051c 18,57,61-63,67-69
+src/cognition/__tests__/reflection.test.ts
+  s_0c69fc4bd2bb00::t_44e41aa3cb466f 9-12,14-17,19-21,25-32,36-41,43-44,73-76,86-91,97-103
+src/cognition/__tests__/scene.test.ts
+  s_0c69fc4bd2bb00::t_5c53d7cf8f8f0a 35-36,149-156,158-166,186-190,192-195,201-204,214-217,229-232,239-244,246-247,257-260,268-271,279-282,290-293,301-304,312-315
+src/cognition/crisis.ts
+  s_0c69fc4bd2bb00::t_b0b4d21719a13f 95-97,99-103,106
+src/cognition/deliberation.ts
+  s_0c69fc4bd2bb00::t_80efee74075386 36-47,66-86,94-95,157-162
+src/cognition/gate.ts
+  s_0c69fc4bd2bb00::t_cede70c010fdad 108,112-113,115-119,126,129
+src/cognition/json.ts
+  s_0c69fc4bd2bb00::t_6a4f086a2068cf 19-20,51-54
+src/cognition/reflection.ts
+  s_0c69fc4bd2bb00::t_e36329ce0c1de0 35,47,59-61
+src/cognition/scene.ts
+  s_0c69fc4bd2bb00::t_7ae3cd1d7c8d16 107-110,114-118,122,126,129-142,144,209,231-235,257-258,307-313,315-321,324-331,334-341
+src/dev/bake-cities.ts
+  s_0c69fc4bd2bb00::t_acade0672fd0dc 23-34,47-57,101-103
+src/dev/check-identity.ts
+  s_0c69fc4bd2bb00::t_423283c2766bc3 3-6,8-18
+src/engine/__tests__/crisis-detect.test.ts
+  s_0c69fc4bd2bb00::t_1ad3674682c472 7-10,12-15,17-19,21-30,47-52,60-65,70-73,83-84,118-121
+src/engine/__tests__/tick.test.ts
+  s_0c69fc4bd2bb00::t_fcbd8624f2ea04 40-41,168-178,241,244-257,326-329,409-414,428-433,437-448,450-457
+src/engine/actions.ts
+  s_0c69fc4bd2bb00::t_c586339ce3caf4 84-86,195-204,216-220,237-241,282,306-311,320-324,327-331,336-345,349-353,357-361,372-377
+src/engine/apply/action.ts
+  s_0c69fc4bd2bb00::t_b5fdf72c9a4435 144-146
+src/engine/apply/reflection.ts
+  s_0c69fc4bd2bb00::t_f58ff7028c79fb 16
+src/engine/apply/scene.ts
+  s_0c69fc4bd2bb00::t_2687e019bc8e53 47-50,71
+src/engine/clock.ts
+  s_0c69fc4bd2bb00::t_e375a6e6473e15 46,51,58
+src/engine/tick.ts
+  s_0c69fc4bd2bb00::t_ccd5c41144fa4e 9-15,18-25,122-125,131-134,140,207,240-245,265-270,373-376,378-384,443-446,455-458,560
+src/mcp/index.ts
+  s_0c69fc4bd2bb00::t_8950a4c6f874e0 10-12,44-49
+src/mcp/server.ts
+  s_0c69fc4bd2bb00::t_64bcfa0d53af4a 2,7-18,21,24-30,164,188-189,191,207,210,220,222-233,238,248,250,254,260-265,267-272
+src/memory/dbrain-store.ts
+  s_0c69fc4bd2bb00::t_1d5cb99c68d9e0 35,111
+src/persistence/db.ts
+  s_0c69fc4bd2bb00::t_c6644d5e580ecf 31-33
+src/persistence/history-repo.ts
+  s_0c69fc4bd2bb00::t_717d5705ae49b3 35-41,48-55,84-95,121-132,139-145,148-153,156-164,167-175,178-179,182-183,187-206,214-217,223-225,232-233,237-241,259-261
+src/persistence/owner-repo.ts
+  s_0c69fc4bd2bb00::t_5430b1f55e7285 4,30-32,40
+src/persistence/world-repo.ts
+  s_0c69fc4bd2bb00::t_a0501c8489bde0 34-43,58-80,129-132,142-153,157-158,167-177,203
+src/server/engine.ts
+  s_0c69fc4bd2bb00::t_f4777df9555f4f 73-78,100-103,168-174,184-186
+src/server/http/agents.ts
+  s_0c69fc4bd2bb00::t_b60c9409fb94e3 63-70,100-104,107-113,129-131,168-171,184-190
+src/server/http/owner.ts
+  s_0c69fc4bd2bb00::t_9be07c427581eb 35,56-59,69-72,88-95,99-101,117-120,130-132,134-135,138-142,150-152,154-155,163-165,167-168,172-174,176-177,185-187,189-190,203-206,228-230,268-271,285-288
+src/server/http/respond.ts
+  s_0c69fc4bd2bb00::t_5e169effc68555 19,21-23
+src/server/http/routes.ts
+  s_0c69fc4bd2bb00::t_2aecdbb2b5542b 50-51,59-64,67-71,76-80,90-98,101-102,125-130,133-135,144-149,156-161
+src/server/jobs/handlers.ts
+  s_0c69fc4bd2bb00::t_109bf3e715241d 54-61,98-103,107-120,125-133,136-145,148-159,161-165,179-180,183-190,212-223,226-231,235-257,279-288,293-298,300-322,326-327,346-356,363-385
+src/server/jobs/worker.ts
+  s_0c69fc4bd2bb00::t_9cc731163e9c47 60-83,115
+src/server/world/context.ts
+  s_0c69fc4bd2bb00::t_f260685c6b6f0d 84-92,97-102,107-109,158-160,170-172
+src/server/world/feed.ts
+  s_0c69fc4bd2bb00::t_e3ecf8acb2f534 90-91,98-101,109-111,116-120,137-138,140-141,143-144,146-147,149-152
+src/viewer/core/characters-data.ts
+  s_0c69fc4bd2bb00::t_37cfff8a9af2d2 10-27,32
+src/viewer/core/connection.ts
+  s_0c69fc4bd2bb00::t_119e43d7566689 42-45,70-75,119-125,167-175
+src/viewer/main.ts
+  s_0c69fc4bd2bb00::t_97bc2264c071b2 8
+src/viewer/scene/agents.ts
+  s_0c69fc4bd2bb00::t_8d240c91966b3e 43-54,120,217-224,252
+src/viewer/scene/assets.ts
+  s_0c69fc4bd2bb00::t_9a05f54d1e5bfc 14,32,34-35,48,50,53,55,57,67-69,96-108,168,200-201
+src/viewer/scene/buildings.ts
+  s_0c69fc4bd2bb00::t_d6a8d167c950d1 14-19,33-42,76-90,129-135,148-154
+src/viewer/scene/camera.ts
+  s_0c69fc4bd2bb00::t_f10509b77929a7 20,45,48-51,53-56
+src/viewer/scene/grid.ts
+  s_0c69fc4bd2bb00::t_b729569537288e 13-18,32
+src/viewer/scene/ground.ts
+  s_0c69fc4bd2bb00::t_ab8f6952e3690d 64-66,68-71,73-75,77-79,91-95
+src/viewer/scene/highlight.ts
+  s_0c69fc4bd2bb00::t_da313f486cff73 31
+src/viewer/scene/index.ts
+  s_0c69fc4bd2bb00::t_5129f929a2bd96 16-21,28-35,75,135,301-307,328-332
+src/viewer/scene/labels.ts
+  s_0c69fc4bd2bb00::t_e786d50c925636 49-50,87-88
+src/viewer/scene/lighting.ts
+  s_0c69fc4bd2bb00::t_1f3a573c155a2e 90-92
+src/viewer/scene/picking.ts
+  s_0c69fc4bd2bb00::t_95360b841fd3ce 60-61,65,87-92,125
+src/viewer/ui/agent-card.ts
+  s_0c69fc4bd2bb00::t_3bb4df4446d314 10-14,47-50,83-93,95-98,109-110,113-116,120-124,129-133,140-143,145,153-154,161-166,173-175,179,197
+src/viewer/ui/graph.ts
+  s_0c69fc4bd2bb00::t_c55ea46afea08a 74-75,82,143-144,155-156,232-237,256-260,275-286,331-332
+src/viewer/ui/sidebar.ts
+  s_0c69fc4bd2bb00::t_abd8fa9152d438 9-22,28-42,103-104,115-116,120,124-129,132-137,158,160-167,170,207-212,244,282-284,304-305,360
+src/viewer/ui/venue-card.ts
+  s_0c69fc4bd2bb00::t_d89c58ea087e3c 1-7,11-24,28-31,35-48,61,75-78,96-99,108-111,127,147-150,155-156,179,182
+src/world/config.ts
+  s_0c69fc4bd2bb00::t_2620fb203da74c 23-26,44-45,48
+src/world/generator.ts
+  s_0c69fc4bd2bb00::t_34613c4502e41d 79-90,180,197-200,249,274-275
+src/world/layout.ts
+  s_0c69fc4bd2bb00::t_89f3667ee85779 58-65,85
+src/world/locations.ts
+  s_0c69fc4bd2bb00::t_041222c419999b 55
+src/world/occupations.ts
+  s_0c69fc4bd2bb00::t_53f1bd0f37e6d5 28-35,40-71
+.prettierignore
+  s_0c69fc4bd2bb00::t_807728f50f4173 1-9
+.prettierrc.json
+  s_0c69fc4bd2bb00::t_6a22b73e4ae49e 1-7
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "1b3bc0a0721d4033a36c765e2ace072ae61859df",
+  "prompts": {},
+  "sessions": {
+    "s_0c69fc4bd2bb00": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fbf4acf4-b682-40d7-8694-7837a363537f",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Iván Campillo <ivncmp@gmail.com>"
+    }
+  }
+}
