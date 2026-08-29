@@ -28,13 +28,38 @@ export function looksLikeRefusal(text: string): boolean {
 }
 
 /**
- * Returns the outermost `{...}` in `text`, or `''` if there is none.
- * Greedy on purpose: it must span nested objects, not stop at the first `}`.
+ * Returns the first complete `{...}` in `text`, or `''` if there is none.
+ *
+ * Brace-matched rather than pattern-matched. A regex has to choose between
+ * stopping at the first `}` (which truncates any nested object) and running to
+ * the last one (which swallows a closing ``` fence, or a stray brace in a
+ * trailing sentence). Counting depth while skipping over string literals is the
+ * only version that survives every shape a model actually returns.
  */
 export function extractJsonObject(text: string): string {
-  const raw = text.trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim()
-  if (raw.startsWith('{')) return raw
-  return raw.match(/\{[\s\S]*\}/)?.[0] ?? ''
+  const start = text.indexOf('{')
+  if (start < 0) return ''
+
+  let depth = 0
+  let inString = false
+  let escaped = false
+
+  for (let i = start; i < text.length; i++) {
+    const c = text[i]!
+
+    if (escaped) { escaped = false; continue }
+    if (inString) {
+      if (c === '\\') escaped = true
+      else if (c === '"') inString = false
+      continue
+    }
+
+    if (c === '"') inString = true
+    else if (c === '{') depth++
+    else if (c === '}' && --depth === 0) return text.slice(start, i + 1)
+  }
+
+  return '' // unterminated — a truncated response
 }
 
 /**
