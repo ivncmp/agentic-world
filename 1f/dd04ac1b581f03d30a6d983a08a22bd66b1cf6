@@ -1,0 +1,33 @@
+src/cognition/__tests__/reflection.test.ts
+  s_0c69fc4bd2bb00::t_101e9a86db9850 3
+src/engine/actions.ts
+  s_0c69fc4bd2bb00::t_5c4892d6c38887 43,77,91,102,129,143
+src/engine/apply/deliberation.ts
+  s_0c69fc4bd2bb00::t_cf8d95166784b3 1-2
+src/engine/apply/reflection.ts
+  s_0c69fc4bd2bb00::t_89b4a7b27c57cc 1-5
+src/engine/apply/scene.ts
+  s_0c69fc4bd2bb00::t_6cec859de341f6 1-4
+src/server/jobs/handlers.ts
+  s_0c69fc4bd2bb00::t_075c0600eea54e 10-12
+src/engine/apply/action.ts
+  s_0c69fc4bd2bb00::t_3b5313a24928cb 1-186
+src/engine/tick.ts
+  s_0c69fc4bd2bb00::t_fbbc85d723eddd 14,287
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "1fdd04ac1b581f03d30a6d983a08a22bd66b1cf6",
+  "prompts": {},
+  "sessions": {
+    "s_0c69fc4bd2bb00": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fbf4acf4-b682-40d7-8694-7837a363537f",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Iván Campillo <ivncmp@gmail.com>"
+    }
+  }
+}
