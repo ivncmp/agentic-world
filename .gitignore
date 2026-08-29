@@ -21,11 +21,13 @@ src/dev/executions/
 __trash/
 preview/
 
-# Kenney asset packs — only GLB format is used; re-download others from kenney.nl
+# Kenney asset packs — only GLB format is used; re-download others from kenney.nl.
+# "GLB format/Textures/" is NOT ignored: the character GLBs reference those PNGs
+# externally, and without them every agent renders untextured white.
 src/viewer/public/assets/**/FBX format/
 src/viewer/public/assets/**/OBJ format/
 src/viewer/public/assets/**/Previews/
-src/viewer/public/assets/**/Textures/
+src/viewer/public/assets/city/*/Models/Textures/
 tools/render-characters/models/*.glb
 
 # logs
