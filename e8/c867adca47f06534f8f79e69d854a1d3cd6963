@@ -1,0 +1,19 @@
+.gitignore
+  s_0c69fc4bd2bb00::t_22c87172b1dea1 20-24,26-28
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "e8c867adca47f06534f8f79e69d854a1d3cd6963",
+  "prompts": {},
+  "sessions": {
+    "s_0c69fc4bd2bb00": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fbf4acf4-b682-40d7-8694-7837a363537f",
+        "model": "unknown"
+      },
+      "human_author": "Iván Campillo <ivncmp@gmail.com>"
+    }
+  }
+}
