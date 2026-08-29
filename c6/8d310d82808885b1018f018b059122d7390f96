@@ -1,0 +1,47 @@
+.env.example
+  s_0c69fc4bd2bb00::t_d858347c07a502 27-38
+CLAUDE.md
+  s_0c69fc4bd2bb00::t_5b53bd17a15948 13,15,40,49,121,261,267,269,286-288,332
+src/viewer/core/connection.ts
+  s_0c69fc4bd2bb00::t_8ca66332c6052a 2
+src/viewer/scene/labels.ts
+  s_0c69fc4bd2bb00::t_631feecbc7e2a7 101,107-111
+src/viewer/ui/sidebar.ts
+  s_0c69fc4bd2bb00::t_94bd771acdaef7 3
+DESIGN.md
+  s_0c69fc4bd2bb00::t_1b3179be05bdac 1-192
+documentation/original-brainstorm-es.md
+  s_0c69fc4bd2bb00::t_6cb751dc535204 3,5
+src/server/jobs/handlers.ts
+  s_0c69fc4bd2bb00::t_4f70e814362e0f 219-220,233-237
+src/viewer/index.html
+  s_eeb4f2b1963f1b::t_b51b7ced7b0458 520-521,523,551-552,554
+src/viewer/scene/agents.ts
+  s_0c69fc4bd2bb00::t_d78e1c37c79791 35-38,144-145
+src/viewer/scene/index.ts
+  s_eeb4f2b1963f1b::t_a3bdf387ff5420 286-291
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "c68d310d82808885b1018f018b059122d7390f96",
+  "prompts": {},
+  "sessions": {
+    "s_0c69fc4bd2bb00": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fbf4acf4-b682-40d7-8694-7837a363537f",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Iván Campillo <ivncmp@gmail.com>"
+    },
+    "s_eeb4f2b1963f1b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "493e8757-61b9-419d-a452-7f8898c633b3",
+        "model": "unknown"
+      },
+      "human_author": "Iván Campillo <ivncmp@gmail.com>"
+    }
+  }
+}
