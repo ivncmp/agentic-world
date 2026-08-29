@@ -1,0 +1,19 @@
+src/viewer/scene/index.ts
+  s_0c69fc4bd2bb00::t_796d993f5a2ed0 35,74,275-276,322
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "9d85d8cbec803035b93061c88f57d7d0cd72e194",
+  "prompts": {},
+  "sessions": {
+    "s_0c69fc4bd2bb00": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fbf4acf4-b682-40d7-8694-7837a363537f",
+        "model": "unknown"
+      },
+      "human_author": "Iván Campillo <ivncmp@gmail.com>"
+    }
+  }
+}
