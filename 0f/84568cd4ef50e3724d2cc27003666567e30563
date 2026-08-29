@@ -1,0 +1,85 @@
+src/cognition/__tests__/crisis.test.ts
+  s_0c69fc4bd2bb00::t_951e01e207defb 23,32,40,78-112
+src/cognition/crisis.ts
+  s_0c69fc4bd2bb00::t_36145a5027b2b3 7,14-15,34-53,63,65,74-77
+src/server/jobs/handlers.ts
+  s_0c69fc4bd2bb00::t_7a549e7c60ee49 216
+tools/interior-preview/index.html
+  s_0c69fc4bd2bb00::t_84f386a3031bdf 1-255
+tools/interior-preview/rooms/bar-dockside-tavern.json
+  s_eeb4f2b1963f1b::t_00a6e85bc8d300 1-107
+tools/interior-preview/rooms/bar-the-forge.json
+  s_eeb4f2b1963f1b::t_af7e6efe6e617f 1-107
+tools/interior-preview/rooms/bar-the-rusty-nail.json
+  s_eeb4f2b1963f1b::t_f743edf0d5ea2a 1-141
+tools/interior-preview/rooms/bar-the-salty-dog.json
+  s_eeb4f2b1963f1b::t_e3285521bea328 1-107
+tools/interior-preview/rooms/bowling-sea-bowl.json
+  s_eeb4f2b1963f1b::t_37f17b3e318b70 1-79
+tools/interior-preview/rooms/bowling-strike-lanes.json
+  s_eeb4f2b1963f1b::t_b8f1d488a87ec7 1-92
+tools/interior-preview/rooms/cafe-bean-and-anvil.json
+  s_eeb4f2b1963f1b::t_8d6912d54b2d93 1-95
+tools/interior-preview/rooms/cafe-marina-roast.json
+  s_eeb4f2b1963f1b::t_14549f40a7108c 1-89
+tools/interior-preview/rooms/cafe-the-morning-press.json
+  s_eeb4f2b1963f1b::t_fb918a813d69c8 1-83
+tools/interior-preview/rooms/cinema-the-lantern-cinema.json
+  s_eeb4f2b1963f1b::t_f401cbed00f1aa 1-87
+tools/interior-preview/rooms/clinic-st-skill-infirmary.json
+  s_eeb4f2b1963f1b::t_bdcd268c511398 1-94
+tools/interior-preview/rooms/garage-cranks-and-bolts.json
+  s_eeb4f2b1963f1b::t_20662817ddaf3e 1-84
+tools/interior-preview/rooms/gym-coastal-fitness.json
+  s_eeb4f2b1963f1b::t_3d33dcbc939b84 1-75
+tools/interior-preview/rooms/gym-the-furnace-gym.json
+  s_eeb4f2b1963f1b::t_5d315ba3f7ab1c 1-81
+tools/interior-preview/rooms/home-one-bedroom.json
+  s_eeb4f2b1963f1b::t_f28ff7e09f740c 1-112
+tools/interior-preview/rooms/home-studio.json
+  s_eeb4f2b1963f1b::t_4c2063984caba5 1-78
+tools/interior-preview/rooms/office-blackwell-and-sons.json
+  s_eeb4f2b1963f1b::t_a956f876ac6a4a 1-105
+tools/interior-preview/rooms/office-harbour-trading.json
+  s_eeb4f2b1963f1b::t_48d241a8ce17ab 1-93
+tools/interior-preview/rooms/restaurant-riverside-grill.json
+  s_eeb4f2b1963f1b::t_f56f701f500bfc 1-99
+tools/interior-preview/rooms/restaurant-the-captains-table.json
+  s_eeb4f2b1963f1b::t_069a7d5985c14c 1-139
+tools/interior-preview/rooms/school-ironworks-academy.json
+  s_eeb4f2b1963f1b::t_bdade56bde7829 1-127
+tools/interior-preview/rooms/shop-hillcrest-goods.json
+  s_eeb4f2b1963f1b::t_e7a8f192a4d126 1-71
+tools/interior-preview/rooms/shop-the-compass-rose.json
+  s_eeb4f2b1963f1b::t_87d13489b2829a 1-65
+tools/interior-preview/rooms/shop-the-iron-market.json
+  s_eeb4f2b1963f1b::t_00c6dc51351395 1-71
+tools/interior-preview/rooms/supermarket-harbour-fresh.json
+  s_eeb4f2b1963f1b::t_012912f29c7b65 1-89
+tools/interior-preview/rooms/supermarket-north-market.json
+  s_eeb4f2b1963f1b::t_b821f583d1bb0c 1-89
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "0f84568cd4ef50e3724d2cc27003666567e30563",
+  "prompts": {},
+  "sessions": {
+    "s_0c69fc4bd2bb00": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fbf4acf4-b682-40d7-8694-7837a363537f",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Iván Campillo <ivncmp@gmail.com>"
+    },
+    "s_eeb4f2b1963f1b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "493e8757-61b9-419d-a452-7f8898c633b3",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "Iván Campillo <ivncmp@gmail.com>"
+    }
+  }
+}
