@@ -1,3 +1,21 @@
+/**
+ * The gate — what decides whether two people standing in the same room is worth
+ * paying a model to find out what they said.
+ *
+ * Three steps, and the third is the one that controls cost:
+ *   1. `scoreEncounter` weighs debt, feeling, goal conflict, a vice triggered by
+ *      this place, time apart and noise, minus a damper for pairs who already
+ *      spoke today.
+ *   2. `shouldTriggerScene` applies a threshold, discarding mere co-location.
+ *   3. `selectScenes` sorts by score and applies the **budget**.
+ *
+ * **The budget is the cost dial, not the threshold.** Encounter density swings
+ * with where agents happen to be, so a threshold alone yields an unpredictable
+ * number of calls per day; the caps make spend a decision instead of an
+ * emergent property.
+ *
+ * All of it is pure TypeScript and runs before anything costs money.
+ */
 import type { Agent, AgentId, Relationship } from '../agents/agent.js'
 import { viceDef } from '../agents/vices.js'
 import type { LocationKind } from '../world/locations.js'
@@ -18,6 +36,7 @@ import type { LocationKind } from '../world/locations.js'
  * them and wanting the same thing, not outrank all three. Lowering it does not
  * make the world blander; it lets the other axes reach the top of the ranking.
  */
+/** What makes a pair worth listening to. Tune volume in the budget, not here. */
 export const GATE_WEIGHTS = {
   debt: 1.6,
   grievance: 3.4,
@@ -37,8 +56,15 @@ export const GATE_WEIGHTS = {
  * nothing. Debt, strong feeling, goal conflict or a triggered vice must carry
  * the encounter; the incidental terms only break ties between real candidates.
  */
+/** Floor on shared history: strangers need a reason beyond standing together. */
 export const MIN_SUBSTANCE = 0.6
 
+/**
+ * The cost dial. `maxScenesPerLocationPerTick` exists because the other caps
+ * are blind to *where*: a busy bar would otherwise eat the whole tick budget
+ * and the rest of the city would go silent. Spread beats depth — the same spend
+ * across four locations reads as a living town.
+ */
 export const GATE_DEFAULTS = {
   /** Rejects mere co-location. Volume is controlled by the budget, not here. */
   threshold: 1.8,
@@ -47,12 +73,14 @@ export const GATE_DEFAULTS = {
   maxScenesPerLocationPerTick: 2,
 } as const
 
+/** Caps on how many scenes get paid for, per tick, per agent, per location. */
 export type SceneBudget = {
   maxScenesPerTick: number
   maxScenesPerAgentPerDay: number
   maxScenesPerLocationPerTick: number
 }
 
+/** `random` is injected so ticks stay deterministic and the gate stays testable. */
 export type GateContext = {
   tick: number
   ticksPerDay: number
@@ -81,9 +109,14 @@ const viceUrgeHere = (agent: Agent, where: LocationKind): number => {
 /** Co-located ticks at which two people count as properly familiar. Roughly
  *  two game days of shared rooms — colleagues get there in a week, neighbours
  *  who only pass in the street take far longer. */
+/** Encounters past which more time together adds nothing — familiarity saturates. */
 export const FAMILIARITY_SATURATION = 500
 
 /** The part of the score that reflects a real reason to talk. */
+/**
+ * How much history two agents have, regardless of whether it is warm. Love and
+ * hate both count; indifference does not.
+ */
 export function encounterSubstance(
   a: Agent,
   b: Agent,
@@ -105,6 +138,7 @@ export function encounterSubstance(
  * Returns 0 for encounters with no substance behind them, so they never become
  * candidates at all — cheaper and clearer than letting them compete and lose.
  */
+/** Step 1: how interesting this pair is right now, in this place, at this hour. */
 export function scoreEncounter(a: Agent, b: Agent, rel: Relationship, ctx: GateContext): number {
   const w = GATE_WEIGHTS
 
@@ -130,6 +164,7 @@ export function scoreEncounter(a: Agent, b: Agent, rel: Relationship, ctx: GateC
   )
 }
 
+/** A scored pair awaiting the budget's verdict. `location` lets it spread scenes. */
 export type SceneCandidate = {
   a: AgentId
   b: AgentId
@@ -144,6 +179,10 @@ export type SceneCandidate = {
  * density swings with where agents happen to be, so a threshold alone yields an
  * unpredictable number of calls per day. The budget makes spend a decision
  * instead of an emergent property: best candidates first, hard caps applied.
+ */
+/**
+ * Step 3, and the one that decides spend: sorts candidates by score and takes
+ * what the budget allows, per tick, per agent per day and per location.
  */
 export function selectScenes(
   candidates: readonly SceneCandidate[],
@@ -176,6 +215,7 @@ export function selectScenes(
   return chosen
 }
 
+/** Step 2: a threshold that discards mere co-location. Volume lives in the budget. */
 export function shouldTriggerScene(
   a: Agent,
   b: Agent,

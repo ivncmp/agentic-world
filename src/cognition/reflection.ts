@@ -1,3 +1,18 @@
+/**
+ * Nightly reflection — layer 3, once per agent per game night.
+ *
+ * Produces two artefacts from one call, for two different readers: a `diary`
+ * for the human, and a `consolidated` memory for the agent. They live in
+ * different stores because they are fetched differently — the diary by address
+ * ("day 5"), the memory by relevance.
+ *
+ * **Consolidation is also decay.** Persisting a reflection forgets the day's
+ * episodic noise behind its summary; the forgetting is the point, not a
+ * limitation.
+ *
+ * Cost here scales with agent count, not with activity: every agent gets one,
+ * every night, however quiet their day was.
+ */
 import type { Agent, AgentId, Relationship } from '../agents/agent.js'
 import type { Memory, MemoryStore } from '../memory/store.js'
 import { VALUE_AXES, type ValueAxis, type ValueVector } from '../agents/values.js'
@@ -18,6 +33,7 @@ import { parseJsonResponse, asString } from './json.js'
  * Cost scales with agent count, not activity: one call each, every night.
  */
 
+/** One night's output: prose for the human, a memory for the agent, and drift. */
 export type ReflectionOutcome = {
   /** First person, past tense. What the owner reads in the morning. */
   diary: string
@@ -30,10 +46,16 @@ export type ReflectionOutcome = {
 }
 
 /** A day can nudge you; it cannot remake you. */
+/**
+ * A ceiling per night, not in total. Drift accumulates without limit across
+ * weeks — it is meant to be able to overpower the authored personality — but no
+ * single day may rewrite someone.
+ */
 export const MAX_DRIFT_PER_NIGHT = 0.1
 
 const traits = (v: ValueVector): string => VALUE_AXES.map((a) => `${a} ${v[a].toFixed(2)}`).join(', ')
 
+/** The day's episodic memories, the agent's identity, and who they now know. */
 export function buildReflectionPrompt(input: {
   agent: Agent
   values: ValueVector
@@ -91,6 +113,7 @@ relationships: considered revisions on reflection, between -0.2 and 0.2. Use the
 const clamp = (n: unknown, lim: number): number =>
   typeof n === 'number' && Number.isFinite(n) ? Math.max(-lim, Math.min(lim, n)) : 0
 
+/** Validates the answer and clamps drift to `MAX_DRIFT_PER_NIGHT` per axis. */
 export function parseReflection(text: string, fallbackName: string): ReflectionOutcome {
   const o = parseJsonResponse<Record<string, unknown>>('reflection', text)
 
@@ -120,6 +143,7 @@ export function parseReflection(text: string, fallbackName: string): ReflectionO
   }
 }
 
+/** The outcome plus its metering. */
 export type ReflectionResult = {
   outcome: ReflectionOutcome
   prompt: string
@@ -131,6 +155,7 @@ export type ReflectionResult = {
   outputTokens: number
 }
 
+/** One night, one call, for one agent. */
 export async function reflect(
   input: Parameters<typeof buildReflectionPrompt>[0],
   provider: ModelProvider,
@@ -153,6 +178,10 @@ export async function reflect(
  * Replaces the day's episodic noise with one consolidated memory and forgets
  * what came before. Compression *and* decay in one step — the agent keeps the
  * meaning of the day rather than its transcript.
+ */
+/**
+ * Writes the consolidated memory and **forgets the day's episodic noise behind
+ * it**. That deletion is the decay half of consolidation, not a side effect.
  */
 export async function persistReflection(
   store: MemoryStore,

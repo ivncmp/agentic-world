@@ -1,3 +1,17 @@
+/**
+ * An agent rethinks — and this is the pattern to copy when adding cognition.
+ *
+ * It decides nothing. It returns **dispositions**: biases that `scoreActions`
+ * adds to its own scoring, people the agent would like to run into, and a line
+ * they might open with. The free layer still makes every decision.
+ *
+ * That is what keeps it affordable. A route returning an *action* would have to
+ * run every tick to be useful, which breaks the cost model the whole project is
+ * built around.
+ *
+ * Runs periodically, and reactively after a scene intense enough to change
+ * someone's mind.
+ */
 import type { Agent, AgentId, ActionBias, SeekScene, Relationship } from '../agents/agent.js'
 import type { ActionKind } from '../engine/actions.js'
 import { VALUE_AXES, type ValueVector } from '../agents/values.js'
@@ -5,6 +19,7 @@ import type { Memory } from '../memory/store.js'
 import type { ModelProvider, CompletionResult } from './provider.js'
 import { parseJsonResponse, asString } from './json.js'
 
+/** Dispositions, never actions: what to lean toward, who to seek, what to open with. */
 export type DeliberationOutcome = {
   biases: ActionBias[]
   seekScene: SeekScene[]
@@ -12,6 +27,7 @@ export type DeliberationOutcome = {
   thought: string
 }
 
+/** Recent memories, current relationships, and who exists to be sought out. */
 export type DeliberationInput = {
   agent: Agent
   values: ValueVector
@@ -21,6 +37,7 @@ export type DeliberationInput = {
   allAgentNames: { id: AgentId; name: string }[]
 }
 
+/** The outcome plus its metering. */
 export type DeliberationResult = {
   outcome: DeliberationOutcome
   prompt: string
@@ -52,6 +69,7 @@ const traitLine = (v: ValueVector): string =>
     .map((a) => `${v[a] > 0 ? 'high' : 'low'} ${a}`)
     .join(', ') || 'unremarkable'
 
+/** Asks what the agent wants next — explicitly not what they should do next. */
 export function buildDeliberationPrompt(input: DeliberationInput): string {
   const { agent, values, hour } = input
   const needs = agent.needs
@@ -122,6 +140,10 @@ Rules:
 - thought: what crosses your mind right now. One sentence, first person.`
 }
 
+/**
+ * Validates the answer against reality: an unknown action kind or an agent who
+ * does not exist is dropped rather than trusted into the reflex layer.
+ */
 export function parseDeliberation(
   text: string,
   validAgentIds: ReadonlySet<string>,
@@ -166,6 +188,7 @@ export function parseDeliberation(
   return { biases, seekScene, conversationSeed, thought }
 }
 
+/** One call. `validIds` is what keeps `seekScene` pointing at real people. */
 export async function deliberate(
   input: DeliberationInput,
   provider: ModelProvider,

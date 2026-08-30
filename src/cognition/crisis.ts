@@ -1,3 +1,15 @@
+/**
+ * The interior monologue at the moment of temptation.
+ *
+ * It exists because the diary cannot reach it: a vice breaks at four in the
+ * afternoon and reflection happens at midnight, by which point the moment has
+ * been summarised into a sentence about the day.
+ *
+ * Two things in here look like prompt style and are load-bearing — the fiction
+ * framing that stops the model refusing, and the rotating entry point that
+ * stops every monologue opening the same way. Both are documented where they
+ * are defined.
+ */
 import type { Agent } from '../agents/agent.js'
 import { VALUE_AXES, type ValueVector } from '../agents/values.js'
 import { occupationDef } from '../world/occupations.js'
@@ -6,6 +18,7 @@ import type { ModelProvider, CompletionResult } from './provider.js'
 import { extractJsonObject, looksLikeRefusal } from './json.js'
 import { pickBy } from '../shared/hash.js'
 
+/** The agent, their situation, and the tick that varies the prompt's angle. */
 export type CrisisInput = {
   agent: Agent
   values: ValueVector
@@ -15,6 +28,7 @@ export type CrisisInput = {
   tick: number
 }
 
+/** The thought plus its metering. An empty `thought` means the model declined. */
 export type CrisisResult = {
   thought: string
   prompt: string
@@ -103,6 +117,7 @@ export function parseCrisisResponse(text: string): string {
     .slice(0, 300)
 }
 
+/** One call. A refusal comes back as an empty thought, never as prose in the diary. */
 export async function resolveCrisis(input: CrisisInput, provider: ModelProvider): Promise<CrisisResult> {
   const prompt = buildCrisisPrompt(input)
   const res: CompletionResult = await provider.complete({ prompt, purpose: 'crisis' })
