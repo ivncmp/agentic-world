@@ -53,6 +53,16 @@ const server = createServer((req, res) => {
     void sendFile(res, join(ROOT, 'src/viewer/public/assets/furniture/Models/GLTF format', file))
     return
   }
+  if (url.pathname.startsWith('/textures/')) {
+    const file = decodeURIComponent(url.pathname.slice('/textures/'.length))
+    void sendFile(res, join(ROOT, 'src/viewer/public/assets/textures/PNG', file))
+    return
+  }
+  if (url.pathname.startsWith('/food/')) {
+    const file = decodeURIComponent(url.pathname.slice('/food/'.length))
+    void sendFile(res, join(ROOT, 'src/viewer/public/assets/food/Models/GLB format', file))
+    return
+  }
   if (url.pathname === '/rooms') {
     void (async () => {
       try {

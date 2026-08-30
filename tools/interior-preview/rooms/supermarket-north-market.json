@@ -20,70 +20,374 @@
   ],
   "items": [
     {
-      "model": "kitchenBar",
-      "x": 0.5,
-      "z": 1,
-      "rotY": 1.5708
+      "model": "bookcaseOpen",
+      "x": 2,
+      "z": 0.15,
+      "rotY": 0
+    },
+    {
+      "model": "bookcaseOpen",
+      "x": 2.4,
+      "z": 0.15,
+      "rotY": 0
+    },
+    {
+      "model": "bookcaseOpen",
+      "x": 2.8,
+      "z": 0.15,
+      "rotY": 0
+    },
+    {
+      "model": "bookcaseOpen",
+      "x": 3.2,
+      "z": 0.15,
+      "rotY": 0
+    },
+    {
+      "model": "bookcaseOpen",
+      "x": 3.6,
+      "z": 0.15,
+      "rotY": 0
+    },
+    {
+      "model": "bookcaseOpen",
+      "x": 4,
+      "z": 0.15,
+      "rotY": 0
+    },
+    {
+      "model": "bookcaseOpen",
+      "x": 4.4,
+      "z": 0.15,
+      "rotY": 0
+    },
+    {
+      "model": "bookcaseOpenLow",
+      "x": 1,
+      "z": 1.6,
+      "rotY": 0
+    },
+    {
+      "model": "bookcaseOpenLow",
+      "x": 1.4,
+      "z": 1.6,
+      "rotY": 0
+    },
+    {
+      "model": "bookcaseOpenLow",
+      "x": 1.8,
+      "z": 1.6,
+      "rotY": 0
+    },
+    {
+      "model": "bookcaseOpenLow",
+      "x": 4,
+      "z": 1.6,
+      "rotY": 0
+    },
+    {
+      "model": "bookcaseOpenLow",
+      "x": 4.4,
+      "z": 1.6,
+      "rotY": 0
+    },
+    {
+      "model": "bookcaseOpenLow",
+      "x": 4.8,
+      "z": 1.6,
+      "rotY": 0
+    },
+    {
+      "model": "bookcaseOpenLow",
+      "x": 1,
+      "z": 2.9,
+      "rotY": 0
+    },
+    {
+      "model": "bookcaseOpenLow",
+      "x": 1.4,
+      "z": 2.9,
+      "rotY": 0
+    },
+    {
+      "model": "bookcaseOpenLow",
+      "x": 1.8,
+      "z": 2.9,
+      "rotY": 0
+    },
+    {
+      "model": "bookcaseOpenLow",
+      "x": 4,
+      "z": 2.9,
+      "rotY": 0
+    },
+    {
+      "model": "bookcaseOpenLow",
+      "x": 4.4,
+      "z": 2.9,
+      "rotY": 0
+    },
+    {
+      "model": "bookcaseOpenLow",
+      "x": 4.8,
+      "z": 2.9,
+      "rotY": 0
     },
     {
       "model": "kitchenBarEnd",
-      "x": 0.5,
-      "z": 0.5,
-      "rotY": 1.5708
+      "x": 1.689,
+      "z": 4.2,
+      "rotY": 3.142
     },
     {
-      "model": "chairRounded",
-      "x": 0.3,
-      "z": 1,
-      "rotY": 1.5708
+      "model": "kitchenBar",
+      "x": 1.955,
+      "z": 4.2,
+      "rotY": 3.142
     },
     {
-      "model": "bookcaseOpen",
-      "x": 2.5,
-      "z": 4.5,
-      "rotY": 3.14159
+      "model": "kitchenBar",
+      "x": 2.385,
+      "z": 4.2,
+      "rotY": 3.142
     },
     {
-      "model": "bookcaseOpen",
-      "x": 2.5,
+      "model": "kitchenBar",
+      "x": 2.815,
+      "z": 4.2,
+      "rotY": 3.142
+    },
+    {
+      "model": "kitchenBar",
+      "x": 3.245,
+      "z": 4.2,
+      "rotY": 3.142
+    },
+    {
+      "model": "kitchenBarEnd",
+      "x": 3.511,
+      "z": 4.2,
+      "rotY": 3.142
+    },
+    {
+      "model": "stoolBar",
+      "x": 2.2,
+      "z": 4.65,
+      "rotY": 3.142
+    },
+    {
+      "model": "stoolBar",
+      "x": 3,
+      "z": 4.65,
+      "rotY": 3.142
+    },
+    {
+      "model": "kitchenFridgeLarge",
+      "x": 0.35,
+      "z": 1.2,
+      "rotY": 1.571
+    },
+    {
+      "model": "kitchenFridgeLarge",
+      "x": 0.35,
+      "z": 2.2,
+      "rotY": 1.571
+    },
+    {
+      "model": "kitchenFridgeLarge",
+      "x": 6.65,
+      "z": 2,
+      "rotY": -1.571
+    },
+    {
+      "model": "kitchenFridgeSmall",
+      "x": 6.7,
       "z": 3,
+      "rotY": -1.571
+    },
+    {
+      "model": "cardboardBoxClosed",
+      "x": 1,
+      "z": 0.75,
       "rotY": 0
     },
     {
-      "model": "bookcaseOpen",
-      "x": 2.5,
-      "z": 1.5,
+      "model": "cardboardBoxClosed",
+      "x": 1.8,
+      "z": 0.75,
       "rotY": 0
     },
     {
-      "model": "bookcaseOpen",
-      "x": 4.5,
-      "z": 4.5,
-      "rotY": 3.14159
-    },
-    {
-      "model": "bookcaseOpen",
-      "x": 4.5,
-      "z": 3,
+      "model": "cardboardBoxClosed",
+      "x": 4.6,
+      "z": 0.75,
       "rotY": 0
     },
     {
-      "model": "bookcaseOpen",
-      "x": 4.5,
-      "z": 1.5,
+      "model": "cardboardBoxClosed",
+      "x": 5.4,
+      "z": 0.75,
       "rotY": 0
     },
     {
-      "model": "kitchenCabinet",
+      "model": "cardboardBoxOpen",
       "x": 6,
-      "z": 4.5,
-      "rotY": 3.14159
+      "z": 4.6,
+      "rotY": 0
     },
     {
-      "model": "kitchenCabinetDrawer",
-      "x": 6,
-      "z": 3,
-      "rotY": 3.14159
+      "model": "trashcan",
+      "x": 4.6,
+      "z": 4.7,
+      "rotY": 0
+    },
+    {
+      "model": "pottedPlant",
+      "x": 0.35,
+      "z": 4.7,
+      "rotY": 0
+    },
+    {
+      "model": "lampSquareCeiling",
+      "x": 2,
+      "z": 2.2,
+      "rotY": 0,
+      "yOffset": 1.06
+    },
+    {
+      "model": "lampSquareCeiling",
+      "x": 5,
+      "z": 2.2,
+      "rotY": 0,
+      "yOffset": 1.06
+    },
+    {
+      "model": "tomato",
+      "x": 0.9,
+      "z": 1.6,
+      "rotY": 0,
+      "pack": "food",
+      "yOffset": 0.4
+    },
+    {
+      "model": "paprika",
+      "x": 1.233,
+      "z": 1.6,
+      "rotY": 0,
+      "pack": "food",
+      "yOffset": 0.4
+    },
+    {
+      "model": "onion",
+      "x": 1.567,
+      "z": 1.6,
+      "rotY": 0,
+      "pack": "food",
+      "yOffset": 0.4
+    },
+    {
+      "model": "mushroom",
+      "x": 1.9,
+      "z": 1.6,
+      "rotY": 0,
+      "pack": "food",
+      "yOffset": 0.4
+    },
+    {
+      "model": "pear",
+      "x": 0.9,
+      "z": 2.9,
+      "rotY": 0,
+      "pack": "food",
+      "yOffset": 0.4
+    },
+    {
+      "model": "pineapple",
+      "x": 1.4,
+      "z": 2.9,
+      "rotY": 0,
+      "pack": "food",
+      "yOffset": 0.4
+    },
+    {
+      "model": "coconut",
+      "x": 1.9,
+      "z": 2.9,
+      "rotY": 0,
+      "pack": "food",
+      "yOffset": 0.4
+    },
+    {
+      "model": "meat-sausage",
+      "x": 3.9,
+      "z": 1.6,
+      "rotY": 0,
+      "pack": "food",
+      "yOffset": 0.4
+    },
+    {
+      "model": "whole-ham",
+      "x": 4.4,
+      "z": 1.6,
+      "rotY": 0,
+      "pack": "food",
+      "yOffset": 0.4
+    },
+    {
+      "model": "cheese",
+      "x": 4.9,
+      "z": 1.6,
+      "rotY": 0,
+      "pack": "food",
+      "yOffset": 0.4
+    },
+    {
+      "model": "soda-bottle",
+      "x": 3.9,
+      "z": 2.9,
+      "rotY": 0,
+      "pack": "food",
+      "yOffset": 0.4
+    },
+    {
+      "model": "wine-red",
+      "x": 4.4,
+      "z": 2.9,
+      "rotY": 0,
+      "pack": "food",
+      "yOffset": 0.4
+    },
+    {
+      "model": "honey",
+      "x": 4.9,
+      "z": 2.9,
+      "rotY": 0,
+      "pack": "food",
+      "yOffset": 0.4
+    },
+    {
+      "model": "watermelon",
+      "x": 1,
+      "z": 0.75,
+      "rotY": 0,
+      "pack": "food",
+      "yOffset": 0.28
+    },
+    {
+      "model": "cabbage",
+      "x": 4.6,
+      "z": 0.75,
+      "rotY": 0,
+      "pack": "food",
+      "yOffset": 0.28
+    },
+    {
+      "model": "plate-dinner",
+      "x": 2.4,
+      "z": 4.15,
+      "rotY": 0,
+      "pack": "food",
+      "yOffset": 0.42
     }
   ]
 }

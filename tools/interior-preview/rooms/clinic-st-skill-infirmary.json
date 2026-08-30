@@ -25,70 +25,186 @@
   "items": [
     {
       "model": "bedSingle",
-      "x": 4.5,
-      "z": 4,
-      "rotY": -1.5708
+      "x": 0.9,
+      "z": 1,
+      "rotY": 1.571
     },
     {
       "model": "cabinetBedDrawer",
-      "x": 5.5,
-      "z": 4.5,
-      "rotY": 3.14159
+      "x": 0.25,
+      "z": 1.9,
+      "rotY": 1.571
     },
     {
-      "model": "desk",
-      "x": 1.5,
-      "z": 4,
-      "rotY": 3.14159
+      "model": "bedSingle",
+      "x": 0.9,
+      "z": 2.5,
+      "rotY": 1.571
     },
     {
-      "model": "chairDesk",
-      "x": 1.5,
-      "z": 4.5,
-      "rotY": 3.14159
-    },
-    {
-      "model": "computerScreen",
-      "x": 1.5,
-      "z": 3.8,
-      "rotY": 3.14159
-    },
-    {
-      "model": "chair",
-      "x": 0.5,
-      "z": 1,
-      "rotY": 1.5708
-    },
-    {
-      "model": "chair",
-      "x": 0.5,
-      "z": 2,
-      "rotY": 1.5708
-    },
-    {
-      "model": "chair",
-      "x": 0.5,
-      "z": 3,
-      "rotY": 1.5708
+      "model": "cabinetBedDrawer",
+      "x": 0.25,
+      "z": 3.4,
+      "rotY": 1.571
     },
     {
       "model": "bathroomSink",
-      "x": 5.5,
-      "z": 2.5,
-      "rotY": -1.5708
+      "x": 5.7,
+      "z": 0.35,
+      "rotY": -1.571
     },
     {
       "model": "bathroomMirror",
-      "x": 5.5,
-      "z": 2.5,
-      "rotY": -1.5708,
-      "yOffset": 0.8
+      "x": 5.85,
+      "z": 0.35,
+      "rotY": -1.571,
+      "yOffset": 0.62
     },
     {
-      "model": "sideTable",
-      "x": 3.5,
-      "z": 4.5,
+      "model": "kitchenCabinetDrawer",
+      "x": 5.72,
+      "z": 1.77,
+      "rotY": -1.571
+    },
+    {
+      "model": "kitchenCabinet",
+      "x": 5.72,
+      "z": 2.2,
+      "rotY": -1.571
+    },
+    {
+      "model": "kitchenCabinetDrawer",
+      "x": 5.72,
+      "z": 2.63,
+      "rotY": -1.571
+    },
+    {
+      "model": "kitchenCabinetUpper",
+      "x": 5.85,
+      "z": 1.985,
+      "rotY": -1.571,
+      "yOffset": 0.78
+    },
+    {
+      "model": "kitchenCabinetUpper",
+      "x": 5.85,
+      "z": 2.415,
+      "rotY": -1.571,
+      "yOffset": 0.78
+    },
+    {
+      "model": "bookcaseClosedDoors",
+      "x": 3.6,
+      "z": 0.2,
       "rotY": 0
+    },
+    {
+      "model": "bookcaseClosedDoors",
+      "x": 4,
+      "z": 0.2,
+      "rotY": 0
+    },
+    {
+      "model": "bookcaseClosedDoors",
+      "x": 4.4,
+      "z": 0.2,
+      "rotY": 0
+    },
+    {
+      "model": "bookcaseClosedDoors",
+      "x": 4.8,
+      "z": 0.2,
+      "rotY": 0
+    },
+    {
+      "model": "desk",
+      "x": 2.8,
+      "z": 3.6,
+      "rotY": 0
+    },
+    {
+      "model": "chairDesk",
+      "x": 2.8,
+      "z": 4.013,
+      "rotY": 3.142
+    },
+    {
+      "model": "computerScreen",
+      "x": 2.8,
+      "z": 3.51,
+      "rotY": 0,
+      "yOffset": 0.384
+    },
+    {
+      "model": "computerKeyboard",
+      "x": 2.8,
+      "z": 3.68,
+      "rotY": 0,
+      "yOffset": 0.384
+    },
+    {
+      "model": "chairCushion",
+      "x": 3.2,
+      "z": 4.7,
+      "rotY": 3.142
+    },
+    {
+      "model": "chairCushion",
+      "x": 3.933,
+      "z": 4.7,
+      "rotY": 3.142
+    },
+    {
+      "model": "chairCushion",
+      "x": 4.667,
+      "z": 4.7,
+      "rotY": 3.142
+    },
+    {
+      "model": "chairCushion",
+      "x": 5.4,
+      "z": 4.7,
+      "rotY": 3.142
+    },
+    {
+      "model": "rugRectangle",
+      "x": 2.6,
+      "z": 2.2,
+      "rotY": 0
+    },
+    {
+      "model": "pottedPlant",
+      "x": 0.3,
+      "z": 4.7,
+      "rotY": 0
+    },
+    {
+      "model": "trashcan",
+      "x": 1.5,
+      "z": 4.7,
+      "rotY": 0
+    },
+    {
+      "model": "lampSquareCeiling",
+      "x": 1.8,
+      "z": 2,
+      "rotY": 0,
+      "yOffset": 1.06
+    },
+    {
+      "model": "lampSquareCeiling",
+      "x": 4.4,
+      "z": 3,
+      "rotY": 0,
+      "yOffset": 1.06
+    },
+    {
+      "model": "mug",
+      "x": 2.62,
+      "z": 3.72,
+      "rotY": 0,
+      "pack": "food",
+      "yOffset": 0.384
     }
   ]
 }

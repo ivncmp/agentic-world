@@ -24,52 +24,158 @@
   ],
   "items": [
     {
-      "model": "benchCushion",
-      "x": 1,
-      "z": 4,
-      "rotY": 1.5708
-    },
-    {
-      "model": "benchCushion",
-      "x": 1,
-      "z": 2,
-      "rotY": 1.5708
+      "model": "rugRectangle",
+      "x": 2,
+      "z": 1.3,
+      "rotY": 0
     },
     {
       "model": "rugRectangle",
-      "x": 3.5,
-      "z": 3.5,
-      "rotY": 1.5708
-    },
-    {
-      "model": "rugRectangle",
-      "x": 3.5,
-      "z": 1.5,
-      "rotY": 1.5708
-    },
-    {
-      "model": "bookcaseClosedDoors",
-      "x": 5.5,
-      "z": 4.5,
-      "rotY": 3.14159
-    },
-    {
-      "model": "bookcaseClosedDoors",
-      "x": 5.5,
+      "x": 2,
       "z": 3,
-      "rotY": 3.14159
-    },
-    {
-      "model": "bench",
-      "x": 5,
-      "z": 1,
       "rotY": 0
     },
     {
-      "model": "radio",
-      "x": 0.4,
-      "z": 4.5,
+      "model": "rugRound",
+      "x": 4.6,
+      "z": 1.6,
       "rotY": 0
+    },
+    {
+      "model": "rugRound",
+      "x": 4.6,
+      "z": 3.4,
+      "rotY": 0
+    },
+    {
+      "model": "bookcaseOpenLow",
+      "x": 5.72,
+      "z": 0.8,
+      "rotY": -1.571
+    },
+    {
+      "model": "bookcaseOpenLow",
+      "x": 5.72,
+      "z": 1.2,
+      "rotY": -1.571
+    },
+    {
+      "model": "bookcaseOpenLow",
+      "x": 5.72,
+      "z": 1.6,
+      "rotY": -1.571
+    },
+    {
+      "model": "bookcaseOpenLow",
+      "x": 5.72,
+      "z": 2,
+      "rotY": -1.571
+    },
+    {
+      "model": "cardboardBoxClosed",
+      "x": 5.25,
+      "z": 0.6,
+      "rotY": 0
+    },
+    {
+      "model": "cardboardBoxClosed",
+      "x": 5.25,
+      "z": 1.2,
+      "rotY": 0
+    },
+    {
+      "model": "cardboardBoxClosed",
+      "x": 5.25,
+      "z": 1.8,
+      "rotY": 0
+    },
+    {
+      "model": "cardboardBoxClosed",
+      "x": 5.25,
+      "z": 2.4,
+      "rotY": 0
+    },
+    {
+      "model": "benchCushionLow",
+      "x": 2,
+      "z": 1.3,
+      "rotY": 3.142
+    },
+    {
+      "model": "benchCushionLow",
+      "x": 2,
+      "z": 3,
+      "rotY": 3.142
+    },
+    {
+      "model": "benchCushion",
+      "x": 0.35,
+      "z": 1.5,
+      "rotY": 1.571
+    },
+    {
+      "model": "benchCushion",
+      "x": 0.35,
+      "z": 2.3,
+      "rotY": 1.571
+    },
+    {
+      "model": "bathroomMirror",
+      "x": 3,
+      "z": 0.12,
+      "rotY": 0,
+      "yOffset": 0.62
+    },
+    {
+      "model": "bathroomMirror",
+      "x": 4.2,
+      "z": 0.12,
+      "rotY": 0,
+      "yOffset": 0.62
+    },
+    {
+      "model": "speaker",
+      "x": 0.3,
+      "z": 0.35,
+      "rotY": 0
+    },
+    {
+      "model": "speakerSmall",
+      "x": 5.7,
+      "z": 0.35,
+      "rotY": 0
+    },
+    {
+      "model": "trashcan",
+      "x": 0.35,
+      "z": 4.7,
+      "rotY": 0
+    },
+    {
+      "model": "coatRackStanding",
+      "x": 1.4,
+      "z": 4.7,
+      "rotY": 0
+    },
+    {
+      "model": "pottedPlant",
+      "x": 5.7,
+      "z": 4.7,
+      "rotY": 0
+    },
+    {
+      "model": "lampSquareCeiling",
+      "x": 2,
+      "z": 2.2,
+      "rotY": 0,
+      "yOffset": 1.06
+    },
+    {
+      "model": "lampSquareCeiling",
+      "x": 4.4,
+      "z": 2.6,
+      "rotY": 0,
+      "yOffset": 1.06
     }
   ]
 }

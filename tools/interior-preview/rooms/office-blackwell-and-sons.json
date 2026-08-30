@@ -25,81 +25,217 @@
   "items": [
     {
       "model": "desk",
-      "x": 3,
-      "z": 4,
-      "rotY": 3.14159
+      "x": 1.2,
+      "z": 1.4,
+      "rotY": 0
     },
     {
       "model": "chairDesk",
-      "x": 3,
-      "z": 4.5,
-      "rotY": 3.14159
+      "x": 1.2,
+      "z": 1.813,
+      "rotY": 3.142
     },
     {
       "model": "computerScreen",
-      "x": 3,
-      "z": 3.8,
-      "rotY": 3.14159
+      "x": 1.2,
+      "z": 1.31,
+      "rotY": 0,
+      "yOffset": 0.384
     },
     {
       "model": "computerKeyboard",
-      "x": 3,
-      "z": 3.5,
-      "rotY": 3.14159
+      "x": 1.2,
+      "z": 1.48,
+      "rotY": 0,
+      "yOffset": 0.384
     },
     {
       "model": "desk",
-      "x": 1,
-      "z": 2,
+      "x": 3.2,
+      "z": 1.4,
       "rotY": 0
     },
     {
       "model": "chairDesk",
-      "x": 1,
-      "z": 1.5,
-      "rotY": 0
+      "x": 3.2,
+      "z": 1.813,
+      "rotY": 3.142
     },
     {
       "model": "computerScreen",
-      "x": 1,
-      "z": 2.2,
-      "rotY": 0
+      "x": 3.2,
+      "z": 1.31,
+      "rotY": 0,
+      "yOffset": 0.384
+    },
+    {
+      "model": "computerKeyboard",
+      "x": 3.2,
+      "z": 1.48,
+      "rotY": 0,
+      "yOffset": 0.384
     },
     {
       "model": "desk",
-      "x": 3.5,
-      "z": 2,
+      "x": 5,
+      "z": 1.4,
       "rotY": 0
     },
     {
       "model": "chairDesk",
-      "x": 3.5,
-      "z": 1.5,
-      "rotY": 0
+      "x": 5,
+      "z": 1.813,
+      "rotY": 3.142
     },
     {
       "model": "computerScreen",
-      "x": 3.5,
-      "z": 2.2,
+      "x": 5,
+      "z": 1.31,
+      "rotY": 0,
+      "yOffset": 0.384
+    },
+    {
+      "model": "computerKeyboard",
+      "x": 5,
+      "z": 1.48,
+      "rotY": 0,
+      "yOffset": 0.384
+    },
+    {
+      "model": "desk",
+      "x": 1.2,
+      "z": 3.4,
       "rotY": 0
     },
     {
-      "model": "bookcaseClosedWide",
-      "x": 5.5,
-      "z": 4.5,
-      "rotY": 3.14159
+      "model": "chairDesk",
+      "x": 1.2,
+      "z": 3.813,
+      "rotY": 3.142
     },
     {
-      "model": "bookcaseClosed",
-      "x": 0.4,
-      "z": 4.5,
+      "model": "computerScreen",
+      "x": 1.2,
+      "z": 3.31,
+      "rotY": 0,
+      "yOffset": 0.384
+    },
+    {
+      "model": "computerKeyboard",
+      "x": 1.2,
+      "z": 3.48,
+      "rotY": 0,
+      "yOffset": 0.384
+    },
+    {
+      "model": "desk",
+      "x": 3.2,
+      "z": 3.4,
+      "rotY": 0
+    },
+    {
+      "model": "chairDesk",
+      "x": 3.2,
+      "z": 3.813,
+      "rotY": 3.142
+    },
+    {
+      "model": "computerScreen",
+      "x": 3.2,
+      "z": 3.31,
+      "rotY": 0,
+      "yOffset": 0.384
+    },
+    {
+      "model": "computerKeyboard",
+      "x": 3.2,
+      "z": 3.48,
+      "rotY": 0,
+      "yOffset": 0.384
+    },
+    {
+      "model": "bookcaseClosedDoors",
+      "x": 5.75,
+      "z": 2.6,
+      "rotY": -1.571
+    },
+    {
+      "model": "bookcaseClosedDoors",
+      "x": 5.75,
+      "z": 3,
+      "rotY": -1.571
+    },
+    {
+      "model": "bookcaseClosedDoors",
+      "x": 5.75,
+      "z": 3.4,
+      "rotY": -1.571
+    },
+    {
+      "model": "bookcaseClosedDoors",
+      "x": 5.75,
+      "z": 3.8,
+      "rotY": -1.571
+    },
+    {
+      "model": "rugRectangle",
+      "x": 2.6,
+      "z": 4.4,
       "rotY": 0
     },
     {
       "model": "pottedPlant",
-      "x": 5.5,
+      "x": 5.7,
       "z": 0.3,
       "rotY": 0
+    },
+    {
+      "model": "pottedPlant",
+      "x": 0.3,
+      "z": 4.7,
+      "rotY": 0
+    },
+    {
+      "model": "trashcan",
+      "x": 4.4,
+      "z": 4.7,
+      "rotY": 0
+    },
+    {
+      "model": "coatRackStanding",
+      "x": 5.7,
+      "z": 4.7,
+      "rotY": 0
+    },
+    {
+      "model": "lampSquareCeiling",
+      "x": 2,
+      "z": 2.4,
+      "rotY": 0,
+      "yOffset": 1.06
+    },
+    {
+      "model": "lampSquareCeiling",
+      "x": 4.4,
+      "z": 2.4,
+      "rotY": 0,
+      "yOffset": 1.06
+    },
+    {
+      "model": "mug",
+      "x": 1.02,
+      "z": 1.22,
+      "rotY": 0,
+      "pack": "food",
+      "yOffset": 0.384
+    },
+    {
+      "model": "mug",
+      "x": 3.02,
+      "z": 3.22,
+      "rotY": 0,
+      "pack": "food",
+      "yOffset": 0.384
     }
   ]
 }

@@ -21,58 +21,175 @@
   "items": [
     {
       "model": "bedSingle",
-      "x": 0.5,
-      "z": 3.5,
-      "rotY": 1.5708
+      "x": 0.65,
+      "z": 3.4,
+      "rotY": 1.571
     },
     {
       "model": "cabinetBedDrawer",
-      "x": 0.4,
-      "z": 2.5,
-      "rotY": 1.5708
+      "x": 0.25,
+      "z": 2.55,
+      "rotY": 1.571
+    },
+    {
+      "model": "lampSquareTable",
+      "x": 0.25,
+      "z": 2.55,
+      "rotY": 1.571,
+      "yOffset": 0.27
     },
     {
       "model": "loungeSofa",
-      "x": 3.5,
+      "x": 3.6,
       "z": 3.5,
-      "rotY": 3.14159
+      "rotY": 3.142
     },
     {
       "model": "tableCoffee",
-      "x": 3.5,
-      "z": 2.5,
+      "x": 3.6,
+      "z": 2.7,
       "rotY": 0
     },
     {
       "model": "cabinetTelevision",
-      "x": 3.5,
-      "z": 1.5,
+      "x": 3.6,
+      "z": 1.6,
       "rotY": 0
     },
     {
       "model": "televisionModern",
-      "x": 3.5,
-      "z": 1.5,
+      "x": 3.6,
+      "z": 1.6,
       "rotY": 0,
-      "yOffset": 0.5
+      "yOffset": 0.32
     },
     {
       "model": "kitchenCabinetDrawer",
-      "x": 0.5,
-      "z": 0.5,
-      "rotY": 1.5708
+      "x": 0.25,
+      "z": 0.47,
+      "rotY": 1.571
+    },
+    {
+      "model": "kitchenSink",
+      "x": 0.25,
+      "z": 0.9,
+      "rotY": 1.571
+    },
+    {
+      "model": "kitchenStove",
+      "x": 0.25,
+      "z": 1.33,
+      "rotY": 1.571
     },
     {
       "model": "kitchenCabinet",
-      "x": 1.5,
-      "z": 0.4,
+      "x": 1.185,
+      "z": 0.25,
       "rotY": 0
     },
     {
-      "model": "rugRound",
-      "x": 2.5,
-      "z": 2.5,
+      "model": "kitchenCabinetDrawer",
+      "x": 1.615,
+      "z": 0.25,
       "rotY": 0
+    },
+    {
+      "model": "kitchenCabinetUpper",
+      "x": 1.185,
+      "z": 0.12,
+      "rotY": 0,
+      "yOffset": 0.78
+    },
+    {
+      "model": "kitchenCabinetUpper",
+      "x": 1.615,
+      "z": 0.12,
+      "rotY": 0,
+      "yOffset": 0.78
+    },
+    {
+      "model": "kitchenFridgeSmall",
+      "x": 2.3,
+      "z": 0.25,
+      "rotY": 0
+    },
+    {
+      "model": "kitchenMicrowave",
+      "x": 1.2,
+      "z": 0.25,
+      "rotY": 0,
+      "yOffset": 0.46
+    },
+    {
+      "model": "rugRound",
+      "x": 3.6,
+      "z": 2.7,
+      "rotY": 0
+    },
+    {
+      "model": "bookcaseOpen",
+      "x": 4.75,
+      "z": 0.6,
+      "rotY": -1.571
+    },
+    {
+      "model": "pottedPlant",
+      "x": 4.7,
+      "z": 3.7,
+      "rotY": 0
+    },
+    {
+      "model": "trashcan",
+      "x": 0.35,
+      "z": 1.95,
+      "rotY": 0
+    },
+    {
+      "model": "lampSquareCeiling",
+      "x": 2.5,
+      "z": 2,
+      "rotY": 0,
+      "yOffset": 1.06
+    },
+    {
+      "model": "bowl",
+      "x": 3.6,
+      "z": 2.7,
+      "rotY": 0,
+      "pack": "food",
+      "yOffset": 0.23
+    },
+    {
+      "model": "mug",
+      "x": 3.85,
+      "z": 2.62,
+      "rotY": 0,
+      "pack": "food",
+      "yOffset": 0.23
+    },
+    {
+      "model": "pot-lid",
+      "x": 0.3,
+      "z": 1.33,
+      "rotY": 0,
+      "pack": "food",
+      "yOffset": 0.45
+    },
+    {
+      "model": "cutting-board",
+      "x": 1.55,
+      "z": 0.28,
+      "rotY": 0,
+      "pack": "food",
+      "yOffset": 0.45
+    },
+    {
+      "model": "bottle-oil",
+      "x": 1.2,
+      "z": 0.18,
+      "rotY": 0,
+      "pack": "food",
+      "yOffset": 0.45
     }
   ]
 }

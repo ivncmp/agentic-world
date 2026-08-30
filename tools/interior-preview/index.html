@@ -42,8 +42,13 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 
 const TILE = 1.0
-const WALL_H = 1.6
-const FURNITURE_BASE = '/furniture/'
+// Two asset packs at different authoring scales. The furniture kit defines the
+// world unit (floor tile = 1); the food pack is ~4.5x larger, measured against
+// a cup, an apple and a bottle, so it is scaled down on load.
+const PACKS = {
+  furniture: { base: '/furniture/', scale: 1 },
+  food: { base: '/food/', scale: 0.22 },
+}
 
 // ── Scene ────────────────────────────────────────────────────────────
 const canvas = document.createElement('canvas')
@@ -54,9 +59,11 @@ const renderer = new THREE.WebGLRenderer({ canvas, antialias: true })
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2))
 renderer.setSize(innerWidth, innerHeight)
 renderer.shadowMap.enabled = true
-renderer.shadowMap.type = THREE.PCFShadowMap
-renderer.toneMapping = THREE.ACESFilmicToneMapping
-renderer.toneMappingExposure = 1.2
+renderer.shadowMap.type = THREE.PCFSoftShadowMap
+renderer.outputColorSpace = THREE.SRGBColorSpace
+// Kenney's palette is already flat and saturated; filmic tone mapping pulls
+// every swatch towards the same beige, which is what made the room look untextured.
+renderer.toneMapping = THREE.NoToneMapping
 
 const scene = new THREE.Scene()
 scene.background = new THREE.Color(0x1a1a2e)
@@ -72,15 +79,18 @@ controls.minDistance = 3
 controls.maxDistance = 25
 controls.maxPolarAngle = Math.PI / 2.1
 
-scene.add(new THREE.AmbientLight(0xffffff, 0.6))
-const sun = new THREE.DirectionalLight(0xfff4e5, 1.8)
-sun.position.set(6, 10, 8)
+scene.add(new THREE.HemisphereLight(0xffffff, 0x9098b0, 1.5))
+const sun = new THREE.DirectionalLight(0xfff4e5, 1.1)
+sun.position.set(6, 12, 8)
 sun.castShadow = true
-sun.shadow.mapSize.set(1024, 1024)
-sun.shadow.camera.left = -10; sun.shadow.camera.right = 10
-sun.shadow.camera.top = 10; sun.shadow.camera.bottom = -10
+sun.shadow.mapSize.set(2048, 2048)
+sun.shadow.camera.left = -12; sun.shadow.camera.right = 12
+sun.shadow.camera.top = 12; sun.shadow.camera.bottom = -12
+sun.shadow.bias = -0.0005
 scene.add(sun)
-scene.add(new THREE.DirectionalLight(0xc8d8ff, 0.4).translateX(-4).translateY(6).translateZ(-2))
+const fill = new THREE.DirectionalLight(0xc8d8ff, 0.5)
+fill.position.set(-6, 8, -4)
+scene.add(fill)
 
 const groundMesh = new THREE.Mesh(
   new THREE.PlaneGeometry(30, 30),
@@ -95,75 +105,198 @@ scene.add(groundMesh)
 const loader = new GLTFLoader()
 const modelCache = new Map()
 
-async function ensureModel(name) {
-  if (modelCache.has(name)) return modelCache.get(name)
+/** Cache key: a name may exist in more than one pack. */
+const keyOf = (name, pack = 'furniture') => `${pack}/${name}`
+
+/** Wall pieces are 1 unit wide and this tall; one texture covers exactly that. */
+const WALL_HEIGHT = 1.29
+
+/**
+ * Kenney's models index a colour atlas rather than parameterising their surface:
+ * floorFull's UVs span -39.37..39.37 across three discrete values. A tiling
+ * texture on those comes out as moire, so structural pieces get a planar
+ * projection instead — once per template, which every clone then shares.
+ */
+function reprojectUVs(root, mode) {
+  root.traverse((o) => {
+    if (!o.isMesh) return
+    const pos = o.geometry.attributes.position
+    const uv = new Float32Array(pos.count * 2)
+    for (let i = 0; i < pos.count; i++) {
+      // Floor tiles lie in x[0,1] z[-1,0]; walls stand in x[0,1] y[0,1.29].
+      uv[i * 2] = pos.getX(i)
+      uv[i * 2 + 1] = mode === 'floor' ? -pos.getZ(i) : pos.getY(i) / WALL_HEIGHT
+    }
+    o.geometry.setAttribute('uv', new THREE.BufferAttribute(uv, 2))
+  })
+}
+
+async function ensureModel(name, pack = 'furniture') {
+  const key = keyOf(name, pack)
+  if (modelCache.has(key)) return modelCache.get(key)
   try {
-    const gltf = await loader.loadAsync(FURNITURE_BASE + name + '.glb')
+    const gltf = await loader.loadAsync(PACKS[pack].base + name + '.glb')
     gltf.scene.traverse(c => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = true } })
-    modelCache.set(name, gltf.scene)
+    if (name === 'floorFull') reprojectUVs(gltf.scene, 'floor')
+    else if (name.startsWith('wall')) reprojectUVs(gltf.scene, 'wall')
+    modelCache.set(key, gltf.scene)
     return gltf.scene
   } catch (e) {
-    console.warn(`Failed to load ${name}:`, e)
-    modelCache.set(name, null)
+    console.warn(`Failed to load ${pack}/${name}:`, e)
+    modelCache.set(key, null)
     return null
   }
 }
 
-function cloneModel(name) {
-  const t = modelCache.get(name)
+function cloneModel(name, pack = 'furniture') {
+  const t = modelCache.get(keyOf(name, pack))
   return t ? t.clone() : null
 }
 
-// ── Unified scaling ──────────────────────────────────────────────────
-// All Kenney Furniture Kit models share the same authoring scale.
-// We measure floorFull once and derive a single scale factor so that
-// one floor tile = one TILE unit. Everything else inherits that factor.
-let BASE_SCALE = 1
+// ── Palette ──────────────────────────────────────────────────────────
+// The whole kit is 15 named materials, and the structure uses them
+// cleanly: a floor tile is only `wood`, a wall is `_defaultMat` (inner
+// face) + `wood` (skirting) + `metalDark` (outer face). Remapping by
+// material name therefore repaints a room without touching the meshes.
 
-async function calibrate() {
-  const floor = await ensureModel('floorFull')
-  const wall = await ensureModel('wall')
-  const chair = await ensureModel('chair')
-  const sizes = {}
-  for (const [name, model] of [['floor', floor], ['wall', wall], ['chair', chair]]) {
-    if (!model) continue
-    const box = new THREE.Box3().setFromObject(model)
-    const sz = new THREE.Vector3(); box.getSize(sz)
-    sizes[name] = { x: sz.x.toFixed(3), y: sz.y.toFixed(3), z: sz.z.toFixed(3) }
-  }
-  console.table(sizes)
-  if (!floor) return
-  const box = new THREE.Box3().setFromObject(floor)
-  const sz = new THREE.Vector3(); box.getSize(sz)
-  BASE_SCALE = TILE / Math.max(sz.x, sz.z)
-  console.log('BASE_SCALE:', BASE_SCALE, 'floor footprint:', Math.max(sz.x, sz.z))
+// Pixel-art tilesheets: 64x64 per floor tile, 64x128 per wall segment, which is
+// exactly one structural piece each. Nearest filtering keeps them crisp.
+const texLoader = new THREE.TextureLoader()
+const texCache = new Map()
+
+function texture(name) {
+  if (texCache.has(name)) return texCache.get(name)
+  const t = texLoader.load('/textures/' + name + '.png')
+  t.colorSpace = THREE.SRGBColorSpace
+  t.magFilter = THREE.NearestFilter
+  t.minFilter = THREE.NearestMipmapLinearFilter
+  t.wrapS = t.wrapT = THREE.RepeatWrapping
+  texCache.set(name, t)
+  return t
 }
 
-function placeModel(model, x, z, rotY, extraScale) {
-  const s = BASE_SCALE * (extraScale ?? 1)
-  model.scale.setScalar(s)
+/** Pull a palette colour towards white so it tints a texture instead of muddying it. */
+function wash(hex, amount = 0.55) {
+  const c = new THREE.Color(hex)
+  return c.lerp(new THREE.Color(0xffffff), amount).getHexString().padStart(6, '0')
+}
+
+/** Per-venue palettes. A room JSON may override with its own `palette`. */
+const PALETTES = {
+  bar:         { wall: '#7c4a3a', wallTrim: '#3f2a22', floor: '#8c5a37', wood: '#a56a3c', accent: '#d94f45', metal: '#c9a227', wallTex: 'wall_brick_stone_both' },
+  restaurant:  { wall: '#9c5f4e', wallTrim: '#4a2c24', floor: '#a3703f', wood: '#b07a45', accent: '#c8433c', metal: '#d9c27a', wallTex: 'wall_brick_sand_both' },
+  cafe:        { wall: '#e2c9a0', wallTrim: '#7a5334', floor: '#b98b57', wood: '#c08e55', accent: '#4a8c6f', metal: '#e8e2d4', wallTex: 'wall_timber_structure_horizontal' },
+  office:      { wall: '#dfe6ec', wallTrim: '#8a949c', floor: '#6f7d88', wood: '#c8ad8a', accent: '#3f6fb5', metal: '#b8c4cc', wallTex: 'wall_stone' },
+  shop:        { wall: '#f2e3c8', wallTrim: '#a8794a', floor: '#c9a877', wood: '#d2a068', accent: '#e08a2e', metal: '#dcd2c0', wallTex: 'wall_timber' },
+  supermarket: { wall: '#eef3f6', wallTrim: '#5f8fa8', floor: '#cfd8de', wood: '#d8b98c', accent: '#2f8f5b', metal: '#c2ced6', wallTex: 'wall_stone_depth' },
+  clinic:      { wall: '#f0f7f6', wallTrim: '#6fb3a8', floor: '#d7e6e4', wood: '#e0d3bd', accent: '#3fa08f', metal: '#e6eeee', wallTex: 'wall_brick_small_sand' },
+  school:      { wall: '#fbeed0', wallTrim: '#c58a3a', floor: '#c9955c', wood: '#d6a45f', accent: '#e0a92e', metal: '#dcd6c4', wallTex: 'wall_brick_sand_center' },
+  gym:         { wall: '#4c5763', wallTrim: '#2b323a', floor: '#3f4952', wood: '#8d99a5', accent: '#f26722', metal: '#aab6c0', wallTex: 'wall_brick_small_stone' },
+  garage:      { wall: '#5d666e', wallTrim: '#33393f', floor: '#6b7178', wood: '#9aa3ab', accent: '#e2b007', metal: '#b6c0c8', wallTex: 'wall_rock_structure' },
+  cinema:      { wall: '#3a2740', wallTrim: '#1e1425', floor: '#4a2230', wood: '#6d4a52', accent: '#b8332f', metal: '#c9a227', wallTex: 'wall_rock' },
+  bowling:     { wall: '#2f3b52', wallTrim: '#1a2233', floor: '#c79a54', wood: '#d2a465', accent: '#e8483f', metal: '#7fb0d8', wallTex: 'wall_brick_stone_center' },
+  home:        { wall: '#e8dfd0', wallTrim: '#9a7550', floor: '#c08f5c', wood: '#cf9a63', accent: '#c85a52', metal: '#d5cec2', wallTex: 'wall_timber_structure_vertical' },
+}
+const FALLBACK = { wall: '#ffffff', wallTrim: '#e59964', floor: '#e59964', wood: '#e59964', accent: '#f15e57', metal: '#bdd2d6' }
+
+/** Structure and furniture read different slots out of the same palette. */
+const wallMap = (p) => ({
+  _defaultMat: p.wallTex ? { color: '#' + wash(p.wall), map: p.wallTex } : p.wall,
+  wood: p.wallTrim,
+  metalDark: p.wallTrim,
+})
+const floorMap = (p) => ({ wood: p.floorTex ? { color: '#' + wash(p.floor), map: p.floorTex } : p.floor })
+const propMap = (p) => ({ wood: p.wood, carpet: p.accent, metal: p.metal })
+
+// GLB clones share their materials, so tinting in place would repaint every
+// copy. One clone per (source material, target colour) instead.
+const tintCache = new Map()
+
+function tint(model, map) {
+  const swap = (m) => {
+    const spec = map[m.name]
+    if (!spec) return m
+    const { color, map: texName } = typeof spec === 'string' ? { color: spec } : spec
+    const key = `${m.uuid}|${color}|${texName ?? ''}`
+    let out = tintCache.get(key)
+    if (!out) {
+      out = m.clone()
+      out.color = new THREE.Color(color)
+      if (texName) { out.map = texture(texName); out.needsUpdate = true }
+      tintCache.set(key, out)
+    }
+    return out
+  }
+  model.traverse((o) => {
+    if (!o.isMesh) return
+    o.material = Array.isArray(o.material) ? o.material.map(swap) : swap(o.material)
+  })
+}
+
+// ── Placement ────────────────────────────────────────────────────────
+// Every Kenney Furniture Kit model is corner-anchored: the origin sits on
+// the floor plane and the geometry runs into +X and -Z. A floor tile is
+// exactly 1 unit, a wall 1 long and 0.05 thick, so structure needs no
+// measuring at all — the anchor points below are exact and gapless.
+
+/** Structure: drop the model on its authored anchor, no bounding box involved. */
+function placeAnchored(model, x, z, rotY) {
+  model.rotation.set(0, rotY ?? 0, 0)
+  model.position.set(x, 0, z)
+}
+
+/**
+ * Furniture: centre the footprint on (x, z). The box is measured *after*
+ * rotating — measuring first and rotating later swings the model off its
+ * mark by its own dimensions, which is what tore the walls apart.
+ */
+function placeCentred(model, x, z, rotY, extraScale) {
+  model.scale.setScalar(extraScale ?? 1)
+  model.rotation.set(0, rotY ?? 0, 0)
+  model.position.set(0, 0, 0)
+  model.updateMatrixWorld(true)
   const box = new THREE.Box3().setFromObject(model)
   const c = new THREE.Vector3(); box.getCenter(c)
   model.position.set(x - c.x, -box.min.y, z - c.z)
-  model.rotation.y = rotY ?? 0
 }
 
 // ── Room builder ─────────────────────────────────────────────────────
 let roomGroup = null
+/** Wall segments grouped by the edge they sit on, for the camera-facing cull. */
+let walls = { n: [], s: [], e: [], w: [] }
+const roomCentre = new THREE.Vector3()
+
+/**
+ * Habbo-style cutaway: a wall whose outward normal points back at the camera
+ * stands between the viewer and the room, so it is hidden. Orbiting swaps
+ * which two that is.
+ */
+const OUTWARD = { n: [0, -1], s: [0, 1], w: [-1, 0], e: [1, 0] }
+
+function updateWallCull() {
+  const dx = camera.position.x - roomCentre.x
+  const dz = camera.position.z - roomCentre.z
+  for (const side of ['n', 's', 'e', 'w']) {
+    const [ox, oz] = OUTWARD[side]
+    const facingCamera = ox * dx + oz * dz > 0
+    for (const w of walls[side]) w.visible = !facingCamera
+  }
+}
 
 async function buildRoom(layout) {
   const info = document.getElementById('info')
   info.textContent = `Building ${layout.name}…`
 
-  // Collect all model names needed
-  const needed = new Set(['floorFull', 'wall', 'wallDoorway', 'wallWindow', 'wallCorner'])
-  for (const it of layout.items) needed.add(it.model)
+  // Collect every model the layout needs, per pack
+  const needed = new Map()
+  for (const n of ['floorFull', 'wall', 'wallDoorway', 'wallWindow']) needed.set(keyOf(n), [n, 'furniture'])
+  for (const it of layout.items) needed.set(keyOf(it.model, it.pack), [it.model, it.pack ?? 'furniture'])
 
-  // Load any models not yet cached
-  const toLoad = [...needed].filter(n => !modelCache.has(n))
+  const toLoad = [...needed.entries()].filter(([k]) => !modelCache.has(k))
   for (let i = 0; i < toLoad.length; i++) {
-    info.textContent = `Loading ${toLoad[i]} (${i + 1}/${toLoad.length})`
-    await ensureModel(toLoad[i])
+    const [, [name, pack]] = toLoad[i]
+    info.textContent = `Loading ${name} (${i + 1}/${toLoad.length})`
+    await ensureModel(name, pack)
   }
 
   if (roomGroup) scene.remove(roomGroup)
@@ -171,42 +304,56 @@ async function buildRoom(layout) {
 
   const { width, depth, door, windows, items } = layout
   const winSet = new Set((windows || []).map(w => `${w.wall}-${w.pos}`))
+  const palette = { ...FALLBACK, ...(PALETTES[layout.kind] ?? {}), ...(layout.palette ?? {}) }
+  const wallTint = wallMap(palette), floorTint = floorMap(palette), propTint = propMap(palette)
 
-  // Floor
+  // Floor — tile (x, z) covers [x, x+1] x [z, z+1]
   for (let x = 0; x < width; x++) {
     for (let z = 0; z < depth; z++) {
       const tile = cloneModel('floorFull')
       if (tile) {
-        placeModel(tile, (x + 0.5) * TILE, (z + 0.5) * TILE, 0)
+        placeAnchored(tile, x * TILE, (z + 1) * TILE, 0)
+        tint(tile, floorTint)
         roomGroup.add(tile)
       }
     }
   }
 
-  // Walls
+  // Walls. A segment runs +X from its anchor with the 0.05 thickness behind
+  // it, so each edge gets the anchor and rotation that puts the painted face
+  // inwards and the thickness outside the floor.
+  const segment = (side, i) =>
+    (door.wall === side && i === door.pos) ? 'wallDoorway'
+      : winSet.has(`${side}-${i}`) ? 'wallWindow'
+      : 'wall'
+
+  walls = { n: [], s: [], e: [], w: [] }
+  const addWall = (side, model, x, z, rot) => {
+    if (!model) return
+    placeAnchored(model, x, z, rot)
+    tint(model, wallTint)
+    walls[side].push(model)
+    roomGroup.add(model)
+  }
   for (let x = 0; x < width; x++) {
-    const sType = (door.wall === 's' && x === door.pos) ? 'wallDoorway' : winSet.has(`s-${x}`) ? 'wallWindow' : 'wall'
-    const sW = cloneModel(sType)
-    if (sW) { placeModel(sW, (x + 0.5) * TILE, 0, 0); roomGroup.add(sW) }
-    const nType = (door.wall === 'n' && x === door.pos) ? 'wallDoorway' : winSet.has(`n-${x}`) ? 'wallWindow' : 'wall'
-    const nW = cloneModel(nType)
-    if (nW) { placeModel(nW, (x + 0.5) * TILE, depth * TILE, Math.PI); roomGroup.add(nW) }
+    addWall('n', cloneModel(segment('n', x)), x * TILE, 0, 0)
+    addWall('s', cloneModel(segment('s', x)), (x + 1) * TILE, depth * TILE, Math.PI)
   }
   for (let z = 0; z < depth; z++) {
-    const wType = (door.wall === 'w' && z === door.pos) ? 'wallDoorway' : winSet.has(`w-${z}`) ? 'wallWindow' : 'wall'
-    const wW = cloneModel(wType)
-    if (wW) { placeModel(wW, 0, (z + 0.5) * TILE, Math.PI / 2); roomGroup.add(wW) }
-    const eType = (door.wall === 'e' && z === door.pos) ? 'wallDoorway' : winSet.has(`e-${z}`) ? 'wallWindow' : 'wall'
-    const eW = cloneModel(eType)
-    if (eW) { placeModel(eW, width * TILE, (z + 0.5) * TILE, -Math.PI / 2); roomGroup.add(eW) }
+    addWall('w', cloneModel(segment('w', z)), 0, (z + 1) * TILE, Math.PI / 2)
+    addWall('e', cloneModel(segment('e', z)), width * TILE, z * TILE, -Math.PI / 2)
   }
+  roomCentre.set((width / 2) * TILE, 0, (depth / 2) * TILE)
 
-  // Furniture
+  // Furniture and props
   for (const item of items) {
-    const obj = cloneModel(item.model)
+    const pack = item.pack ?? 'furniture'
+    const obj = cloneModel(item.model, pack)
     if (!obj) continue
-    placeModel(obj, item.x * TILE, item.z * TILE, item.rotY ?? 0, item.scale)
+    placeCentred(obj, item.x * TILE, item.z * TILE, item.rotY ?? 0, PACKS[pack].scale * (item.scale ?? 1))
     if (item.yOffset) obj.position.y += item.yOffset
+    // The food pack carries its own baked colours; only furniture takes the palette.
+    if (pack === 'furniture') tint(obj, item.tint ? { ...propTint, ...item.tint } : propTint)
     roomGroup.add(obj)
   }
 
@@ -233,6 +380,7 @@ window.addEventListener('resize', () => {
 function animate() {
   requestAnimationFrame(animate)
   controls.update()
+  updateWallCull()
   renderer.render(scene, camera)
 }
 
@@ -252,8 +400,6 @@ for (let i = 0; i < rooms.length; i++) {
 
 select.addEventListener('change', () => buildRoom(rooms[Number(select.value)]))
 
-info.textContent = 'Calibrating scale…'
-await calibrate()
 await buildRoom(rooms[0])
 animate()
 </script>
