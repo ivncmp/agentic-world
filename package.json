@@ -19,7 +19,8 @@
     "format": "prettier --write \"src/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.ts\"",
     "clean": "rm -rf dist",
-    "dev": "docker compose up -d"
+    "dev": "docker compose up -d",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -28,6 +29,8 @@
     "@types/three": "^0.185.4",
     "@types/ws": "^8.18.1",
     "eslint": "^10.9.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.4.1",
     "prettier": "^3.9.6",
     "three": "^0.185.1",
     "typescript": "^5.9.0",
@@ -42,5 +45,11 @@
     "ioredis": "^6.0.0",
     "pg": "^8.23.0",
     "ws": "^8.21.3"
+  },
+  "lint-staged": {
+    "src/**/*.ts": [
+      "prettier --write",
+      "eslint --fix"
+    ]
   }
 }

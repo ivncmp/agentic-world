@@ -35,6 +35,13 @@ pnpm check    # tsc --noEmit + eslint + prettier --check + vitest
 That is the whole gate, and it must pass. `pnpm lint:fix` and `pnpm format`
 fix most of what it complains about.
 
+A **pre-commit hook** runs Prettier and ESLint over just your staged files, so
+most of this is fixed before you notice. CI then runs the full `pnpm check`,
+plus `pnpm build`, `pnpm viewer:build` and a Docker image build — the last three
+catch what type-checking cannot: a broken project build, a viewer that
+type-checks but will not bundle, and a Dockerfile that stopped building. That
+last one matters because `docker compose up` is how anyone actually runs this.
+
 Prettier owns formatting, so ESLint carries no stylistic rules. Two of its rules
 are project constraints rather than preferences, and they exist for the reasons
 in the next section: **no `Math.random` or `Date.now` inside `src/engine/`**, and

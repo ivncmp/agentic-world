@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# A new push to the same branch makes the previous run irrelevant.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Types, lint, format, tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Reads the pnpm version from package.json's packageManager field.
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # tsc --noEmit, eslint, prettier --check, vitest — the same gate a
+      # contributor runs locally, so CI can never disagree with `pnpm check`.
+      - run: pnpm check
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # `pnpm check` only type-checks. These two catch what it cannot: a broken
+      # project build, and a viewer that type-checks but will not bundle.
+      - run: pnpm build
+      - run: pnpm viewer:build
+
+  docker:
+    name: Docker images
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # The compose file is how anyone actually runs this, so a Dockerfile that
+      # stopped building is a broken quick start even with every test green.
+      - run: docker compose build engine mcp
+        env:
+          POSTGRES_PASSWORD: ci
+          ADMIN_SECRET: ci
