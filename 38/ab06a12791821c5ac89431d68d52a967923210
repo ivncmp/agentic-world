@@ -1,0 +1,23 @@
+docker-compose.yml
+  s_0c69fc4bd2bb00::t_e6db07357d69c8 146-159,170-174,180-191,205-210
+infra/dbrain/Dockerfile
+  s_0c69fc4bd2bb00::t_85321a1a3fd5cf 6
+docker-compose.override.yml
+  s_0c69fc4bd2bb00::t_8992c59b59fea1 16-31
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "38ab06a12791821c5ac89431d68d52a967923210",
+  "prompts": {},
+  "sessions": {
+    "s_0c69fc4bd2bb00": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fbf4acf4-b682-40d7-8694-7837a363537f",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Iván Campillo <ivncmp@gmail.com>"
+    }
+  }
+}
