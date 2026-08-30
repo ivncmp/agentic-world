@@ -13,3 +13,19 @@ services:
       - ./tsconfig.viewer.json:/app/tsconfig.viewer.json
     environment:
       ENGINE_URL: http://engine:7070
+    # The production check uses wget, which busybox gives nginx:alpine. This
+    # image is node:22-slim and has neither wget nor curl — but it does have
+    # node, and Vite listens on the same port.
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:80/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      # Vite installs and pre-bundles dependencies on first boot.
+      start_period: 40s

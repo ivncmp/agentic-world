@@ -3,7 +3,7 @@
 # anyone cloning it can `docker compose up` without checking out dtoolkit.
 FROM node:22-slim
 
-ARG DBRAIN_VERSION=0.2.1
+ARG DBRAIN_VERSION=1.0.1
 
 # better-sqlite3 is a native module; build deps are needed if no prebuilt
 # binary matches the platform. Purged afterwards to keep the image small.
