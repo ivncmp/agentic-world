@@ -107,7 +107,9 @@ describe('tick', () => {
 })
 
 describe('owner constraints reach the reflex layer', () => {
-  /** Hungry with nothing in their pocket to buy food — the only state that robs. */
+  /**
+   * Hungry with nothing in their pocket to buy food — the only state that robs.
+   */
   const desperate = (constraints: string[]) =>
     agent(
       'thief',
@@ -161,7 +163,9 @@ describe('owner constraints reach the reflex layer', () => {
     expect(r.events.some((e) => e.type === 'theft')).toBe(false)
   })
 
-  /** You do not rob the people you are fond of, however hungry you are. */
+  /**
+   * You do not rob the people you are fond of, however hungry you are.
+   */
   it('will not rob someone it is fond of', () => {
     const thief = desperate([])
     const friendly = new Map([

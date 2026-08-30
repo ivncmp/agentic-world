@@ -3,24 +3,34 @@
  * and DOM sidebar can both subscribe.
  */
 
+/**
+ * One agent as the engine sees them this tick, including their walk progress.
+ */
 export type AgentSnapshot = {
   id: string
   name: string
   occupation: string
   x: number
   y: number
-  /** Journey endpoints and how far along it is, for street-following walks. */
+  /**
+   * Journey endpoints and how far along it is, for street-following walks.
+   */
   from: { x: number; y: number }
   to: { x: number; y: number }
   progress: number
   state: string
   at: string
-  /** Who this agent is mid-conversation with, if anyone. */
+  /**
+   * Who this agent is mid-conversation with, if anyone.
+   */
   partner: string | null
   money: number
   arrears: number
 }
 
+/**
+ * A venue, with the tile it stands on. Sent once in the world payload.
+ */
 export type LocationInfo = {
   id: string
   kind: string
@@ -30,13 +40,19 @@ export type LocationInfo = {
   y: number
 }
 
-/** A city block and what it is for. Roles come from the engine's layout. */
+/**
+ * A city block and what it is for. Roles come from the engine's layout.
+ */
 export type BlockInfo = {
   bx: number
   by: number
   role: 'plaza' | 'green' | 'civic' | 'residential' | 'harbor' | 'sea'
 }
 
+/**
+ * A rectangle of water. The viewer expands these to tiles and reclassifies any
+ * river tile touching the sea, so an estuary does not grow a bridge.
+ */
 export type WaterRegion = {
   kind: 'river' | 'sea' | 'lake'
   x0: number
@@ -45,6 +61,11 @@ export type WaterRegion = {
   y1: number
 }
 
+/**
+ * The static city, fetched once at boot. Note it carries the grid and the
+ * street period rather than a tilemap: the viewer rebuilds the streets from the
+ * same rule the generator used, so the two cannot disagree.
+ */
 export type WorldInfo = {
   city: {
     name: string
@@ -58,6 +79,9 @@ export type WorldInfo = {
   agents: { id: string; name: string; occupation: string }[]
 }
 
+/**
+ * Pushed every tick over `/live`: the clock, every agent, and cognition counters.
+ */
 export type StateMsg = {
   type: 'state'
   tick: number
@@ -77,6 +101,9 @@ export type StateMsg = {
   }
 }
 
+/**
+ * One village-log entry. `detail` shape depends on `kind`.
+ */
 export type FeedItem = {
   tick: number
   time: string
@@ -100,7 +127,10 @@ export type FeedItem = {
   }
 }
 
-/** The full card behind a click on an agent. Mirrors the engine's /agent shape. */
+/**
+ * The full card behind a click on an agent. Mirrors the engine's /agent shape.
+ * The agent card, fetched on demand rather than pushed every tick.
+ */
 export type AgentDetail = {
   id: string
   name: string
@@ -129,6 +159,9 @@ export type AgentDetail = {
 
 type Listener<T> = (data: T) => void
 
+/**
+ * The only thing that talks to the engine. Read-only: it fetches and listens.
+ */
 export class EngineConnection {
   private ws: WebSocket | null = null
   private stateListeners: Listener<StateMsg>[] = []

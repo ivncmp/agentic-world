@@ -9,6 +9,9 @@
 import type { AgentId, Deliberation } from '../../agents/agent.js'
 import type { WorldState } from '../tick.js'
 
+/**
+ * The shape the deliberation route returns — biases and people to seek out.
+ */
 export type DeliberationOutcome = {
   biases: Deliberation['biases']
   seekScene: Deliberation['seekScene']
@@ -16,6 +19,9 @@ export type DeliberationOutcome = {
   thought: string
 }
 
+/**
+ * Stores the new intent on the agent, stamped with the tick so it can expire.
+ */
 export function applyDeliberation(
   state: WorldState,
   agentId: AgentId,

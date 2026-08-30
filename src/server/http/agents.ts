@@ -16,7 +16,9 @@ import { json, failFrom, round2 } from './respond.js'
 import type { World } from '../world/context.js'
 import type { LiveFeed } from '../world/feed.js'
 
-/** How much a relationship matters, for ordering the agent card's list. */
+/**
+ * How much a relationship matters, for ordering the agent card's list.
+ */
 const weight = (r: { affection: number; grievance: number; debt: number }): number =>
   Math.abs(r.affection) + r.grievance + Math.abs(r.debt) / 100
 
@@ -84,7 +86,9 @@ export async function agentDetail(world: World, id: string): Promise<unknown> {
   }
 }
 
-/** Validate a create-agent request body into the input the factory accepts. */
+/**
+ * Validate a create-agent request body into the input the factory accepts.
+ */
 function parseCreateInput(world: World, raw: Record<string, unknown>): CreateAgentInput {
   const name = typeof raw.name === 'string' ? raw.name.trim() : ''
   if (name === '') throw new Error('name is required')

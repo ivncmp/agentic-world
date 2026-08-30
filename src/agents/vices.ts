@@ -1,14 +1,19 @@
-import type { LocationKind } from '../world/locations.js'
-import { timesPerDay } from '../engine/clock.js'
-
 /**
  * Vices are not low values — they are active pulls with a trigger, a growing
  * urge and a cost. DESIGN.md makes two mandatory per agent: they are the
  * designed friction that stops the world becoming uniformly pleasant.
  */
+import type { LocationKind } from '../world/locations.js'
+import { timesPerDay } from '../engine/clock.js'
+
+/**
+ * Where a vice bites, how fast it builds, and what indulging it costs.
+ */
 export type ViceDefinition = {
   label: string
-  /** Where the urge is provoked. */
+  /**
+   * Where the urge is provoked.
+   */
   triggers: readonly LocationKind[]
   /**
    * How many times a day the urge crosses VICE_URGE_THRESHOLD if left untended.
@@ -17,9 +22,13 @@ export type ViceDefinition = {
    * "0.0035" quietly would not.
    */
   bitesPerDay: number
-  /** Credits burned per indulgence. */
+  /**
+   * Credits burned per indulgence.
+   */
   moneyCost: number
-  /** How much an active urge raises the odds of a scene. */
+  /**
+   * How much an active urge raises the odds of a scene.
+   */
   conflictWeight: number
 }
 
@@ -81,17 +90,23 @@ export const VICE_CATALOG = {
  */
 export type ViceKind = keyof typeof VICE_CATALOG
 
-/** A vice as carried by an agent: the kind plus its current pressure. */
-/** One agent's live pull toward one vice. `urge` climbs until it is indulged. */
+/**
+ * A vice as carried by an agent: the kind, plus an `urge` that climbs until it
+ * is indulged.
+ */
 export type ViceInstance = {
   kind: ViceKind
   urge: number // 0..1
 }
 
-/** The static definition behind an agent's vice: label, trigger, cost. */
+/**
+ * The static definition behind an agent's vice: label, trigger, cost.
+ */
 export const viceDef = (kind: ViceKind): ViceDefinition => VICE_CATALOG[kind]
 
-/** Per-tick urge growth for a vice, derived from its daily frequency. */
-/** Per-tick urge growth that reaches `threshold` at the vice's own frequency. */
+/**
+ * Per-tick urge growth, derived so a vice reaches `threshold` at its own daily
+ * frequency.
+ */
 export const urgeGrowth = (kind: ViceKind, threshold: number): number =>
   timesPerDay(VICE_CATALOG[kind].bitesPerDay, threshold)

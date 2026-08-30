@@ -13,10 +13,14 @@ export const VALUE_AXES = [
   'pride', // refuse help vs ask for it
 ] as const
 
-/** Derived from the array, so adding an axis there widens the type here. */
+/**
+ * Derived from the array, so adding an axis there widens the type here.
+ */
 export type ValueAxis = (typeof VALUE_AXES)[number]
 
-/** Every axis runs −1..+1. */
+/**
+ * Every axis runs −1..+1.
+ */
 export type ValueVector = Record<ValueAxis, number>
 
 /**
@@ -42,16 +46,21 @@ export type PersonalityValues = {
 
 const DAY_MS = 86_400_000
 
-/** Holds an axis inside −1..+1 after drift or guidance has been added. */
+/**
+ * Holds an axis inside −1..+1 after drift or guidance has been added.
+ */
 export const clampAxis = (n: number): number => Math.max(-1, Math.min(1, n))
 
-/** A neutral personality — the starting point creation adjusts from. */
+/**
+ * A neutral personality — the starting point creation adjusts from.
+ */
 export function zeroVector(): ValueVector {
   return Object.fromEntries(VALUE_AXES.map((a) => [a, 0])) as ValueVector
 }
 
-/** Remaining strength of a guidance entry after exponential half-life decay. */
 /**
+ * Remaining strength of a guidance entry after exponential half-life decay.
+ *
  * What a piece of guidance is still worth, given how long ago it was given.
  * Halves every `halfLifeDays`, so raising is a habit rather than a command.
  */
@@ -65,14 +74,6 @@ export function decayedGuidance(entry: GuidanceEntry, now: number): number {
  *
  * Drift is deliberately allowed to overpower base: an agent whose life
  * contradicts how its owner wrote it is the story working, not a bug.
- */
-/**
- * Collapses the three strata into the values the reflex layer actually reads:
- * `clamp(base + drift + decayed guidance)`.
- *
- * Note there is no floor protecting `base`. Drift may overpower what the owner
- * authored, deliberately — an agent robbed often enough becomes someone who
- * distrusts, whatever their author intended.
  */
 export function resolveValues(v: PersonalityValues, now: number): ValueVector {
   const out = zeroVector()

@@ -10,7 +10,10 @@ import { occupationDef } from '../../world/occupations.js'
 import type { WorldEvent } from '../../engine/tick.js'
 import type { World } from './context.js'
 
-/** One line in the village log. */
+/**
+ * One line in the village log. One line in the village log. `detail` carries
+ * whatever the viewer renders.
+ */
 export type FeedItem = {
   tick: number
   time: string
@@ -19,7 +22,10 @@ export type FeedItem = {
   detail?: unknown
 }
 
-/** Cognition counters shown in the viewer's status bar. */
+/**
+ * Cognition counters shown in the viewer's status bar. Queue and spend
+ * counters, shown in the viewer's status bar every tick.
+ */
 export type CognitionStats = {
   pending: number
   done: number
@@ -30,10 +36,16 @@ export type CognitionStats = {
   breakdown: Record<string, { queued: number; running: number }>
 }
 
-/** How much backlog a client joining mid-run receives. */
+/**
+ * How much backlog a client joining mid-run receives.
+ */
 const BACKLOG = 60
 const MAX_FEED = 300
 
+/**
+ * The village log and the state snapshot. One-way: it pushes, and never reads
+ * anything back from a client.
+ */
 export class LiveFeed {
   private readonly items: FeedItem[] = []
   private readonly clients = new Set<WebSocket>()
@@ -43,7 +55,9 @@ export class LiveFeed {
     private readonly stats: () => CognitionStats,
   ) {}
 
-  /** Append a feed line and push it to every connected client. */
+  /**
+   * Append a feed line and push it to every connected client.
+   */
   publish(kind: string, text: string, detail?: unknown): void {
     const item: FeedItem = {
       tick: this.world.state.tick,
@@ -66,7 +80,9 @@ export class LiveFeed {
     return this.items.slice(-BACKLOG)
   }
 
-  /** Attach a client and send it the world as it stands, so it is never blank. */
+  /**
+   * Attach a client and send it the world as it stands, so it is never blank.
+   */
   attach(ws: WebSocket): void {
     this.clients.add(ws)
     ws.send(JSON.stringify({ type: 'hello', feed: this.recent() }))
@@ -74,7 +90,9 @@ export class LiveFeed {
     ws.on('close', () => this.clients.delete(ws))
   }
 
-  /** The whole world as the viewer needs it, rebuilt each tick. */
+  /**
+   * The whole world as the viewer needs it, rebuilt each tick.
+   */
   snapshot(): unknown {
     const { state, byId } = this.world
     return {
@@ -129,7 +147,9 @@ export class LiveFeed {
     }
   }
 
-  /** Turn the tick's events into feed lines. Silent events are simply skipped. */
+  /**
+   * Turn the tick's events into feed lines. Silent events are simply skipped.
+   */
   describe(e: WorldEvent): void {
     const { nameOf, placeOf } = this.world
     switch (e.type) {

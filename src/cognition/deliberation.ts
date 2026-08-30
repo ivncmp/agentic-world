@@ -19,7 +19,9 @@ import type { Memory } from '../memory/store.js'
 import type { ModelProvider, CompletionResult } from './provider.js'
 import { parseJsonResponse, asString } from './json.js'
 
-/** Dispositions, never actions: what to lean toward, who to seek, what to open with. */
+/**
+ * Dispositions, never actions: what to lean toward, who to seek, what to open with.
+ */
 export type DeliberationOutcome = {
   biases: ActionBias[]
   seekScene: SeekScene[]
@@ -27,7 +29,9 @@ export type DeliberationOutcome = {
   thought: string
 }
 
-/** Recent memories, current relationships, and who exists to be sought out. */
+/**
+ * Recent memories, current relationships, and who exists to be sought out.
+ */
 export type DeliberationInput = {
   agent: Agent
   values: ValueVector
@@ -37,7 +41,9 @@ export type DeliberationInput = {
   allAgentNames: { id: AgentId; name: string }[]
 }
 
-/** The outcome plus its metering. */
+/**
+ * The outcome plus its metering.
+ */
 export type DeliberationResult = {
   outcome: DeliberationOutcome
   prompt: string
@@ -69,7 +75,9 @@ const traitLine = (v: ValueVector): string =>
     .map((a) => `${v[a] > 0 ? 'high' : 'low'} ${a}`)
     .join(', ') || 'unremarkable'
 
-/** Asks what the agent wants next — explicitly not what they should do next. */
+/**
+ * Asks what the agent wants next — explicitly not what they should do next.
+ */
 export function buildDeliberationPrompt(input: DeliberationInput): string {
   const { agent, values, hour } = input
   const needs = agent.needs
@@ -188,7 +196,9 @@ export function parseDeliberation(
   return { biases, seekScene, conversationSeed, thought }
 }
 
-/** One call. `validIds` is what keeps `seekScene` pointing at real people. */
+/**
+ * One call. `validIds` is what keeps `seekScene` pointing at real people.
+ */
 export async function deliberate(
   input: DeliberationInput,
   provider: ModelProvider,

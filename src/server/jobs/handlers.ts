@@ -22,7 +22,9 @@ import type { World } from '../world/context.js'
 import type { LiveFeed } from '../world/feed.js'
 import type { Agent, Relationship } from '../../agents/agent.js'
 
-/** A job that costs nothing: the agent is gone, or the call failed. */
+/**
+ * A job that costs nothing: the agent is gone, or the call failed.
+ */
 const ZERO: CallResult = { costUsd: 0, inputTokens: 0, outputTokens: 0 }
 
 /**
@@ -38,17 +40,26 @@ const GOSSIP_MIN_ENCOUNTERS = 5
  */
 const REACTIVE_DELIBERATION_THRESHOLD = 4
 
-/** Minimum gap between two deliberations for the same agent. */
+/**
+ * Minimum gap between two deliberations for the same agent.
+ */
 const DELIBERATION_COOLDOWN_TICKS = TICKS_PER_HOUR * 2
 
+/**
+ * What every handler needs: the world, the feed, and a way to queue more work.
+ */
 export type JobDeps = {
   world: World
   feed: LiveFeed
-  /** Queue another job — used for reactive deliberation. */
+  /**
+   * Queue another job — used for reactive deliberation.
+   */
   submit: (job: Job) => Promise<void>
 }
 
-/** Routes a job to its handler. This is the callback the worker runs. */
+/**
+ * Routes a job to its handler. This is the callback the worker runs.
+ */
 export async function handleJob(job: Job, deps: JobDeps): Promise<CallResult> {
   switch (job.kind) {
     case 'scene':
@@ -62,7 +73,9 @@ export async function handleJob(job: Job, deps: JobDeps): Promise<CallResult> {
   }
 }
 
-/** Every relationship this agent has, paired with the other party's name. */
+/**
+ * Every relationship this agent has, paired with the other party's name.
+ */
 function knownTo(world: World, id: string): { id: string; name: string; rel: Relationship }[] {
   return [...world.state.relationships.entries()]
     .filter(([k]) => k.split(':').includes(id))
@@ -73,7 +86,9 @@ function knownTo(world: World, id: string): { id: string; name: string; rel: Rel
     .filter((x) => x.id !== '')
 }
 
-/** People both participants know well enough to have opinions worth trading. */
+/**
+ * People both participants know well enough to have opinions worth trading.
+ */
 function gossipSubjects(world: World, a: Agent, b: Agent): ThirdParty[] {
   return world.state.agents
     .filter((c) => c.id !== a.id && c.id !== b.id)

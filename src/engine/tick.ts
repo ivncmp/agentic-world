@@ -70,34 +70,52 @@ export type WorldState = {
   tick: number
   agents: readonly Agent[]
   locations: readonly Location[]
-  /** Keyed by pairKey(a, b). */
+  /**
+   * Keyed by pairKey(a, b).
+   */
   relationships: ReadonlyMap<string, Relationship>
   scenesTodayByAgent: ReadonlyMap<AgentId, number>
-  /** Scenes per pair today, keyed by pairKey. Damps repeat conversations. */
+  /**
+   * Scenes per pair today, keyed by pairKey. Damps repeat conversations.
+   */
   scenesTodayByPair: ReadonlyMap<string, number>
-  /** Free, wordless encounters today, keyed by pairKey. */
+  /**
+   * Free, wordless encounters today, keyed by pairKey.
+   */
   passingTodayByPair: ReadonlyMap<string, number>
-  /** Agents whose day contained something worth consolidating tonight. */
+  /**
+   * Agents whose day contained something worth consolidating tonight.
+   */
   notableToday: ReadonlySet<AgentId>
-  /** Workplace id -> remaining vacancies. Hiring consumes one. */
+  /**
+   * Workplace id -> remaining vacancies. Hiring consumes one.
+   */
   openings: ReadonlyMap<LocationId, number>
 }
 
-/** Everything the loop needs from outside itself. Injected so it stays pure. */
+/**
+ * Everything the loop needs from outside itself. Injected so it stays pure.
+ */
 export type TickDeps = {
   now: number
   random: () => number
   ticksPerDay?: number
   budget?: SceneBudget
-  /** Override when the caller knows how long its provider really takes. */
+  /**
+   * Override when the caller knows how long its provider really takes.
+   */
   scenePatienceTicks?: number
 }
 
-/** The new world, what happened, and what it would like someone to think about. */
+/**
+ * The new world, what happened, and what it would like someone to think about.
+ */
 export type TickResult = {
   state: WorldState
   events: WorldEvent[]
-  /** Queued for the cognition worker. The tick itself never waits on these. */
+  /**
+   * Queued for the cognition worker. The tick itself never waits on these.
+   */
   sceneJobs: SceneCandidate[]
   reflectionJobs: AgentId[]
   deliberationJobs: AgentId[]
@@ -125,8 +143,9 @@ export const SCENE_PATIENCE_TICKS = minutes(15)
  */
 export const PASSING_AFFECTION = 0.02
 
-/** How much bad blood one robbery leaves behind. */
-/** What being robbed adds to bad blood. Three thefts make an enemy. */
+/**
+ * How much bad blood one robbery leaves behind. Three thefts make an enemy.
+ */
 export const GRIEVANCE_PER_THEFT = 0.35
 
 /**
@@ -137,26 +156,37 @@ export const GRIEVANCE_PER_THEFT = 0.35
  */
 export const GRIEVANCE_DAILY_DECAY = 0.95
 
-/** Layer 1.5: deliberation fires every 12 game-hours. */
-/** Minimum ticks between deliberations for one agent — 12 game hours. */
+/**
+ * Layer 1.5: the minimum gap between one agent's deliberations — 12 game hours.
+ */
 export const DELIBERATION_INTERVAL = 144
-/** Deliberation results expire after 12 game-hours. */
-/** How long a plan steers behaviour before it expires and stops mattering. */
+/**
+ * How long a plan steers behaviour before it expires — 12 game hours.
+ */
 export const DELIBERATION_TTL = 144
 
-/** Crisis monologue cooldown: 4 game-hours between inner thoughts. */
+/**
+ * Crisis monologue cooldown: 4 game-hours between inner thoughts.
+ */
 export const CRISIS_COOLDOWN = 48
 
-/** Arrears thresholds, in multiples of the agent's rent. */
-/** Arrears at this multiple of rent produce a warning event. */
+/**
+ * Arrears at this multiple of the agent's rent produce a warning event.
+ */
 export const ARREARS_WARNING_FACTOR = 2
-/** And at this multiple, an eviction — currently emitted but not acted on. */
+/**
+ * And at this multiple, an eviction — currently emitted but not acted on.
+ */
 export const ARREARS_EVICTION_FACTOR = 5
-/** Fraction of each wage tick diverted to pay down arrears. */
-/** Share of wages that would go to arrears once garnishment is wired up. */
+/**
+ * Fraction of each wage tick diverted to pay down arrears. Share of wages that
+ * would go to arrears once garnishment is wired up.
+ */
 export const GARNISHMENT_RATE = 0.25
 
-/** Events worth tracking in the day's notable set. */
+/**
+ * Events worth tracking in the day's notable set.
+ */
 const isNotable = (e: WorldEvent): AgentId[] => {
   switch (e.type) {
     case 'theft':
@@ -195,17 +225,15 @@ const emptyRel = (): Relationship => ({
   lastInteractionTick: null,
 })
 
-/** Money is displayed and reasoned about by people; keep it in whole credits. */
+/**
+ * Money is displayed and reasoned about by people; keep it in whole credits.
+ */
 const credits = (n: number) => Math.round(n * 100) / 100
 
 /**
  * One world step. Pure, synchronous, allocation-light: no I/O, no model calls,
  * no awaiting. Expensive cognition leaves as queued jobs and resolves later —
  * a tick that lags behind never blocks the clock.
- */
-/**
- * Advances the world by one tick. Pure — see the file header for why that is
- * load-bearing rather than stylistic.
  */
 export function tick(state: WorldState, deps: TickDeps): TickResult {
   const ticksPerDay = deps.ticksPerDay ?? TICKS_PER_DAY

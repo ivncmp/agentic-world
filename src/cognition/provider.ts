@@ -7,13 +7,17 @@
  */
 import { DProxyClient, type AskOptions, type AskResponse } from '@dtoolkit/sdk'
 
-/** `purpose` selects the per-route model and tags the call for metering. */
+/**
+ * `purpose` selects the per-route model and tags the call for metering.
+ */
 export type CompletionRequest = {
   prompt: string
   purpose: 'scene' | 'reflection' | 'deliberation' | 'crisis'
 }
 
-/** The answer plus what it cost. Every call is metered — that is a hard rule. */
+/**
+ * The answer plus what it cost. Every call is metered — that is a hard rule.
+ */
 export type CompletionResult = {
   text: string
   model: string
@@ -32,12 +36,16 @@ export interface ModelProvider {
   complete(req: CompletionRequest): Promise<CompletionResult>
 }
 
-/** Where dproxy lives, and which model each route should ask for. */
+/**
+ * Where dproxy lives, and which model each route should ask for.
+ */
 export type DproxyOptions = {
   url: string
   apiKey?: string
   timeoutMs?: number
-  /** Model override per purpose. */
+  /**
+   * Model override per purpose.
+   */
   models?: Partial<Record<CompletionRequest['purpose'], string>>
 }
 

@@ -10,7 +10,9 @@ import type { Pool } from 'pg'
 
 const hash = (token: string): string => createHash('sha256').update(token).digest('hex')
 
-/** Owner records and token verification. Tokens are hashed, never stored raw. */
+/**
+ * Owner records and token verification. Tokens are hashed, never stored raw.
+ */
 export class OwnerRepository {
   constructor(private readonly pool: Pool) {}
 
@@ -43,7 +45,9 @@ export class OwnerRepository {
     return row.secret_hash === hash(token)
   }
 
-  /** Which agents does this owner control? */
+  /**
+   * Which agents does this owner control?
+   */
   async agentIds(ownerId: string): Promise<string[]> {
     const r = await this.pool.query<{ id: string }>('SELECT id FROM agents WHERE owner_id = $1', [ownerId])
     return r.rows.map((row) => row.id)

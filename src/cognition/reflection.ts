@@ -33,29 +33,42 @@ import { parseJsonResponse, asString } from './json.js'
  * Cost scales with agent count, not activity: one call each, every night.
  */
 
-/** One night's output: prose for the human, a memory for the agent, and drift. */
+/**
+ * One night's output: prose for the human, a memory for the agent, and drift.
+ */
 export type ReflectionOutcome = {
-  /** First person, past tense. What the owner reads in the morning. */
+  /**
+   * First person, past tense. What the owner reads in the morning.
+   */
   diary: string
-  /** One memory that replaces the day's episodic noise. */
+  /**
+   * One memory that replaces the day's episodic noise.
+   */
   consolidated: string
-  /** Lasting shifts in character. Small: a single day should not remake anyone. */
+  /**
+   * Lasting shifts in character. Small: a single day should not remake anyone.
+   */
   drift: Partial<Record<ValueAxis, number>>
-  /** Considered revisions of how the agent feels about people. */
+  /**
+   * Considered revisions of how the agent feels about people.
+   */
   relationships: { agent: AgentId; trust: number; affection: number }[]
 }
 
-/** A day can nudge you; it cannot remake you. */
 /**
+ * A day can nudge you; it cannot remake you.
+ *
  * A ceiling per night, not in total. Drift accumulates without limit across
- * weeks — it is meant to be able to overpower the authored personality — but no
- * single day may rewrite someone.
+ * weeks — it is meant to be able to overpower the authored personality — but
+ * no single day may rewrite someone.
  */
 export const MAX_DRIFT_PER_NIGHT = 0.1
 
 const traits = (v: ValueVector): string => VALUE_AXES.map((a) => `${a} ${v[a].toFixed(2)}`).join(', ')
 
-/** The day's episodic memories, the agent's identity, and who they now know. */
+/**
+ * The day's episodic memories, the agent's identity, and who they now know.
+ */
 export function buildReflectionPrompt(input: {
   agent: Agent
   values: ValueVector
@@ -113,7 +126,9 @@ relationships: considered revisions on reflection, between -0.2 and 0.2. Use the
 const clamp = (n: unknown, lim: number): number =>
   typeof n === 'number' && Number.isFinite(n) ? Math.max(-lim, Math.min(lim, n)) : 0
 
-/** Validates the answer and clamps drift to `MAX_DRIFT_PER_NIGHT` per axis. */
+/**
+ * Validates the answer and clamps drift to `MAX_DRIFT_PER_NIGHT` per axis.
+ */
 export function parseReflection(text: string, fallbackName: string): ReflectionOutcome {
   const o = parseJsonResponse<Record<string, unknown>>('reflection', text)
 
@@ -143,7 +158,9 @@ export function parseReflection(text: string, fallbackName: string): ReflectionO
   }
 }
 
-/** The outcome plus its metering. */
+/**
+ * The outcome plus its metering.
+ */
 export type ReflectionResult = {
   outcome: ReflectionOutcome
   prompt: string
@@ -155,7 +172,9 @@ export type ReflectionResult = {
   outputTokens: number
 }
 
-/** One night, one call, for one agent. */
+/**
+ * One night, one call, for one agent.
+ */
 export async function reflect(
   input: Parameters<typeof buildReflectionPrompt>[0],
   provider: ModelProvider,
@@ -178,10 +197,6 @@ export async function reflect(
  * Replaces the day's episodic noise with one consolidated memory and forgets
  * what came before. Compression *and* decay in one step — the agent keeps the
  * meaning of the day rather than its transcript.
- */
-/**
- * Writes the consolidated memory and **forgets the day's episodic noise behind
- * it**. That deletion is the decay half of consolidation, not a side effect.
  */
 export async function persistReflection(
   store: MemoryStore,

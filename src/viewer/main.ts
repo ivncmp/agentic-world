@@ -1,3 +1,9 @@
+/**
+ * Viewer boot: fetch the world once, build the 3D scene, wire up the panels.
+ *
+ * Everything after this is driven by the `/live` WebSocket. The viewer never
+ * writes to the engine — it is a spectator with no authority.
+ */
 import { EngineConnection } from './core/connection.js'
 import { CityScene3D } from './scene/index.js'
 import { initSidebar } from './ui/sidebar.js'

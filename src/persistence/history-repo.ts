@@ -19,13 +19,14 @@ import { TICKS_PER_DAY } from '../engine/clock.js'
  * What happened, as opposed to what is. The world repository can restore a
  * running simulation; this is what lets it remember having lived.
  */
-/** Everything append-only. Nothing here is read by the tick loop. */
 export class HistoryRepository {
   constructor(private readonly pool: Pool) {}
 
   private static day = (tick: number): number => Math.floor(tick / TICKS_PER_DAY) + 1
 
-  /** Batched: a busy tick can produce a dozen events and each costs a round trip. */
+  /**
+   * Batched: a busy tick can produce a dozen events and each costs a round trip.
+   */
   async recordEvents(events: readonly WorldEvent[]): Promise<void> {
     const rows = events.map(HistoryRepository.toRow).filter((r) => r != null)
     if (rows.length === 0) return
@@ -263,7 +264,9 @@ export class HistoryRepository {
     return r.rows.map((x) => ({ agent: x.agent_id, day: x.day }))
   }
 
-  /** Counts by kind for a day — the shape a briefing needs. */
+  /**
+   * Counts by kind for a day — the shape a briefing needs.
+   */
   async daySummary(agentId: AgentId, day: number): Promise<Record<string, number>> {
     const r = await this.pool.query<{ kind: string; n: string }>(
       `SELECT kind, count(*) AS n FROM events

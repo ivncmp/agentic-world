@@ -11,7 +11,9 @@
  * was an absorbing state nothing could climb out of.
  */
 
-/** Fraction of a feeling that survives a day with no contact at all. */
+/**
+ * Fraction of a feeling that survives a day with no contact at all.
+ */
 export const FEELING_DAILY_DECAY = 0.97
 
 /**

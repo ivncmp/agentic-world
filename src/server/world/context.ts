@@ -22,11 +22,23 @@ import { OwnerRepository } from '../../persistence/owner-repo.js'
 import type { ModelProvider } from '../../cognition/provider.js'
 import type { Location } from '../../world/locations.js'
 
+/**
+ * Everything long-lived the server modules share.
+ *
+ * `state` is a mutable property rather than a module-level binding: the tick
+ * loop and every cognition handler replace it wholesale with the result of a
+ * pure reducer, and passing a holder is what lets those live in separate files
+ * without one of them writing to a stale copy.
+ */
 export type World = {
-  /** Replaced wholesale each tick and by each applied cognition result. */
+  /**
+   * Replaced wholesale each tick and by each applied cognition result.
+   */
   state: WorldState
   readonly city: GeneratedCity
-  /** The authoritative location list — the same objects `state.locations` holds. */
+  /**
+   * The authoritative location list — the same objects `state.locations` holds.
+   */
   locations: readonly Location[]
   readonly byId: Map<string, Location>
   readonly store: MemoryStore
@@ -36,27 +48,46 @@ export type World = {
   readonly owners: OwnerRepository | null
   readonly pool: Pool | null
   readonly seed: number
-  /** Reference instant for guidance decay. Fixed, so decay is reproducible. */
+  /**
+   * Reference instant for guidance decay. Fixed, so decay is reproducible.
+   */
   readonly now: number
-  /** Display name for an agent id, falling back to the id itself. */
+  /**
+   * Display name for an agent id, falling back to the id itself.
+   */
   nameOf(id: string): string
-  /** Display name for a location id, falling back to the id itself. */
+  /**
+   * Display name for a location id, falling back to the id itself.
+   */
   placeOf(id: string): string
-  /** Persist the current state, if persistence is enabled. */
+  /**
+   * Persist the current state, if persistence is enabled.
+   */
   save(): Promise<void>
-  /** Register a location created after boot (a new agent's home). */
+  /**
+   * Register a location created after boot (a new agent's home).
+   */
   addLocation(loc: Location): void
 }
 
+/**
+ * Everything boot needs from the environment, resolved by the entry point.
+ */
 export type BootOptions = {
   seed: number
   persist: boolean
   provider: ModelProvider
-  /** Reference instant for guidance decay. */
+  /**
+   * Reference instant for guidance decay.
+   */
   now: number
-  /** Name of a baked city template, or null to generate one from the seed. */
+  /**
+   * Name of a baked city template, or null to generate one from the seed.
+   */
   cityTemplate: string | null
-  /** Start from tick 0 even if a saved world exists. */
+  /**
+   * Start from tick 0 even if a saved world exists.
+   */
   fresh: boolean
 }
 

@@ -1,3 +1,10 @@
+/**
+ * Reports how much identity memory each agent currently has in dbrain.
+ *
+ * Read-only. Run it after `pnpm build` when an agent starts behaving like a
+ * stranger to themselves — usually the sign their founding identity never got
+ * written.
+ */
 import { DBrainClient } from '@dtoolkit/sdk'
 
 const c = new DBrainClient({

@@ -26,7 +26,9 @@ const pickFrom = (pool: string[], gx: number, gy: number, salt: string): string 
 const quarterTurns = (gx: number, gy: number, salt: string): number =>
   (hash(gx, gy, salt) % 4) * (Math.PI / 2)
 
-/** Places the engine's venues. Returns their meshes keyed by location id. */
+/**
+ * Places the engine's venues. Returns their meshes keyed by location id.
+ */
 export function placeVenues(grid: CityGrid, place: PlaceFn): Map<string, THREE.Object3D> {
   const meshes = new Map<string, THREE.Object3D>()
   for (const v of grid.locations) {
@@ -181,7 +183,9 @@ function fillHarbor(place: PlaceFn, gx: number, gy: number, rot: number): void {
   else place('planter', gx, gy)
 }
 
-/** Lamps on every intersection, traffic lights on the busier block roles. */
+/**
+ * Lamps on every intersection, traffic lights on the busier block roles.
+ */
 export function placeStreetFurniture(grid: CityGrid, place: PlaceFn): void {
   for (let gy = 0; gy < grid.size; gy += grid.period) {
     for (let gx = 0; gx < grid.size; gx += grid.period) {

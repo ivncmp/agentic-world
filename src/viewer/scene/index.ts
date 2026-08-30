@@ -36,9 +36,14 @@ import {
 } from './camera.js'
 import type { EngineConnection, WorldInfo, StateMsg } from '../core/connection.js'
 
-/** Real milliseconds between engine state messages, used to pace walk animation. */
+/**
+ * Real milliseconds between engine state messages, used to pace walk animation.
+ */
 const TICK_MS = 2000
 
+/**
+ * Owns the renderer, camera and render loop. Everything else is delegated.
+ */
 export class CityScene3D {
   private readonly canvas: HTMLCanvasElement
   private readonly renderer: THREE.WebGLRenderer
@@ -142,7 +147,9 @@ export class CityScene3D {
 
   // ── Placement ───────────────────────────────────────────────────────
 
-  /** Clones a catalogue model onto a tile, registering it for picking if asked. */
+  /**
+   * Clones a catalogue model onto a tile, registering it for picking if asked.
+   */
   private placer(): PlaceFn {
     return (key: string, gx: number, gy: number, rotY = 0, pick?: PickInfo) => {
       const template = this.models.get(key)
@@ -259,7 +266,9 @@ export class CityScene3D {
     })
   }
 
-  /** Act on whatever the picker already resolved for the current cursor position. */
+  /**
+   * Act on whatever the picker already resolved for the current cursor position.
+   */
   private select(): void {
     if (this.picker.hoveredAgent) {
       window.dispatchEvent(new CustomEvent('aw:agent-click', { detail: { id: this.picker.hoveredAgent } }))

@@ -13,6 +13,9 @@ import type { LocationInfo } from '../core/connection.js'
 
 const GLB = (pack: string, name: string) => `/assets/city/${pack}/Models/GLB format/${name}.glb`
 
+/**
+ * Every GLB the scene needs, keyed by the short name the placers use.
+ */
 export const MODELS_TO_LOAD: Record<string, string> = {
   'com-a': GLB('commercial', 'building-a'),
   'com-c': GLB('commercial', 'building-c'),
@@ -70,12 +73,30 @@ export const MODELS_TO_LOAD: Record<string, string> = {
   'elec-pole': GLB('roads', 'electricity-pole-single'),
 }
 
+/**
+ * Pools a filler tile draws from, chosen by hash so the town looks the same everywhere.
+ */
 export const COMMERCIAL_POOL = ['com-a', 'com-c', 'com-e', 'com-g', 'com-h', 'com-j', 'com-l', 'com-n']
+/**
+ * Towers, for offices and the civic core.
+ */
 export const SKYSCRAPER_POOL = ['sky-a', 'sky-c', 'sky-e']
+/**
+ * Cheap filler for the back of a civic block, where nobody looks closely.
+ */
 export const LOW_DETAIL_POOL = ['low-a', 'low-d', 'low-g', 'low-j']
+/**
+ * Houses, for residential blocks outside the Ironworks.
+ */
 export const SUBURBAN_POOL = ['sub-b', 'sub-d', 'sub-f', 'sub-h', 'sub-k', 'sub-n', 'sub-q', 'sub-t']
+/**
+ * Sheds and units, for the Ironworks and the harbour.
+ */
 export const INDUSTRIAL_POOL = ['ind-a', 'ind-d', 'ind-h', 'ind-l']
 
+/**
+ * Which models suit which venue kind, so a bar never looks like a factory.
+ */
 export const VENUE_MODELS: Record<string, string[]> = {
   bar: COMMERCIAL_POOL,
   restaurant: COMMERCIAL_POOL,
@@ -91,7 +112,10 @@ export const VENUE_MODELS: Record<string, string[]> = {
   bowling: ['com-h'],
 }
 
-/** Venue kinds an agent disappears into — mesh and label hide together. */
+/**
+ * Venue kinds an agent disappears into — mesh and label hide together. Venue
+ * kinds an agent disappears into — mesh and label hide together.
+ */
 export const INDOOR_KINDS = new Set([
   'home',
   'bar',
@@ -108,7 +132,10 @@ export const INDOOR_KINDS = new Set([
   'restaurant',
 ])
 
-/** Tooltip name for a filler building, which has a block role but no venue. */
+/**
+ * Tooltip name for a filler building, which has a block role but no venue.
+ * Tooltip name for a filler building, which has a block role but no venue.
+ */
 export const ROLE_LABEL: Record<string, string> = {
   civic: 'Office block',
   home: 'Residence',
@@ -116,7 +143,9 @@ export const ROLE_LABEL: Record<string, string> = {
   harbor: 'Harbour building',
 }
 
-/** What a raycast hit should report about the object it landed on. */
+/**
+ * What a raycast hit should report about the object it landed on.
+ */
 export type PickInfo = { venue?: LocationInfo | null; role?: string | null }
 
 /**
@@ -131,9 +160,14 @@ export type PlaceFn = (
   pick?: PickInfo,
 ) => THREE.Object3D | null
 
+/**
+ * Drives the loading bar; every model reports before and after itself.
+ */
 export type LoadProgress = (loaded: number, total: number, name: string) => void
 
-/** Fit a loaded model to the tile grid and seat it on the ground. */
+/**
+ * Fit a loaded model to the tile grid and seat it on the ground.
+ */
 function normalise(model: THREE.Object3D, scale: number): void {
   model.scale.setScalar(scale)
   const box = new THREE.Box3().setFromObject(model)
@@ -150,6 +184,14 @@ function normalise(model: THREE.Object3D, scale: number): void {
   })
 }
 
+/**
+ * Loads every GLB once and hands out clones.
+ *
+ * Each Kenney pack models at its own scale and origin, so each model is
+ * rescaled to the tile and re-seated on the ground at load time. Road pieces
+ * are the exception: they all inherit `road-straight`'s scale so the strips
+ * line up.
+ */
 export class ModelLibrary {
   private readonly cache = new Map<string, THREE.Object3D>()
   private readonly clips = new Map<string, THREE.AnimationClip[]>()

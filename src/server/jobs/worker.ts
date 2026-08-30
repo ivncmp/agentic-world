@@ -1,21 +1,46 @@
+/**
+ * The cognition queue — BullMQ on Redis, capped at six concurrent calls.
+ *
+ * Every call spawns a CLI process through dproxy and takes seconds, not
+ * milliseconds, so **never fan out unbounded**: cap concurrency and let the
+ * backlog drain across ticks. Falling behind degrades richness, never
+ * correctness — the world keeps ticking on the reflex layer either way.
+ *
+ * Redis outliving this process is deliberate. Pending jobs survive a restart
+ * and the engine reports them at boot, so a scene queued before a deploy still
+ * resolves after it.
+ */
 import { Queue, Worker, type Job as BullJob } from 'bullmq'
 import { Redis as IORedis } from 'ioredis'
 import type { AgentId } from '../../agents/agent.js'
 
+/**
+ * Everything the queue can be asked to resolve. One variant per route.
+ */
 export type Job =
   | { kind: 'scene'; a: AgentId; b: AgentId; tension: number; tick: number }
   | { kind: 'reflection'; agent: AgentId; tick: number }
   | { kind: 'deliberation'; agent: AgentId; tick: number }
   | { kind: 'crisis'; agent: AgentId; crisisKind: string; context: string; tick: number }
 
+/**
+ * What a handler reports back, so the worker can total spend across the run.
+ */
 export type CallResult = {
   costUsd: number
   inputTokens: number
   outputTokens: number
 }
 
+/**
+ * The route names, for the per-route breakdown the viewer shows.
+ */
 export type JobKind = Job['kind']
 
+/**
+ * Concurrent model calls. Sized against how fast dproxy answers: too high and
+ * calls queue at the provider instead of here, where they can be counted.
+ */
 export const MAX_CONCURRENT = 6
 
 const KIND_PRIORITY: Record<JobKind, number> = {
@@ -87,7 +112,9 @@ export class CognitionWorker {
     })
   }
 
-  /** Sync in-memory counters with Redis state (call once on startup). */
+  /**
+   * Sync in-memory counters with Redis state (call once on startup).
+   */
   async init(): Promise<number> {
     const counts = await this.queue.getJobCounts('waiting', 'active')
     const total = (counts.waiting ?? 0) + (counts.active ?? 0)

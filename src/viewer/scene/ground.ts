@@ -6,7 +6,9 @@ import * as THREE from 'three'
 import { CityGrid, TILE } from './grid.js'
 import type { LocationInfo } from '../core/connection.js'
 
-/** What hovering a bare tile should report. */
+/**
+ * What hovering a bare tile should report.
+ */
 export type TileInfo = {
   venue: LocationInfo | null
   home: boolean
@@ -16,14 +18,22 @@ export type TileInfo = {
   bridge: boolean
 }
 
+/**
+ * The per-tile facts the tooltip needs, plus the shared water material.
+ */
 export type Ground = {
   tileData: Map<string, TileInfo>
-  /** Shared by every water tile, so the wave animation can find them by material. */
+  /**
+   * Shared by every water tile, so the wave animation can find them by material.
+   */
   waterMat: THREE.MeshPhongMaterial
 }
 
 const WATER_Y = -0.12
 
+/**
+ * One flat tile per cell. Streets get none — the road model covers them.
+ */
 export function buildGround(scene: THREE.Scene, grid: CityGrid): Ground {
   const MAT = {
     grass: new THREE.MeshLambertMaterial({ color: 0x4a8a3a }),
@@ -114,7 +124,9 @@ export function buildGround(scene: THREE.Scene, grid: CityGrid): Ground {
   return { tileData, waterMat }
 }
 
-/** Gentle bob so water reads as water. Called every frame from the render loop. */
+/**
+ * Gentle bob so water reads as water. Called every frame from the render loop.
+ */
 export function animateWater(scene: THREE.Scene, waterMat: THREE.Material, t: number): void {
   scene.traverse((obj) => {
     const mesh = obj as THREE.Mesh

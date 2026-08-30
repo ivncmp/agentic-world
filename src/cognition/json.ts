@@ -19,6 +19,9 @@ const REFUSAL_VERB = /\bi(?:'m| am)?\s*(?:can(?:no|')?t|won'?t|am not|'m not|do 
 const TASK_WORD =
   /\b(?:help|assist|roleplay|role-play|write|generate|create|produce|provide|engage|comply|comfortable|appropriate)\b/
 
+/**
+ * True when the model declined the task rather than answered it.
+ */
 export function looksLikeRefusal(text: string): boolean {
   const t = text.toLowerCase()
   if (t.includes('as an ai') || t.includes('as a language model')) return true

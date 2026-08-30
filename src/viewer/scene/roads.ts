@@ -16,7 +16,9 @@ function isRoadConnected(grid: CityGrid, gx: number, gy: number): boolean {
   return grid.isStreet(gx, gy)
 }
 
-/** Pick the road model and rotation that match a tile's connected neighbours. */
+/**
+ * Pick the road model and rotation that match a tile's connected neighbours.
+ */
 export function classifyRoad(grid: CityGrid, gx: number, gy: number): { model: string; rot: number } {
   const n = isRoadConnected(grid, gx, gy - 1)
   const e = isRoadConnected(grid, gx + 1, gy)
@@ -58,7 +60,9 @@ const DECK_GEO = new THREE.BoxGeometry(TILE, 0.06, TILE)
 const RAIL_GEO_X = new THREE.BoxGeometry(TILE, 0.25, TILE * 0.06)
 const RAIL_GEO_Z = new THREE.BoxGeometry(TILE * 0.06, 0.25, TILE)
 
-/** Plank deck plus railings, oriented across the river the bridge spans. */
+/**
+ * Plank deck plus railings, oriented across the river the bridge spans.
+ */
 function placeBridge(scene: THREE.Scene, grid: CityGrid, gx: number, gy: number): void {
   const pos = grid.worldPos(gx, gy)
 
@@ -77,6 +81,9 @@ function placeBridge(scene: THREE.Scene, grid: CityGrid, gx: number, gy: number)
   }
 }
 
+/**
+ * Lays a road piece on every street tile, and a plank bridge where one crosses water.
+ */
 export function placeRoads(scene: THREE.Scene, grid: CityGrid, place: PlaceFn): void {
   for (let gy = 0; gy < grid.size; gy++) {
     for (let gx = 0; gx < grid.size; gx++) {

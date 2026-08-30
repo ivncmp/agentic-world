@@ -1,3 +1,15 @@
+/**
+ * dbrain-backed memory — the production `MemoryStore`.
+ *
+ * This is the dogfooding half of the project: dbrain was built as memory for a
+ * coding assistant, and driving it as a memory engine for characters stresses
+ * it in ways nothing else does — hundreds of small facts per entity, a recall
+ * on every scene, and decay that has to actually forget.
+ *
+ *   memory kind  -> fact.category        ('episodic' | 'identity' | 'hearsay')
+ *   about whom   -> fact.relatedEntities (the graph edge dbrain already models)
+ *   game tick    -> fact.timestamp       (a real instant; see tickToStamp)
+ */
 import { randomUUID } from 'node:crypto'
 import { DBrainClient, type FactRow } from '@dtoolkit/sdk'
 import type { AgentId } from '../agents/agent.js'
@@ -16,11 +28,12 @@ import { worldTime, tickAt } from '../engine/clock.js'
  *   about whom   -> fact.relatedEntities (the graph edge dbrain already models)
  *   game tick    -> fact.timestamp       (a real instant; see tickToStamp)
  */
-/** Where dbrain lives. Use a dedicated instance — never share one with another brain. */
 export type DbrainOptions = {
   url: string
   token: string
-  /** Entity category everything lands in, so a shared brain stays tidy. */
+  /**
+   * Entity category everything lands in, so a shared brain stays tidy.
+   */
   category?: string
   timeoutMs?: number
 }
@@ -31,7 +44,9 @@ export type DbrainOptions = {
  */
 export const tickToStamp = (tick: number): string => worldTime(tick).toISOString()
 
-/** The inverse. Returns 0 for anything unparseable rather than throwing. */
+/**
+ * The inverse. Returns 0 for anything unparseable rather than throwing.
+ */
 export const stampToTick = (stamp: string): number => {
   const ms = Date.parse(stamp)
   if (!Number.isFinite(ms)) return 0
@@ -52,7 +67,9 @@ const isAlreadyExists = (err: unknown): boolean => /already exists|conflict|409|
 
 const isMissingEntity = (err: unknown): boolean => /not found|404/.test(message(err))
 
-/** The production store. Each agent is an entity; each memory is a fact on it. */
+/**
+ * The production store. Each agent is an entity; each memory is a fact on it.
+ */
 export class DbrainStore implements MemoryStore {
   private readonly known = new Set<AgentId>()
   private readonly client: DBrainClient

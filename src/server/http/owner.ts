@@ -23,18 +23,28 @@ import type { Agent } from '../../agents/agent.js'
  */
 const GUIDANCE_HALF_LIFE_DAYS = 14
 
-/** Urge above which a vice is worth raising with the owner. */
+/**
+ * Urge above which a vice is worth raising with the owner.
+ */
 const VICE_PRESSURE = 0.6
-/** Grievance above which bad blood is worth raising. */
+/**
+ * Grievance above which bad blood is worth raising.
+ */
 const GRIEVANCE_FLOOR = 0.4
-/** Credits owed above which a debt is worth raising. */
+/**
+ * Credits owed above which a debt is worth raising.
+ */
 const DEBT_FLOOR = 50
-/** How far effective values may drift from base before it is worth mentioning. */
+/**
+ * How far effective values may drift from base before it is worth mentioning.
+ */
 const DRIFT_FLOOR = 0.4
 
 type AuthResult = { ok: true; agent: Agent } | { ok: false; error: string; status: number }
 
-/** An owner may only ever act on their own agents. */
+/**
+ * An owner may only ever act on their own agents.
+ */
 async function authenticate(world: World, agentId: string, token: string): Promise<AuthResult> {
   if (world.owners == null) return { ok: false, error: 'persistence is disabled', status: 500 }
   const agent = world.state.agents.find((a) => a.id === agentId)
@@ -45,7 +55,9 @@ async function authenticate(world: World, agentId: string, token: string): Promi
   return { ok: true, agent }
 }
 
-/** Relationships as the owner sees them: no encounter counts, no internals. */
+/**
+ * Relationships as the owner sees them: no encounter counts, no internals.
+ */
 function relationshipsFor(world: World, a: Agent) {
   return world.state.agents
     .filter((o) => o.id !== a.id)
@@ -64,7 +76,9 @@ function relationshipsFor(world: World, a: Agent) {
     .filter((x) => x != null)
 }
 
-/** Where the agent stands right now, in the owner's terms. */
+/**
+ * Where the agent stands right now, in the owner's terms.
+ */
 export async function handleBriefing(
   world: World,
   agentId: string,
@@ -280,7 +294,9 @@ export async function handleGuidance(
   }
 }
 
-/** Mints an owner token. Gated on the server's admin secret, not on a session. */
+/**
+ * Mints an owner token. Gated on the server's admin secret, not on a session.
+ */
 export async function handleRegisterOwner(
   world: World,
   adminSecret: string,

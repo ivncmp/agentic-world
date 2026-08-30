@@ -15,7 +15,9 @@ import type { ViceInstance } from './vices.js'
 import type { LocationId } from '../world/locations.js'
 import type { Occupation } from '../world/occupations.js'
 
-/** Slug, not a UUID: it appears in prompts, memories and the viewer. */
+/**
+ * Slug, not a UUID: it appears in prompts, memories and the viewer.
+ */
 export type AgentId = string
 
 /**
@@ -26,25 +28,37 @@ export type AgentId = string
  */
 export type Activity = {
   kind: string
-  /** Where the activity happens, or the destination while walking. */
+  /**
+   * Where the activity happens, or the destination while walking.
+   */
   at: LocationId
-  /** Origin while walking; absent otherwise. */
+  /**
+   * Origin while walking; absent otherwise.
+   */
   from?: LocationId
   startedTick: number
   endsTick: number
-  /** The other party, for scenes. */
+  /**
+   * The other party, for scenes.
+   */
   with?: AgentId
 }
-/** The human who authored this agent. Never appears inside the world. */
+/**
+ * The human who authored this agent. Never appears inside the world.
+ */
 export type OwnerId = string
 
-/** Drives that decay each tick and push the reflex layer to act. 0..1. */
+/**
+ * Drives that decay each tick and push the reflex layer to act. 0..1.
+ */
 export type Needs = {
   hunger: number
   energy: number
   social: number
   hygiene: number
-  /** Boredom. Off-shift hours are most of the day; without this they are dead. */
+  /**
+   * Boredom. Off-shift hours are most of the day; without this they are dead.
+   */
   fun: number
 }
 
@@ -54,7 +68,9 @@ export type Needs = {
  */
 export type GoalKind = 'get_job' | 'buy_home' | 'repay_debt' | 'befriend' | 'start_business'
 
-/** Two agents chasing the same goal + target is a conflict the gate scores. */
+/**
+ * Two agents chasing the same goal + target is a conflict the gate scores.
+ */
 export type Goal = {
   kind: GoalKind
   targetId?: string
@@ -92,7 +108,9 @@ export type ActionBias = {
   bias: number // -1.0..+1.0, additive to scoreActions
 }
 
-/** Someone this agent wants to find, and why. Raises the gate's score for that pair. */
+/**
+ * Someone this agent wants to find, and why. Raises the gate's score for that pair.
+ */
 export type SeekScene = {
   target: AgentId
   reason: string
@@ -120,9 +138,13 @@ export type Agent = {
 
   occupation: Occupation
   values: PersonalityValues
-  /** Exactly two, chosen at creation. Non-negotiable: friction by design. */
+  /**
+   * Exactly two, chosen at creation. Non-negotiable: friction by design.
+   */
   vices: [ViceInstance, ViceInstance]
-  /** Hobbies and interests — conversation material beyond work and money. */
+  /**
+   * Hobbies and interests — conversation material beyond work and money.
+   */
   interests: string[]
 
   needs: Needs
@@ -131,12 +153,18 @@ export type Agent = {
   job: Job | null
   housing: Housing
 
-  /** Tick when the agent arrived at their current location (for minimum stay). */
+  /**
+   * Tick when the agent arrived at their current location (for minimum stay).
+   */
   arrivedTick: number | null
-  /** Cooldown anchor: you cannot rob the neighbourhood every five minutes. */
+  /**
+   * Cooldown anchor: you cannot rob the neighbourhood every five minutes.
+   */
   lastTheftTick: number | null
 
-  /** Day of the agent's last reflection, so quiet lives still get one eventually. */
+  /**
+   * Day of the agent's last reflection, so quiet lives still get one eventually.
+   */
   lastReflectionDay: number
 
   /**
@@ -148,14 +176,20 @@ export type Agent = {
   activity: Activity | null
 
   goals: Goal[]
-  /** Hard limits set by the owner, e.g. "no_theft". Honoured by the reflex layer. */
+  /**
+   * Hard limits set by the owner, e.g. "no_theft". Honoured by the reflex layer.
+   */
   constraints: string[]
 
-  /** Layer 1.5 output. Expires after DELIBERATION_TTL ticks. Null = no active plan. */
+  /**
+   * Layer 1.5 output. Expires after DELIBERATION_TTL ticks. Null = no active plan.
+   */
   deliberation: Deliberation | null
   lastDeliberationTick: number
 
-  /** Cooldown anchor for crisis monologue (reactive micro-cognition). */
+  /**
+   * Cooldown anchor for crisis monologue (reactive micro-cognition).
+   */
   lastCrisisTick: number
 }
 

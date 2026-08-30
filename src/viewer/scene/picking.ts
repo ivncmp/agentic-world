@@ -15,18 +15,31 @@ import type { AgentView } from './agents.js'
 import type { TileInfo } from './ground.js'
 import type { LocationInfo } from '../core/connection.js'
 
+/**
+ * Stashed on each placed building so a raycast hit knows what it hit.
+ */
 export type BuildingPick = { tileKey: string; venue: LocationInfo | null; role: string | null }
 
+/**
+ * The two sets of roots to raycast. Agents are tested first and win ties.
+ */
 export type PickTargets = {
   agents: THREE.Object3D[]
   buildings: THREE.Object3D[]
 }
 
+/**
+ * Owns the raycaster, the hovered state and the tooltip element.
+ */
 export class Picker {
   readonly highlighter = new Highlighter()
-  /** Id of the agent under the cursor, or null. */
+  /**
+   * Id of the agent under the cursor, or null.
+   */
   hoveredAgent: string | null = null
-  /** Tile key of the building under the cursor, or null. */
+  /**
+   * Tile key of the building under the cursor, or null.
+   */
   hoveredBuilding: string | null = null
 
   private readonly raycaster = new THREE.Raycaster()
@@ -41,7 +54,9 @@ export class Picker {
     private readonly tileData: Map<string, TileInfo>,
   ) {}
 
-  /** Remember where the cursor is, in normalised device coordinates. */
+  /**
+   * Remember where the cursor is, in normalised device coordinates.
+   */
   track(e: MouseEvent, rect: DOMRect): void {
     this.mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1
     this.mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1
@@ -54,7 +69,9 @@ export class Picker {
     this.highlighter.set(null)
   }
 
-  /** Resolve what is under the cursor and redraw the tooltip. Returns the cursor style. */
+  /**
+   * Resolve what is under the cursor and redraw the tooltip. Returns the cursor style.
+   */
   update(camera: THREE.Camera, cx: number, cy: number): 'pointer' | 'default' {
     this.raycaster.setFromCamera(this.mouse, camera)
     this.el.style.left = cx + 14 + 'px'

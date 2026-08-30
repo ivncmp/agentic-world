@@ -15,15 +15,18 @@ import type { LocationKind } from './locations.js'
  * Wages differ on purpose: DESIGN.md leans on income inequality as a conflict
  * source, and a world where everyone earns the same generates none.
  */
-/** Where this job is done, what it pays per hour, and when the shift runs. */
 export type OccupationDef = {
   label: string
-  /** Where this occupation is practised. */
+  /**
+   * Where this occupation is practised.
+   */
   worksAt: LocationKind
   wage: number
   shiftStart: number
   shiftEnd: number
-  /** Days of the week this occupation works. 0 = Sunday, 6 = Saturday. */
+  /**
+   * Days of the week this occupation works. 0 = Sunday, 6 = Saturday.
+   */
   workDays: readonly number[]
 }
 
@@ -31,7 +34,9 @@ const MON_FRI = [1, 2, 3, 4, 5] as const
 const MON_SAT = [1, 2, 3, 4, 5, 6] as const
 const EVERY_DAY = [0, 1, 2, 3, 4, 5, 6] as const
 
-/** The closed catalogue. Each entry needs a venue kind that actually exists. */
+/**
+ * The closed catalogue. Each entry needs a venue kind that actually exists.
+ */
 export const OCCUPATIONS = {
   student: { label: 'Student', worksAt: 'school', wage: 2, shiftStart: 9, shiftEnd: 15, workDays: MON_FRI },
   teacher: { label: 'Teacher', worksAt: 'school', wage: 15, shiftStart: 8, shiftEnd: 16, workDays: MON_FRI },
@@ -82,10 +87,16 @@ export const OCCUPATIONS = {
   trainer: { label: 'Trainer', worksAt: 'gym', wage: 12, shiftStart: 7, shiftEnd: 15, workDays: MON_SAT },
 } as const satisfies Record<string, OccupationDef>
 
-/** Derived from the catalogue's keys, so an unknown occupation fails to compile. */
+/**
+ * Derived from the catalogue's keys, so an unknown occupation fails to compile.
+ */
 export type Occupation = keyof typeof OCCUPATIONS
 
-/** The definition behind an agent's occupation. */
+/**
+ * The definition behind an agent's occupation.
+ */
 export const occupationDef = (o: Occupation): OccupationDef => OCCUPATIONS[o]
-/** Every occupation, for validation and for the agent-creation UI. */
+/**
+ * Every occupation, for validation and for the agent-creation UI.
+ */
 export const ALL_OCCUPATIONS = Object.keys(OCCUPATIONS) as Occupation[]

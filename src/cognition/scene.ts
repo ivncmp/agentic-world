@@ -22,7 +22,9 @@ import { parseJsonResponse } from './json.js'
  * decides what passes between them and what each takes away from it.
  */
 
-/** Everything one call decides: the words, the money, and how each feels after. */
+/**
+ * Everything one call decides: the words, the money, and how each feels after.
+ */
 export type SceneOutcome = {
   dialogue: { speaker: string; line: string }[]
   outcome: string
@@ -32,7 +34,9 @@ export type SceneOutcome = {
     aToB: { trust: number; affection: number }
     bToA: { trust: number; affection: number }
   }
-  /** Credits moving from A to B; negative reverses. Bounded on apply. */
+  /**
+   * Credits moving from A to B; negative reverses. Bounded on apply.
+   */
   transfer: number
   /**
    * Credits *lent* from A to B, creating a debt. Distinct from `transfer`,
@@ -40,13 +44,21 @@ export type SceneOutcome = {
    * they are born in life — you ask someone, and they say yes or no.
    */
   loan: number
-  /** What A thought but didn't say — inner life, saved as memory. */
+  /**
+   * What A thought but didn't say — inner life, saved as memory.
+   */
   thoughtA: string
-  /** What B thought but didn't say. */
+  /**
+   * What B thought but didn't say.
+   */
   thoughtB: string
-  /** Things A told B about third parties — second-hand memory transfer. */
+  /**
+   * Things A told B about third parties — second-hand memory transfer.
+   */
   gossipA: { about: AgentId; text: string }[]
-  /** Things B told A about third parties. */
+  /**
+   * Things B told A about third parties.
+   */
   gossipB: { about: AgentId; text: string }[]
 }
 
@@ -80,12 +92,15 @@ const describe = (a: Agent, v: ValueVector): string => {
  * consequence of a relationship, not the thing that starts one, so the engine
  * now decides and the prompt only reports the decision.
  */
-/** Below this trust, a loan is not credible and the outcome is discarded. */
 export const LEND_MIN_TRUST = 0.15
-/** And below this much shared history — you do not lend to a near-stranger. */
+/**
+ * And below this much shared history — you do not lend to a near-stranger.
+ */
 export const LEND_MIN_ENCOUNTERS = 120
 
-/** Guards transfers, so a scene cannot invent a loan between people who barely met. */
+/**
+ * Guards transfers, so a scene cannot invent a loan between people who barely met.
+ */
 export const canLend = (rel: Relationship): boolean =>
   rel.encounters >= LEND_MIN_ENCOUNTERS && rel.trust >= LEND_MIN_TRUST
 
@@ -98,7 +113,9 @@ function lendingRule(a: Agent, b: Agent, rel: Relationship): string {
   return `credits *lent* from ${a.name} to ${b.name} (negative reverses), creating a debt to be repaid later. These two know and trust each other enough that a loan is possible — but only if one actually asks and the other agrees. Usually 0.`
 }
 
-/** Someone both participants know well enough to be worth gossiping about. */
+/**
+ * Someone both participants know well enough to be worth gossiping about.
+ */
 export type ThirdParty = {
   id: AgentId
   name: string
@@ -106,7 +123,9 @@ export type ThirdParty = {
   fromB: Relationship
 }
 
-/** Assembles the scene prompt from each participant's bounded recall about the other. */
+/**
+ * Assembles the scene prompt from each participant's bounded recall about the other.
+ */
 export function buildScenePrompt(input: {
   a: Agent
   b: Agent
@@ -241,9 +260,13 @@ export function parseSceneOutcome(
   text: string,
   aName: string,
   bName: string,
-  /** When false, any loan the model invents is discarded — see `lendingRule`. */
+  /**
+   * When false, any loan the model invents is discarded — see `lendingRule`.
+   */
   lendingAllowed = true,
-  /** Valid third-party ids — gossip mentioning anyone else is discarded. */
+  /**
+   * Valid third-party ids — gossip mentioning anyone else is discarded.
+   */
   thirdPartyIds: ReadonlySet<string> = new Set(),
 ): SceneOutcome {
   const o = parseJsonResponse<Record<string, unknown>>('scene', text)
@@ -283,7 +306,9 @@ export function parseSceneOutcome(
   }
 }
 
-/** The outcome plus the metering the call has to report. */
+/**
+ * The outcome plus the metering the call has to report.
+ */
 export type SceneResult = {
   outcome: SceneOutcome
   prompt: string
@@ -295,7 +320,9 @@ export type SceneResult = {
   outputTokens: number
 }
 
-/** Builds the prompt, calls the model, validates the answer. */
+/**
+ * Builds the prompt, calls the model, validates the answer.
+ */
 export async function resolveScene(
   input: Parameters<typeof buildScenePrompt>[0],
   provider: ModelProvider,
@@ -315,8 +342,9 @@ export async function resolveScene(
   }
 }
 
-/** Writes what each party took away. Memory is what makes relationships emerge. */
 /**
+ * Writes what each party took away. Memory is what makes relationships emerge.
+ *
  * Writes what each participant remembers, including anything either of them
  * repeated about a third party — marked as second-hand, because hearsay is
  * allowed to be wrong.

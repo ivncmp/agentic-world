@@ -10,9 +10,14 @@ import type * as THREE from 'three'
 import type { CityGrid } from './grid.js'
 import type { AgentView } from './agents.js'
 
-/** How far off-screen a label may drift before it is hidden. */
+/**
+ * How far off-screen a label may drift before it is hidden.
+ */
 const MARGIN = 50
 
+/**
+ * One hidden label per venue, shown later only when somebody is inside.
+ */
 export function createVenueLabels(grid: CityGrid, overlay: HTMLElement): Map<string, HTMLDivElement> {
   const labels = new Map<string, HTMLDivElement>()
   for (const loc of grid.locations) {
@@ -29,6 +34,9 @@ export function createVenueLabels(grid: CityGrid, overlay: HTMLElement): Map<str
   return labels
 }
 
+/**
+ * Who is currently inside a venue — not counting anyone still walking there.
+ */
 export function occupantsOf(views: Map<string, AgentView>, locationId: string): AgentView[] {
   const result: AgentView[] = []
   for (const v of views.values()) {
@@ -37,7 +45,9 @@ export function occupantsOf(views: Map<string, AgentView>, locationId: string): 
   return result
 }
 
-/** Project a world point to canvas pixels, or null when it is off-screen. */
+/**
+ * Project a world point to canvas pixels, or null when it is off-screen.
+ */
 function toScreen(
   pos: THREE.Vector3,
   camera: THREE.PerspectiveCamera,
@@ -62,6 +72,9 @@ function position(label: HTMLDivElement, at: { x: number; y: number } | null): b
   return true
 }
 
+/**
+ * Rules 1-3: hide when empty, list occupants, yield to a hovered building.
+ */
 export function updateVenueLabels(
   labels: Map<string, HTMLDivElement>,
   grid: CityGrid,
@@ -89,6 +102,9 @@ export function updateVenueLabels(
   }
 }
 
+/**
+ * Rule 4: anyone visible in the street carries their name.
+ */
 export function updateAgentLabels(
   labels: Map<string, HTMLDivElement>,
   views: Map<string, AgentView>,

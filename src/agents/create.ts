@@ -20,31 +20,42 @@ import type { Goal } from './agent.js'
  * join through MCP. This is what that endpoint will call, so it must produce a
  * fully placed agent: a private home, a job if one is going, and money.
  */
-/** What an owner supplies. Anything omitted gets a sensible default. */
 export type CreateAgentInput = {
   id: string
   name: string
   ownerId: string
   occupation: Occupation
-  /** Owner-authored personality. Anything omitted sits at neutral. */
+  /**
+   * Owner-authored personality. Anything omitted sits at neutral.
+   */
   base?: Partial<ValueVector>
-  /** Exactly two — DESIGN.md's mandatory flaws. */
+  /**
+   * Exactly two — DESIGN.md's mandatory flaws.
+   */
   vices: [ViceKind, ViceKind]
   interests?: string[]
   constraints?: string[]
   startingMoney?: number
 }
 
-/** The agent plus the home allocated for them, which the world must register. */
+/**
+ * The agent plus the home allocated for them, which the world must register.
+ */
 export type CreatedAgent = {
   agent: Agent
-  /** The agent's own home, to be added to the world's locations. */
+  /**
+   * The agent's own home, to be added to the world's locations.
+   */
   home: Location
 }
 
-/** Enough to eat and pay rent for a few days — not enough to be comfortable. */
+/**
+ * Enough to eat and pay rent for a few days — not enough to be comfortable.
+ */
 export const STARTING_MONEY = 150
-/** Charged daily. Set against wages so a job covers it and idleness does not. */
+/**
+ * Charged daily. Set against wages so a job covers it and idleness does not.
+ */
 export const RENT_DUE = 25
 
 const initialGoals = (vacancy: string | null, homeId: string): Goal[] => {

@@ -8,8 +8,10 @@
 import type { AgentId } from '../agents/agent.js'
 import type { Memory, MemoryStore } from './store.js'
 
-/** For tests and for running the world without a brain. */
-/** Everything in a Map. Nothing persists past the process. */
+/**
+ * For tests and for running the world without a brain. Everything in a Map.
+ * Nothing persists past the process.
+ */
 export class InMemoryStore implements MemoryStore {
   private readonly memories: Memory[] = []
 

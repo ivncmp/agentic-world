@@ -10,12 +10,17 @@ import * as THREE from 'three'
 const TINT = new THREE.Color(0xffffff)
 const GLOW = new THREE.Color(0x4fa8ff)
 
+/**
+ * Tints whatever the cursor is over, reusing one variant per source material.
+ */
 export class Highlighter {
   private readonly cache = new Map<THREE.Material, THREE.Material>()
   private restore: { mesh: THREE.Mesh; mat: THREE.Material | THREE.Material[] }[] = []
   private root: THREE.Object3D | null = null
 
-  /** Tint `root` and clear the previous one. Passing null clears everything. */
+  /**
+   * Tint `root` and clear the previous one. Passing null clears everything.
+   */
   set(root: THREE.Object3D | null): void {
     if (this.root === root) return
     for (const e of this.restore) e.mesh.material = e.mat
@@ -49,7 +54,9 @@ export class Highlighter {
   }
 }
 
-/** Walk up to the nearest ancestor that carries pick metadata. */
+/**
+ * Walk up to the nearest ancestor that carries pick metadata.
+ */
 export function pickRoot(obj: THREE.Object3D): THREE.Object3D | null {
   let cur: THREE.Object3D | null = obj
   while (cur) {

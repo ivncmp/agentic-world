@@ -11,10 +11,14 @@
 import type { Agent, AgentId } from '../agents/agent.js'
 import { viceDef } from '../agents/vices.js'
 
-/** The four moments considered worth an interior monologue. */
+/**
+ * The four moments considered worth an interior monologue.
+ */
 export type CrisisKind = 'vice_temptation' | 'theft_temptation' | 'deep_debt' | 'isolation'
 
-/** A queued crisis. `context` is the sentence the prompt builds the scene from. */
+/**
+ * A queued crisis. `context` is the sentence the prompt builds the scene from.
+ */
 export type CrisisJob = {
   agent: AgentId
   kind: CrisisKind
@@ -22,7 +26,9 @@ export type CrisisJob = {
   tick: number
 }
 
-/** What the detector needs beyond the agent itself. */
+/**
+ * What the detector needs beyond the agent itself.
+ */
 export type CrisisContext = {
   hour: number
   coLocated: readonly Agent[]
@@ -37,11 +43,6 @@ const ISOLATION_SOCIAL_THRESHOLD = 0.65
 /**
  * Detects whether an agent is in a crisis moment worth an inner thought.
  * Returns the most dramatic crisis, or null. Pure, deterministic, testable.
- */
-/**
- * The most dramatic crisis this agent is in, or `null` — which is the answer
- * almost every tick. Order matters: an urge about to break beats a debt that
- * has been mounting for days.
  */
 export function detectCrisis(agent: Agent, ctx: CrisisContext): { kind: CrisisKind; context: string } | null {
   // Vice temptation — the urge is building past comfortable

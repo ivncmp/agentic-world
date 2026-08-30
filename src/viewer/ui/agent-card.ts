@@ -17,6 +17,9 @@ const NEED_LABEL: Record<string, string> = {
 let containerEl: HTMLElement | null = null
 let openId: string | null = null
 
+/**
+ * Wires the agent panel: opens on click, fetches `/agent`, renders the strata.
+ */
 export function initAgentCard(conn: EngineConnection): void {
   containerEl = document.getElementById('agent-detail')
 

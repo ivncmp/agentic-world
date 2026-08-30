@@ -23,23 +23,36 @@ import type { WorldEvent, TickDeps } from '../tick.js'
 const clamp01 = (n: number) => Math.max(0, Math.min(1, n))
 const credits = (n: number) => Math.round(n * 100) / 100
 
-/** Chance per tick that job-hunting finds a vacancy. */
+/**
+ * Chance per tick that job-hunting finds a vacancy.
+ */
 const HIRE_CHANCE = 0.06
-/** Most an agent can lift from one victim in one go. */
+/**
+ * Most an agent can lift from one victim in one go.
+ */
 const MAX_THEFT = 30
 
+/**
+ * What an action needs beyond the agent: the other agents, and the tick's outputs.
+ */
 export type ApplyActionContext = {
-  /** Every agent this tick, mutable — theft debits the victim in place. */
+  /**
+   * Every agent this tick, mutable — theft debits the victim in place.
+   */
   draft: Map<AgentId, Agent>
   events: WorldEvent[]
   tick: number
   deps: TickDeps
-  /** Free posts per workplace, decremented on hire. */
+  /**
+   * Free posts per workplace, decremented on hire.
+   */
   openings: Map<LocationId, number>
   kindOf: ReadonlyMap<LocationId, LocationKind>
 }
 
-/** Returns the agent as the action leaves them. Never mutates `agent` itself. */
+/**
+ * Returns the agent as the action leaves them. Never mutates `agent` itself.
+ */
 export function applyAction(agent: Agent, action: Action, ctx: ApplyActionContext): Agent {
   switch (action.kind) {
     case 'eat':
@@ -115,7 +128,9 @@ export function applyAction(agent: Agent, action: Action, ctx: ApplyActionContex
   }
 }
 
-/** Being around other people takes the edge off the social need. */
+/**
+ * Being around other people takes the edge off the social need.
+ */
 function companyBonus(agent: Agent, { draft }: ApplyActionContext): number {
   const alone = ![...draft.values()].some((o) => o.id !== agent.id && o.location === agent.location)
   return alone ? 0 : 0.1
@@ -136,7 +151,9 @@ function applyWork(agent: Agent, { draft }: ApplyActionContext): Agent {
   }
 }
 
-/** An engineer looks for engineering work; wages come from the occupation. */
+/**
+ * An engineer looks for engineering work; wages come from the occupation.
+ */
 function applySeekJob(agent: Agent, ctx: ApplyActionContext): Agent {
   if (ctx.deps.random() > HIRE_CHANCE) return agent
 

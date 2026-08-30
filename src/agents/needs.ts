@@ -27,7 +27,9 @@ export const NEED_PER_DAY: Needs = {
   fun: 1.44,
 }
 
-/** The per-day rates above, converted to the per-tick amounts the loop adds. */
+/**
+ * The per-day rates above, converted to the per-tick amounts the loop adds.
+ */
 export const NEED_DECAY: Needs = {
   hunger: perDay(NEED_PER_DAY.hunger),
   energy: perDay(NEED_PER_DAY.energy),
@@ -38,7 +40,9 @@ export const NEED_DECAY: Needs = {
 
 const clamp01 = (n: number) => Math.max(0, Math.min(1, n))
 
-/** Needs count *up* towards 1 = desperate, so decay adds pressure. */
+/**
+ * Needs count *up* towards 1 = desperate, so decay adds pressure.
+ */
 export function decayNeeds(needs: Needs): Needs {
   return {
     hunger: clamp01(needs.hunger + NEED_DECAY.hunger),

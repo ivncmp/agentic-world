@@ -9,14 +9,23 @@ import { characterIdFor } from '../core/characters-data.js'
 
 const portraits = new Map<string, string>()
 
+/**
+ * Called once per character after the off-screen portrait pass renders it.
+ */
 export function registerPortrait(charId: string, dataUrl: string): void {
   portraits.set(charId, dataUrl)
 }
 
+/**
+ * The portrait for an agent, resolved through `characterIdFor`.
+ */
 export function avatarDataUrl(agentId: string): string {
   return portraits.get(characterIdFor(agentId)) ?? ''
 }
 
+/**
+ * An `<img>` tag ready to drop into a panel's HTML.
+ */
 export function avatarImg(agentId: string, size = 22): string {
   const url = avatarDataUrl(agentId)
   if (!url) return ''

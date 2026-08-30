@@ -14,13 +14,21 @@ import { json, withBody, round2 } from './respond.js'
 import type { World } from '../world/context.js'
 import type { LiveFeed } from '../world/feed.js'
 
+/**
+ * Everything the handler closes over. Passed in so routes stay testable.
+ */
 export type RouteDeps = {
   world: World
   feed: LiveFeed
-  /** Shared secret gating owner registration and agent creation. */
+  /**
+   * Shared secret gating owner registration and agent creation.
+   */
   adminSecret: string
 }
 
+/**
+ * Builds the request handler. One switch, one endpoint per case.
+ */
 export function createRequestHandler(deps: RouteDeps) {
   const { world, feed, adminSecret } = deps
 
@@ -103,7 +111,9 @@ export function createRequestHandler(deps: RouteDeps) {
   }
 }
 
-/** The static picture of the city, fetched once when the viewer boots. */
+/**
+ * The static picture of the city, fetched once when the viewer boots.
+ */
 function worldPayload(world: World): unknown {
   const { city } = world
   return {
@@ -137,7 +147,9 @@ function worldPayload(world: World): unknown {
   }
 }
 
-/** Who knows whom, and how they feel about it. Pairs never met are omitted. */
+/**
+ * Who knows whom, and how they feel about it. Pairs never met are omitted.
+ */
 function relationshipGraph(world: World): unknown {
   const nodes = world.state.agents.map((a) => ({ id: a.id, name: a.name }))
   const edges: {

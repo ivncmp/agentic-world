@@ -11,8 +11,10 @@ import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { Pool } from 'pg'
 
-/** Connection from the environment, matching docker-compose defaults. */
-/** The connection pool, configured from the environment. */
+/**
+ * Connection from the environment, matching docker-compose defaults. The
+ * connection pool, configured from the environment.
+ */
 export function makePool(): Pool {
   return new Pool({
     host: process.env.POSTGRES_HOST ?? '127.0.0.1',
@@ -26,10 +28,6 @@ export function makePool(): Pool {
 /**
  * Applies every .sql file in migrations/ in name order, once. Deliberately
  * primitive: a migration tool is worth adding when the schema stops moving.
- */
-/**
- * Applies any migration not yet recorded in `schema_migrations`, in
- * lexicographic order, and returns the filenames it ran.
  */
 export async function migrate(pool: Pool): Promise<string[]> {
   await pool.query(

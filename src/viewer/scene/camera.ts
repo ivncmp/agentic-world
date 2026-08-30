@@ -9,14 +9,22 @@ import type { AgentView } from './agents.js'
 
 const MIN_DISTANCE = 8
 const MAX_DISTANCE = 100
-/** Fixed viewing angle used whenever the camera reframes itself. */
+/**
+ * Fixed viewing angle used whenever the camera reframes itself.
+ */
 const ISO_DIR = new THREE.Vector3(0.62, 0.55, 0.62).normalize()
 
+/**
+ * The camera and its orbit controls, kept together because they move as one.
+ */
 export type CameraRig = {
   camera: THREE.PerspectiveCamera
   controls: OrbitControls
 }
 
+/**
+ * Perspective camera plus damped orbit controls, framed on the city centre.
+ */
 export function createCamera(canvas: HTMLCanvasElement, center: THREE.Vector3, aspect: number): CameraRig {
   const camera = new THREE.PerspectiveCamera(35, aspect, 0.5, 200)
   camera.position.set(center.x + 35, 30, center.z + 35)
@@ -33,10 +41,14 @@ export function createCamera(canvas: HTMLCanvasElement, center: THREE.Vector3, a
   return { camera, controls }
 }
 
-/** Where a one-shot camera glide is heading. */
+/**
+ * Where a one-shot camera glide is heading.
+ */
 export type Focus = { target: THREE.Vector3; camera: THREE.Vector3 }
 
-/** Frame every agent as tightly as the viewport allows. */
+/**
+ * Frame every agent as tightly as the viewport allows.
+ */
 export function framingAllAgents(
   rig: CameraRig,
   grid: CityGrid,
@@ -70,7 +82,9 @@ export function framingAllAgents(
   return { target, camera: target.clone().addScaledVector(ISO_DIR, dist) }
 }
 
-/** Glide onto a tile, keeping the current viewing angle. */
+/**
+ * Glide onto a tile, keeping the current viewing angle.
+ */
 export function framingTile(rig: CameraRig, grid: CityGrid, gx: number, gy: number, distance = 12): Focus {
   const p = grid.worldPos(gx, gy)
   const target = new THREE.Vector3(p.x, 1, p.z)
@@ -79,19 +93,27 @@ export function framingTile(rig: CameraRig, grid: CityGrid, gx: number, gy: numb
   return { target, camera: target.clone().addScaledVector(dir, distance) }
 }
 
+/**
+ * Jumps straight to a framing, with no animation.
+ */
 export function snapTo(rig: CameraRig, focus: Focus): void {
   rig.controls.target.copy(focus.target)
   rig.camera.position.copy(focus.camera)
   rig.camera.lookAt(focus.target)
 }
 
-/** Step one frame toward a focus. Returns true once it has arrived. */
+/**
+ * Step one frame toward a focus. Returns true once it has arrived.
+ */
 export function easeTo(rig: CameraRig, focus: Focus): boolean {
   rig.controls.target.lerp(focus.target, 0.08)
   rig.camera.position.lerp(focus.camera, 0.08)
   return rig.camera.position.distanceTo(focus.camera) < 0.25
 }
 
+/**
+ * One step in or out, from the DOM zoom buttons.
+ */
 export function zoom(rig: CameraRig, dir: number): void {
   const dist = rig.camera.position.distanceTo(rig.controls.target)
   const next = THREE.MathUtils.clamp(dist * (dir > 0 ? 0.8 : 1.25), MIN_DISTANCE, MAX_DISTANCE)

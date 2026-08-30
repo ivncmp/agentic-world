@@ -1,3 +1,10 @@
+/**
+ * The venue panel: what a place is, and who is inside it right now.
+ *
+ * Opened by clicking a building in the scene or a venue label. Reads the same
+ * state message the scene does, so the list of occupants can never disagree
+ * with the figures standing in the room.
+ */
 import type {
   EngineConnection,
   WorldInfo,
@@ -52,6 +59,9 @@ let el: HTMLElement | null = null
 let openId: string | null = null
 let latestAgents: AgentSnapshot[] = []
 
+/**
+ * Wires the venue panel: opens on a building or label click, lists occupants.
+ */
 export function initVenueCard(conn: EngineConnection, world: WorldInfo): void {
   el = document.createElement('div')
   el.id = 'venue-card'

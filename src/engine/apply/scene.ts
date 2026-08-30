@@ -72,7 +72,9 @@ export function applySceneOutcome(
   return { ...state, agents, relationships }
 }
 
-/** Frees a pair whose scene could not be resolved, leaving no trace. */
+/**
+ * Frees a pair whose scene could not be resolved, leaving no trace.
+ */
 export function abandonScene(state: WorldState, aId: AgentId, bId: AgentId): WorldState {
   return {
     ...state,

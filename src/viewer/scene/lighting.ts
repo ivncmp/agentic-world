@@ -6,6 +6,9 @@
  */
 import * as THREE from 'three'
 
+/**
+ * The three lights the day/night cycle drives.
+ */
 export type SkyRig = {
   ambient: THREE.AmbientLight
   sun: THREE.DirectionalLight
@@ -22,6 +25,9 @@ const SUN_COLOUR = new THREE.Color(0xfff3d6)
 const HORIZON_COLOUR = new THREE.Color(0xff7a3c)
 const MOON_COLOUR = new THREE.Color(0x7f9cd8)
 
+/**
+ * Ambient, sun with shadows, and a cool fill. Shadow camera covers the city.
+ */
 export function createLighting(scene: THREE.Scene, center: THREE.Vector3): SkyRig {
   const ambient = new THREE.AmbientLight(0xffffff, 0.6)
   scene.add(ambient)

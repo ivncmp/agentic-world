@@ -7,7 +7,9 @@
 import * as THREE from 'three'
 import type { WorldInfo, LocationInfo, BlockInfo, WaterRegion } from '../core/connection.js'
 
-/** World units per grid tile. Every model is scaled against this. */
+/**
+ * World units per grid tile. Every model is scaled against this.
+ */
 export const TILE = 2.0
 
 const NEIGHBOURS: [number, number][] = [
@@ -42,6 +44,9 @@ function expandWater(regions: WaterRegion[]): { river: Set<string>; sea: Set<str
   return { river, sea, lake }
 }
 
+/**
+ * Built once from the world payload, then read-only for the scene's lifetime.
+ */
 export class CityGrid {
   readonly size: number
   readonly period: number
@@ -73,7 +78,9 @@ export class CityGrid {
     this.lake = w.lake
   }
 
-  /** Centre of a tile in world space, at ground level. */
+  /**
+   * Centre of a tile in world space, at ground level.
+   */
   worldPos(gx: number, gy: number): THREE.Vector3 {
     return new THREE.Vector3(gx * TILE + TILE / 2, 0, gy * TILE + TILE / 2)
   }
@@ -91,7 +98,9 @@ export class CityGrid {
     return this.river.has(k) || this.sea.has(k) || this.lake.has(k)
   }
 
-  /** A street crossing the river — but never where the river has become sea. */
+  /**
+   * A street crossing the river — but never where the river has become sea.
+   */
   isBridge(x: number, y: number): boolean {
     const k = `${x},${y}`
     if (!this.river.has(k) || !this.isStreet(x, y) || this.sea.has(k)) return false
@@ -110,7 +119,9 @@ export class CityGrid {
     return this.blockAt(Math.floor(gx / this.period), Math.floor(gy / this.period))
   }
 
-  /** Blocks carry no district, so borrow one from a venue standing in them. */
+  /**
+   * Blocks carry no district, so borrow one from a venue standing in them.
+   */
   districtOf(bx: number, by: number): string | null {
     if (!this.blocks.has(`${bx},${by}`)) return null
     for (const v of this.locations) {

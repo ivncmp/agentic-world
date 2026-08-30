@@ -9,7 +9,9 @@ afterAll(() => rmSync(dir, { recursive: true, force: true }))
 
 let n = 0
 
-/** A template that passes every check, so each test can break exactly one thing. */
+/**
+ * A template that passes every check, so each test can break exactly one thing.
+ */
 const valid = (): Record<string, unknown> => ({
   name: 'Testville',
   grid: { width: 25, height: 25 },

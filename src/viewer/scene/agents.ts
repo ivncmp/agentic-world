@@ -11,7 +11,9 @@ import type { CityGrid } from './grid.js'
 import { INDOOR_KINDS, type ModelLibrary } from './assets.js'
 import type { AgentSnapshot, WorldInfo } from '../core/connection.js'
 
-/** Everything the render loop needs to draw and animate one agent. */
+/**
+ * Everything the render loop needs to draw and animate one agent.
+ */
 export type AgentView = {
   id: string
   name: string
@@ -19,12 +21,16 @@ export type AgentView = {
   mixer: THREE.AnimationMixer | null
   clips: Map<string, THREE.AnimationClip>
   currentAnim: string
-  /** Smoothed draw position, in grid units. */
+  /**
+   * Smoothed draw position, in grid units.
+   */
   x: number
   y: number
   from: { x: number; y: number }
   to: { x: number; y: number }
-  /** Engine-reported journey progress, and the eased value chasing it. */
+  /**
+   * Engine-reported journey progress, and the eased value chasing it.
+   */
   targetP: number
   p: number
   travelling: boolean
@@ -32,12 +38,19 @@ export type AgentView = {
   state: string
   partner: string | null
   at: string
-  /** The scale set by ModelLibrary normalisation, preserved for door animation. */
+  /**
+   * The scale set by ModelLibrary normalisation, preserved for door animation.
+   */
   baseScale: number
-  /** 1 = fully visible outdoors, 0 = hidden indoors. Animated smoothly. */
+  /**
+   * 1 = fully visible outdoors, 0 = hidden indoors. Animated smoothly.
+   */
   doorScale: number
 }
 
+/**
+ * Which animation clip an engine action state should play.
+ */
 export function animForState(state: string): string {
   switch (state) {
     case 'travel':
@@ -55,7 +68,9 @@ export function animForState(state: string): string {
   }
 }
 
-/** Fallback body for when a character GLB failed to load. */
+/**
+ * Fallback body for when a character GLB failed to load.
+ */
 function capsuleBody(): THREE.Group {
   const body = new THREE.Mesh(
     new THREE.CapsuleGeometry(0.15, 0.5, 4, 8),
@@ -74,13 +89,21 @@ function capsuleBody(): THREE.Group {
   return group
 }
 
+/**
+ * What `createAgents` hands back: the views, the pickable roots, the labels.
+ */
 export type AgentActors = {
   views: Map<string, AgentView>
-  /** Roots to raycast for hover and click. */
+  /**
+   * Roots to raycast for hover and click.
+   */
   pickable: THREE.Object3D[]
   labels: Map<string, HTMLDivElement>
 }
 
+/**
+ * Builds one character per agent, plus its floating name label.
+ */
 export function createAgents(
   scene: THREE.Scene,
   grid: CityGrid,
@@ -196,6 +219,10 @@ export function renderPortraits(models: ModelLibrary): void {
   r.dispose()
 }
 
+/**
+ * Whether an agent is inside a building, and so should be hidden along with
+ * their label. Someone mid-walk is never indoors, whatever their destination.
+ */
 export function isIndoors(grid: CityGrid, v: AgentView): boolean {
   if (v.travelling) return false
   const loc = grid.locById.get(v.at)
@@ -241,7 +268,9 @@ export function routePoint(v: AgentView, p: number, period: number): { x: number
   return { ...to }
 }
 
-/** Fan agents sharing a tile apart, keeping conversation partners face to face. */
+/**
+ * Fan agents sharing a tile apart, keeping conversation partners face to face.
+ */
 function spreadOffset(a: AgentSnapshot, here: string[]): { x: number; y: number } {
   if (here.length < 2) return { x: 0, y: 0 }
   if (a.partner != null && here.includes(a.partner)) {
@@ -254,7 +283,10 @@ function spreadOffset(a: AgentSnapshot, here: string[]): { x: number; y: number 
   return { x: Math.cos(angle) * r, y: Math.sin(angle) * r }
 }
 
-/** Fold an engine state message into the views the render loop interpolates. */
+/**
+ * Fold an engine state message into the views the render loop interpolates.
+ * Folds a state message into the views the render loop interpolates toward.
+ */
 export function updateAgentViews(views: Map<string, AgentView>, agents: AgentSnapshot[]): void {
   const crowd = new Map<string, string[]>()
   for (const a of agents) {
@@ -280,7 +312,9 @@ export function updateAgentViews(views: Map<string, AgentView>, agents: AgentSna
   }
 }
 
-/** Crossfade to the clip the agent's current state calls for. */
+/**
+ * Crossfade to the clip the agent's current state calls for.
+ */
 export function syncAnimation(v: AgentView, walking: boolean, dtSec: number): void {
   const wantAnim = walking ? 'walk' : animForState(v.state)
   if (v.mixer && wantAnim !== v.currentAnim) {

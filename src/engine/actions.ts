@@ -18,11 +18,6 @@ import { savingDrive, socialDrive } from '../agents/goals.js'
 import { hours } from './clock.js'
 
 /**
- * Layer 1. Utility AI: every candidate action is scored from needs, values and
- * context, and the best one wins. Pure arithmetic — this runs for every agent
- * on every tick and must never touch a model.
- */
-/**
  * Everything an agent can do. Closed: `scoreActions` must know how to score it
  * and `applyAction` must know what it costs, so a kind cannot exist alone.
  */
@@ -41,15 +36,21 @@ export type ActionKind =
   | 'travel'
   | 'idle'
 
-/** A chosen action, with wherever it happens and whoever it involves. */
+/**
+ * A chosen action, with wherever it happens and whoever it involves.
+ */
 export type Action = {
   kind: ActionKind
-  /** Where the action must happen; the agent travels first if elsewhere. */
+  /**
+   * Where the action must happen; the agent travels first if elsewhere.
+   */
   at: LocationId
   targetAgent?: AgentId
 }
 
-/** Where someone this agent likes currently is — a reason to go there. */
+/**
+ * Where someone this agent likes currently is — a reason to go there.
+ */
 export type FriendLocation = {
   friendId: AgentId
   affection: number
@@ -60,27 +61,43 @@ export type FriendLocation = {
 type ActionContext = {
   tick: number
   hour: number
-  /** 0 = Sunday, 6 = Saturday. */
+  /**
+   * 0 = Sunday, 6 = Saturday.
+   */
   dayOfWeek: number
-  /** Resolved personality — base + drift + decayed guidance. */
+  /**
+   * Resolved personality — base + drift + decayed guidance.
+   */
   values: ValueVector
   locationKindOf: (id: LocationId) => LocationKind
-  /** This agent's own home — homes are private, one per agent. */
+  /**
+   * This agent's own home — homes are private, one per agent.
+   */
   homeId: LocationId
-  /** Where this agent's job is, if they have one. */
+  /**
+   * Where this agent's job is, if they have one.
+   */
   workplaceId: LocationId | null
-  /** Nearest location of a kind. Null when the world has none. */
+  /**
+   * Nearest location of a kind. Null when the world has none.
+   */
   findLocation: (kind: LocationKind) => LocationId | null
-  /** Other agents currently sharing the agent's location. */
+  /**
+   * Other agents currently sharing the agent's location.
+   */
   co: readonly Agent[]
-  /** How many agents are at a given location (excluding self). */
+  /**
+   * How many agents are at a given location (excluding self).
+   */
   crowdAt: (loc: LocationId) => number
   /**
    * How this agent feels about another, −1..1. Read only when weighing theft,
    * so the relationship map never has to be walked on an ordinary tick.
    */
   feelingToward: (other: AgentId) => number
-  /** Friends (affection >= 0.25) currently at public locations. */
+  /**
+   * Friends (affection >= 0.25) currently at public locations.
+   */
   friendLocations: readonly FriendLocation[]
   random: () => number
 }
@@ -134,8 +151,9 @@ const ACTION_HOURS: Record<ActionKind, number> = {
   idle: 0,
 }
 
-/** Durations in ticks, derived so the tick size stays a real parameter. */
 /**
+ * Durations in ticks, derived so the tick size stays a real parameter.
+ *
  * How long each action occupies an agent. Nothing is instantaneous: a meal
  * takes a quarter of an hour and a night's sleep takes hours, which is what
  * stops agents flickering between activities every tick.
@@ -144,10 +162,11 @@ export const ACTION_TICKS = Object.fromEntries(
   Object.entries(ACTION_HOURS).map(([k, h]) => [k, h === 0 ? 1 : hours(h)]),
 ) as Record<ActionKind, number>
 
-/** Half a world day. Theft is a crisis move, not a livelihood. */
 /**
- * Robbery is a shock, not a habit. At twelve hours an agent could steal twice a
- * day forever; three days makes it something that happens to a relationship
+ * Half a world day. Theft is a crisis move, not a livelihood.
+ *
+ * Robbery is a shock, not a habit. At twelve hours an agent could steal twice
+ * a day forever; three days makes it something that happens to a relationship
  * rather than something that describes it.
  */
 const THEFT_COOLDOWN_TICKS = hours(72)
@@ -156,10 +175,6 @@ const THEFT_COOLDOWN_TICKS = hours(72)
  * A vice must actually build before it wins a tick. Without this an urge of
  * 0.02 outscores idling, so agents indulge every few ticks and the economy
  * drains — vices should be episodic crises, not a constant background hum.
- */
-/**
- * Urge past which indulging becomes attractive. Vice growth rates are
- * calibrated against this to fire one to three times a day.
  */
 export const VICE_URGE_THRESHOLD = 0.5
 
@@ -176,13 +191,11 @@ const NEED_THRESHOLD = {
   fun: 0.4,
 } as const
 
-/** One candidate and its utility. `chooseAction` takes the highest. */
+/**
+ * One candidate and its utility. `chooseAction` takes the highest.
+ */
 export type ScoredAction = { action: Action; score: number }
 
-/**
- * Values enter here and only here. An axis is only real if it changes a score
- * in this function; adding an axis without touching this is decoration.
- */
 /**
  * People avoid crowded places. A packed bar is less appealing than a quiet one.
  * No penalty up to 3 occupants; beyond that each extra person subtracts 0.12
@@ -193,6 +206,9 @@ const crowdPenalty = (crowd: number): number => Math.max(0, (crowd - 3) * 0.12)
 
 /**
  * Scores every action this agent could take right now.
+ *
+ * Values enter here and only here. An axis is only real if it changes a score
+ * in this function; adding an axis without touching this is decoration.
  *
  * Returns all candidates rather than a winner so the scoring stays inspectable
  * — when an agent does something baffling, the whole ranking is the evidence.
@@ -424,7 +440,9 @@ export function scoreActions(agent: Agent, ctx: ActionContext): ScoredAction[] {
   return out
 }
 
-/** The highest-scoring action. Ties break by order, so choices stay deterministic. */
+/**
+ * The highest-scoring action. Ties break by order, so choices stay deterministic.
+ */
 export function chooseAction(agent: Agent, ctx: ActionContext): Action {
   const scored = scoreActions(agent, ctx)
   if (scored.length === 0) return { kind: 'idle', at: agent.location }

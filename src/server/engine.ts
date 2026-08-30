@@ -20,7 +20,9 @@ import { handleJob } from './jobs/handlers.js'
 import { createRequestHandler } from './http/routes.js'
 
 const SEED = Number(process.env.SEED ?? 42)
-/** Real milliseconds per tick. The dial between "watchable" and "real time". */
+/**
+ * Real milliseconds per tick. The dial between "watchable" and "real time".
+ */
 const TICK_MS = Number(process.env.TICK_MS ?? 2000)
 const PORT = Number(process.env.PORT ?? 7070)
 const USE_LLM = process.env.LLM !== '0'
@@ -28,7 +30,9 @@ const PERSIST = process.env.PERSIST !== '0'
 const ADMIN_SECRET = process.env.ADMIN_SECRET ?? ''
 const REDIS_URL = process.env.REDIS_URL ?? 'redis://localhost:6479'
 
-/** Reference instant for guidance decay. Fixed, so decay stays reproducible. */
+/**
+ * Reference instant for guidance decay. Fixed, so decay stays reproducible.
+ */
 const NOW = Date.parse('2026-08-19T00:00:00Z')
 
 /**
@@ -149,7 +153,9 @@ async function step(): Promise<void> {
   }
 }
 
-/** Hand the tick's cognition jobs to the queue. Never awaited by the clock. */
+/**
+ * Hand the tick's cognition jobs to the queue. Never awaited by the clock.
+ */
 function queueCognition(r: ReturnType<typeof tick>): void {
   for (const s of r.sceneJobs) {
     void submit({ kind: 'scene', a: s.a, b: s.b, tension: s.score, tick: world.state.tick })

@@ -48,6 +48,9 @@ function getColors() {
   }
 }
 
+/**
+ * The relationship graph: a force layout over `/rel-graph`, drawn on canvas.
+ */
 export function initGraph(): void {
   canvas = document.getElementById('graph-canvas') as HTMLCanvasElement
   if (!canvas) return

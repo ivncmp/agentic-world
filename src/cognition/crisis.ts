@@ -18,17 +18,23 @@ import type { ModelProvider, CompletionResult } from './provider.js'
 import { extractJsonObject, looksLikeRefusal } from './json.js'
 import { pickBy } from '../shared/hash.js'
 
-/** The agent, their situation, and the tick that varies the prompt's angle. */
+/**
+ * The agent, their situation, and the tick that varies the prompt's angle.
+ */
 export type CrisisInput = {
   agent: Agent
   values: ValueVector
   kind: CrisisKind
   context: string
-  /** Varies the prompt's entry point. The tick, so the choice is reproducible. */
+  /**
+   * Varies the prompt's entry point. The tick, so the choice is reproducible.
+   */
   tick: number
 }
 
-/** The thought plus its metering. An empty `thought` means the model declined. */
+/**
+ * The thought plus its metering. An empty `thought` means the model declined.
+ */
 export type CrisisResult = {
   thought: string
   prompt: string
@@ -117,7 +123,9 @@ export function parseCrisisResponse(text: string): string {
     .slice(0, 300)
 }
 
-/** One call. A refusal comes back as an empty thought, never as prose in the diary. */
+/**
+ * One call. A refusal comes back as an empty thought, never as prose in the diary.
+ */
 export async function resolveCrisis(input: CrisisInput, provider: ModelProvider): Promise<CrisisResult> {
   const prompt = buildCrisisPrompt(input)
   const res: CompletionResult = await provider.complete({ prompt, purpose: 'crisis' })

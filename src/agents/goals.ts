@@ -1,34 +1,45 @@
-import type { Agent, Goal } from './agent.js'
-import type { ValueVector } from './values.js'
-
 /**
  * Goals are the keystone. Without them a comfortable agent wants nothing, so it
  * idles and its money piles up; the gate scores a goal conflict that can never
  * happen; and the owner has nothing to advise about. Everything downstream of
  * "why would this agent do anything today" runs through here.
  */
+import type { Agent, Goal } from './agent.js'
+import type { ValueVector } from './values.js'
 
-/** Deposit needed before an agent can stop renting. */
 /**
+ * Deposit needed before an agent can stop renting.
+ *
  * An aspirational sink. Without somewhere for money to go, a saving agent
  * accumulates forever and becomes immune to the pressure that makes stories.
  * Buying drops housing cost by 60%; it typically fires around day 10-12.
  */
 export const HOME_DEPOSIT = 1200
-/** Capital needed to start a business. */
-/** The larger sink, for agents who get past a home. */
+/**
+ * Capital needed to start a business — the larger sink, once a home is bought.
+ */
 export const BUSINESS_CAPITAL = 2000
 
-/** What the world looks like from this agent's position, when goals are derived. */
+/**
+ * What the world looks like from this agent's position, when goals are derived.
+ */
 export type GoalContext = {
   values: ValueVector
-  /** Ids this agent owes money to. */
+  /**
+   * Ids this agent owes money to.
+   */
   creditors: readonly string[]
-  /** How many people this agent has any relationship with. */
+  /**
+   * How many people this agent has any relationship with.
+   */
   acquaintances: number
-  /** A workplace with a vacancy matching the agent's occupation, if any. */
+  /**
+   * A workplace with a vacancy matching the agent's occupation, if any.
+   */
   vacancy: string | null
-  /** Someone worth getting to know, if the agent is short of company. */
+  /**
+   * Someone worth getting to know, if the agent is short of company.
+   */
   strangerId: string | null
 }
 
@@ -85,8 +96,9 @@ export function deriveGoals(agent: Agent, ctx: GoalContext): Goal[] {
   return goals
 }
 
-/** Extra pull a goal lends to earning money. */
-/** How hard current goals push toward working and job-seeking. Read by `scoreActions`. */
+/**
+ * Extra pull current goals lend to working and job-seeking. Read by `scoreActions`.
+ */
 export function savingDrive(goals: readonly Goal[]): number {
   let drive = 0
   for (const g of goals) {
@@ -97,8 +109,9 @@ export function savingDrive(goals: readonly Goal[]): number {
   return Math.min(1, drive)
 }
 
-/** Extra pull a goal lends to seeking company. */
-/** How hard current goals push toward socialising. Read by `scoreActions`. */
+/**
+ * Extra pull current goals lend to socialising. Read by `scoreActions`.
+ */
 export function socialDrive(goals: readonly Goal[]): number {
   return Math.min(
     1,

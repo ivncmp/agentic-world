@@ -58,6 +58,9 @@ function switchTab(tab: Tab): void {
   }
 }
 
+/**
+ * Wires the whole sidebar: tabs, the clock, the agent list and the live feed.
+ */
 export function initSidebar(conn: EngineConnection, world: WorldInfo): void {
   const clockEl = document.getElementById('clock')!
   const dateEl = document.getElementById('date')!

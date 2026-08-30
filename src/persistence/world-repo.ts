@@ -25,7 +25,6 @@ import { pairKey } from '../engine/tick.js'
  * between what ran and what was stored, which is the one bug class that makes a
  * persisted simulation untrustworthy.
  */
-/** Load and save the entire world. Written every game hour, not just at midnight. */
 export class WorldRepository {
   constructor(private readonly pool: Pool) {}
 
@@ -129,7 +128,9 @@ export class WorldRepository {
     }
   }
 
-  /** Null when the database holds no world yet. */
+  /**
+   * Null when the database holds no world yet.
+   */
   async load(): Promise<{ state: WorldState; seed: number; city: unknown } | null> {
     const w = await this.pool.query<{ tick: string; seed: number; city: unknown }>(
       'SELECT tick, seed, city FROM world WHERE id = 1',
@@ -211,7 +212,9 @@ export class WorldRepository {
     }
   }
 
-  /** Convenience for tests and a fresh start. */
+  /**
+   * Convenience for tests and a fresh start.
+   */
   async reset(): Promise<void> {
     await this.pool.query('TRUNCATE world, locations, agents, relationships, daily_counters RESTART IDENTITY')
   }

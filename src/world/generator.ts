@@ -28,7 +28,9 @@ const VENUE_NAMES: Partial<Record<LocationKind, readonly string[]>> = {
   cafe: ['Café Rincón', 'La Tertulia', 'Café Sol'],
 }
 
-/** A laid-out city, plus the mutable home-plot pool `createAgent` draws from. */
+/**
+ * A laid-out city, plus the mutable home-plot pool `createAgent` draws from.
+ */
 export type GeneratedCity = {
   config: CityConfig
   layout: CityLayout
@@ -39,11 +41,17 @@ export type GeneratedCity = {
    * as agents join. Skips any tile already occupied.
    */
   allocateHome: () => { tile: Tile; district: string }
-  /** Tell the allocator which tiles are already taken (call after loading state). */
+  /**
+   * Tell the allocator which tiles are already taken (call after loading state).
+   */
   markOccupied: (tiles: ReadonlySet<string>) => void
-  /** Workplace id -> remaining vacancies. */
+  /**
+   * Workplace id -> remaining vacancies.
+   */
   openings: Map<LocationId, number>
-  /** Water regions (river, sea, lake). Empty for procedural cities. */
+  /**
+   * Water regions (river, sea, lake). Empty for procedural cities.
+   */
   water: WaterRegion[]
 }
 
@@ -61,7 +69,9 @@ function districtOf(block: Block, layout: CityLayout, names: readonly string[]):
   return names[1 + (quadrant % (names.length - 1))] ?? names[0] ?? 'Centro'
 }
 
-/** Rotates a list so successive worlds from different seeds do not look alike. */
+/**
+ * Rotates a list so successive worlds from different seeds do not look alike.
+ */
 function rotated<T>(items: T[], rng: () => number): T[] {
   if (items.length === 0) return items
   const k = Math.floor(rng() * items.length)
@@ -76,7 +86,6 @@ function rotated<T>(items: T[], rng: () => number): T[] {
  * bare spiral of tiles: a shop belongs on a corner with a road in front of it,
  * and that single constraint is most of what makes the map look inhabited.
  */
-/** Builds a city from a seed. The same seed always gives the same town. */
 export function generateCity(
   config: CityConfig = DEFAULT_CITY,
   seed = 1,
@@ -174,13 +183,17 @@ export function generateCity(
   return { config, layout, locations, openings, allocateHome, markOccupied, water: [] }
 }
 
-/** Every venue of one kind, for picking a bar or an office to send someone to. */
+/**
+ * Every venue of one kind, for picking a bar or an office to send someone to.
+ */
 export const venuesOfKind = (city: GeneratedCity, kind: LocationKind): Location[] =>
   city.locations.filter((l) => l.kind === kind)
 
 // ---- template I/O -----------------------------------------------------------
 
-/** Rebuilds a city from a baked template, so a world keeps its map across changes. */
+/**
+ * Rebuilds a city from a baked template, so a world keeps its map across changes.
+ */
 export function cityFromTemplate(t: CityTemplate): GeneratedCity {
   const blocksPerSide = Math.floor((t.grid.width - 1) / t.streetPeriod)
   const c = Math.floor(blocksPerSide / 2)
@@ -258,7 +271,9 @@ export function cityFromTemplate(t: CityTemplate): GeneratedCity {
   return { config, layout, locations, openings, allocateHome, markOccupied, water: t.water ?? [] }
 }
 
-/** Freezes a generated city into a template. Used by `src/dev/bake-cities.ts`. */
+/**
+ * Freezes a generated city into a template. Used by `src/dev/bake-cities.ts`.
+ */
 export function exportTemplate(city: GeneratedCity, seed: number): CityTemplate {
   const residential = city.layout.blocks.filter((b) => b.role === 'residential')
   const rng = makeRng(seed)

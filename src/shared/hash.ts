@@ -16,7 +16,9 @@ export function hash(...parts: (string | number)[]): number {
   return h >>> 0
 }
 
-/** Deterministically picks one entry from a non-empty list. */
+/**
+ * Deterministically picks one entry from a non-empty list.
+ */
 export function pickBy<T>(items: readonly T[], ...parts: (string | number)[]): T {
   return items[hash(...parts) % items.length]!
 }
