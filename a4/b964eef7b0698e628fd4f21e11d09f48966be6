@@ -1,0 +1,29 @@
+src/cognition/crisis.ts
+  s_0c69fc4bd2bb00::t_16e85e74c5988e 1-12,21,31,120
+src/cognition/deliberation.ts
+  s_0c69fc4bd2bb00::t_7b3da8c5875d50 1-14,22,30,40,72,143-146,191
+src/cognition/gate.ts
+  s_0c69fc4bd2bb00::t_4ba3dce4e9b60c 1-18,39,59,62-67,76,83,112,116-119,141,167,183-186,218
+src/cognition/provider.ts
+  s_0c69fc4bd2bb00::t_ee2eec5f42c78a 1-7,10,16,26-29,35,66-69
+src/cognition/reflection.ts
+  s_0c69fc4bd2bb00::t_f5469f52cb8c43 1-15,36,49-53,58,116,146,158,182-185
+src/cognition/scene.ts
+  s_0c69fc4bd2bb00::t_980fd337e19b44 1-11,25,83,85,88,101,109,235-239,286,298,319-323
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "a4b964eef7b0698e628fd4f21e11d09f48966be6",
+  "prompts": {},
+  "sessions": {
+    "s_0c69fc4bd2bb00": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fbf4acf4-b682-40d7-8694-7837a363537f",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Iván Campillo <ivncmp@gmail.com>"
+    }
+  }
+}
