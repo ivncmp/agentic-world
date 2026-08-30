@@ -47,3 +47,11 @@ process.on('SIGTERM', () => {
 process.on('SIGINT', () => {
   http.close(() => process.exit(0))
 })
+
+/**
+ * One owner's failed request must not take the server down for every other
+ * owner. Log it and stay up — the caller already got their error.
+ */
+process.on('unhandledRejection', (reason) => {
+  console.error('unhandled rejection (continuing):', reason)
+})

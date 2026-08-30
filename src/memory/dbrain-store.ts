@@ -34,6 +34,18 @@ export const stampToTick = (stamp: string): number => {
 
 const categoryFor = (kind: MemoryKind, secondHand: boolean): string => (secondHand ? 'hearsay' : kind)
 
+/**
+ * dbrain reports failures as plain errors, so these match on the message. They
+ * are deliberately narrow: anything unrecognised is treated as a real fault and
+ * logged, because the alternative is a silent outage that looks like an agent
+ * with nothing to remember.
+ */
+const message = (err: unknown): string => (err instanceof Error ? err.message : String(err)).toLowerCase()
+
+const isAlreadyExists = (err: unknown): boolean => /already exists|conflict|409|duplicate/.test(message(err))
+
+const isMissingEntity = (err: unknown): boolean => /not found|404/.test(message(err))
+
 export class DbrainStore implements MemoryStore {
   private readonly known = new Set<AgentId>()
   private readonly client: DBrainClient
@@ -55,8 +67,15 @@ export class DbrainStore implements MemoryStore {
         type: 'person',
         category: this.opts.category ?? 'agents',
       })
-    } catch {
-      // Already there, which is the common case on restart.
+    } catch (err) {
+      // Already there is the common case on restart, and the only one worth
+      // swallowing. Anything else — dbrain down, bad token — must not mark the
+      // agent known, or this never retries and every later recall comes back
+      // empty for the life of the process.
+      if (!isAlreadyExists(err)) {
+        console.warn(`[dbrain] could not create entity ${id}:`, err)
+        return
+      }
     }
     this.known.add(id)
   }
@@ -71,11 +90,18 @@ export class DbrainStore implements MemoryStore {
     })
   }
 
+  /**
+   * Returns no memories rather than throwing, so a dbrain outage degrades a
+   * scene instead of dropping it. It warns because the failure is otherwise
+   * indistinguishable from an agent who genuinely remembers nothing — which is
+   * also what a brand-new agent looks like.
+   */
   private async facts(who: AgentId): Promise<FactRow[]> {
     try {
       const e = await this.client.getEntity(who)
       return e.facts ?? []
-    } catch {
+    } catch (err) {
+      if (!isMissingEntity(err)) console.warn(`[dbrain] recall failed for ${who}:`, err)
       return []
     }
   }

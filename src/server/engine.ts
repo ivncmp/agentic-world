@@ -201,3 +201,17 @@ async function shutdown(): Promise<void> {
 
 process.on('SIGTERM', () => void shutdown())
 process.on('SIGINT', () => void shutdown())
+
+/**
+ * A world that runs for weeks will eventually drop a promise somewhere — a
+ * dbrain call, a queue write. Node's default is to print and exit, which would
+ * take down a healthy simulation over one lost memory write.
+ *
+ * So log and keep ticking: cognition degrades, the world does not stop. That is
+ * the same trade the queue makes. An uncaught *exception* is different — the
+ * process is in an unknown state after one, so it is left to exit and let
+ * Docker's restart policy bring back a clean one, resuming from the last save.
+ */
+process.on('unhandledRejection', (reason) => {
+  console.error('unhandled rejection (continuing):', reason)
+})

@@ -38,17 +38,46 @@ export type CityTemplate = {
   water?: WaterRegion[]
 }
 
+/**
+ * Every required field is checked before the cast, because a template is read
+ * once at boot and a missing field would otherwise surface as `undefined`
+ * halfway through city generation — with a stack trace pointing at the
+ * generator rather than at the file that is actually wrong.
+ */
 export function loadTemplate(path: string): CityTemplate {
   const raw = JSON.parse(readFileSync(path, 'utf8')) as Record<string, unknown>
-  if (typeof raw.name !== 'string') throw new Error('template: missing name')
-  if (!Array.isArray(raw.venues) || raw.venues.length === 0)
-    throw new Error('template: venues must be a non-empty array')
-  if (!Array.isArray(raw.blocks)) throw new Error('template: missing blocks')
-  if (!Array.isArray(raw.homePlots)) throw new Error('template: missing homePlots')
-  const validKinds = new Set<string>(LOCATION_KINDS.filter((k) => k !== 'home'))
-  for (const v of raw.venues as { kind: string }[]) {
-    if (!validKinds.has(v.kind)) throw new Error(`template: unknown venue kind "${v.kind}"`)
+
+  const bad = (why: string): never => {
+    throw new Error(`template ${path}: ${why}`)
   }
+
+  if (typeof raw.name !== 'string' || raw.name === '') bad('missing name')
+
+  const grid = raw.grid as { width?: unknown; height?: unknown } | undefined
+  if (typeof grid?.width !== 'number' || typeof grid.height !== 'number')
+    bad('grid must be { width, height }')
+
+  if (typeof raw.streetPeriod !== 'number' || raw.streetPeriod < 2) bad('streetPeriod must be a number >= 2')
+
+  if (!Array.isArray(raw.districts) || raw.districts.length === 0) bad('districts must be a non-empty array')
+
+  if (typeof raw.openingsPerWorkplace !== 'number' || raw.openingsPerWorkplace < 1)
+    bad('openingsPerWorkplace must be a number >= 1')
+
+  if (!Array.isArray(raw.venues) || raw.venues.length === 0) bad('venues must be a non-empty array')
+  if (!Array.isArray(raw.blocks)) bad('missing blocks')
+  if (!Array.isArray(raw.homePlots) || raw.homePlots.length === 0) bad('homePlots must be a non-empty array')
+
+  const validKinds = new Set<string>(LOCATION_KINDS.filter((k) => k !== 'home'))
+  const districts = new Set(raw.districts as string[])
+  for (const v of raw.venues as { kind: string; district: string; name: string }[]) {
+    if (!validKinds.has(v.kind)) bad(`unknown venue kind "${v.kind}"`)
+    // A venue in a district nobody declared reaches the viewer as a building
+    // with no district, and the tooltip goes blank rather than erroring.
+    if (!districts.has(v.district)) bad(`venue "${v.name}" is in undeclared district "${v.district}"`)
+  }
+
+  // Validated above.
   return raw as unknown as CityTemplate
 }
 
