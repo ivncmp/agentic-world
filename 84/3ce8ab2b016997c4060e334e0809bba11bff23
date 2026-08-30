@@ -1,0 +1,153 @@
+src/agents/agent.ts
+  s_0c69fc4bd2bb00::t_f3f4dab974d2b9 18-20,31-33,35-37,41-43,46-48,51-53,59-61,71-73,111-113,141-143,145-147,156-158,160-162,165-167,179-181,184-186,190-192
+src/agents/create.ts
+  s_0c69fc4bd2bb00::t_1d0fece5e4323b 28-30,32-34,41-43,46-48,52-54,56-58
+src/agents/goals.ts
+  s_0c69fc4bd2bb00::t_ab524155a9be2f 7-8,11-12,18-20,23-25,28-30,32-34,36-38,40-42,99-101,112-114
+src/agents/needs.ts
+  s_0c69fc4bd2bb00::t_14310f4756b7c7 30-32,43-45
+src/agents/values.ts
+  s_0c69fc4bd2bb00::t_80a5ad91d5c0c5 16-18,21-23,49-51,54-56,62-63
+src/agents/vices.ts
+  s_0c69fc4bd2bb00::t_d23bd9adc37a39 6-11,14-16,25-27,29-31,93-96,102-104,107-110
+src/cognition/crisis.ts
+  s_0c69fc4bd2bb00::t_87c3b3312f76a3 21-23,29-31,35-37,126-128
+src/cognition/deliberation.ts
+  s_0c69fc4bd2bb00::t_658ae558addf82 22-24,32-34,44-46,78-80,199-201
+src/cognition/gate.ts
+  s_0c69fc4bd2bb00::t_d3e39925aa5ce7 59-61,68-70,77-79,84-86,88-90,108-110,114-116,120-121,143-144,173-175,222-224
+src/cognition/json.ts
+  s_0c69fc4bd2bb00::t_534f99214257e7 22-24
+src/cognition/provider.ts
+  s_0c69fc4bd2bb00::t_4d95d3bf9ca657 10-12,18-20,39-41,46-48
+src/cognition/reflection.ts
+  s_0c69fc4bd2bb00::t_ec2a8b6cd809cf 36-38,40-42,44-46,48-50,52-54,59-60,62-63,69-71,129-131,161-163,175-177
+src/cognition/scene.ts
+  s_0c69fc4bd2bb00::t_ffbc5418fb3c79 25-27,37-39,47-49,51-53,55-57,59-61,96-98,101-103,116-118,126-128,263-265,267-269,309-311,323-325,346-347
+src/dev/check-identity.ts
+  s_0c69fc4bd2bb00::t_9dd7d0de74b61a 1-7
+src/engine/__tests__/tick.test.ts
+  s_0c69fc4bd2bb00::t_107da2344c0892 110-112,166-168
+src/engine/apply/action.ts
+  s_0c69fc4bd2bb00::t_542fe1285aab80 26-28,30-32,35-37,39-41,46-48,53-55,131-133,154-156
+src/engine/apply/deliberation.ts
+  s_0c69fc4bd2bb00::t_72f993a7f9419f 12-14,22-24
+src/engine/apply/scene.ts
+  s_0c69fc4bd2bb00::t_4ce6651a916ad9 75-77
+src/engine/clock.ts
+  s_0c69fc4bd2bb00::t_c599b1f3adc399 15-17,20-22,24-26,29-31,33-35,38-40,43-45,48-50,56-58,60-62,66,81-83,87-89,99-102
+src/engine/crisis-detect.ts
+  s_0c69fc4bd2bb00::t_9e7896400928a8 14-16,19-21,29-31
+src/engine/relationship.ts
+  s_0c69fc4bd2bb00::t_72de1b6721bb48 14-16
+src/engine/tick.ts
+  s_0c69fc4bd2bb00::t_cf4df93d06ba8d 73-75,78-80,82-84,86-88,90-92,96-98,104-106,110-112,116-118,146-148,159-161,163-165,168-170,173-175,177-179,181-184,187-189,228-230
+src/memory/dbrain-store.ts
+  s_0c69fc4bd2bb00::t_d71d15991370b0 1-12,34-36,47-49,70-72
+src/memory/in-memory-store.ts
+  s_0c69fc4bd2bb00::t_273daf46718e27 11-14
+src/memory/store.ts
+  s_0c69fc4bd2bb00::t_c0a9d6a8b943c0 25-27,32-34,36-38,40-42,46-48,51-53,66-68
+src/persistence/db.ts
+  s_0c69fc4bd2bb00::t_50c7eed23736a0 14-17
+src/persistence/history-repo.ts
+  s_0c69fc4bd2bb00::t_4b93da4a0f05f3 27-29,267-269
+src/persistence/owner-repo.ts
+  s_0c69fc4bd2bb00::t_46d83ddc7e9062 13-15,48-50
+src/persistence/world-repo.ts
+  s_0c69fc4bd2bb00::t_49a0a290d88608 131-133,215-217
+src/server/engine.ts
+  s_0c69fc4bd2bb00::t_c3d405ad472a8a 23-25,33-35,156-158
+src/server/http/agents.ts
+  s_0c69fc4bd2bb00::t_cb54011a86bb82 19-21,89-91
+src/server/http/owner.ts
+  s_0c69fc4bd2bb00::t_03160ef467571d 26-28,30-32,34-36,38-40,45-47,58-60,79-81,297-299
+src/server/http/respond.ts
+  s_0c69fc4bd2bb00::t_f79aad4001ce67 1-3,6-8,14-16,21-24,29-32,41-43
+src/server/http/routes.ts
+  s_0c69fc4bd2bb00::t_ba36fc9736ea75 17-19,23-25,29-31,114-116,150-152
+src/server/jobs/handlers.ts
+  s_0c69fc4bd2bb00::t_ab2644a682db1f 25-27,43-45,48-50,54-56,60-62,76-78,89-91
+src/server/jobs/llm-logger.ts
+  s_0c69fc4bd2bb00::t_df863adddaf807 1-11,17-19,36-38
+src/server/jobs/worker.ts
+  s_0c69fc4bd2bb00::t_c881e16e353bb8 1-12,17-19,26-28,35-37,40-43,115-117
+src/server/world/context.ts
+  s_0c69fc4bd2bb00::t_13bfa94fcac32e 25-32,34-36,39-41,51-53,55-57,59-61,63-65,67-69,73-75,80-82,84-86,88-90
+src/server/world/feed.ts
+  s_0c69fc4bd2bb00::t_d5086e8ce938f1 13-16,25-28,39-41,45-48,58-60,83-85,93-95,150-152
+src/shared/hash.ts
+  s_0c69fc4bd2bb00::t_28cb9fddadff76 19-21
+src/viewer/core/characters-data.ts
+  s_0c69fc4bd2bb00::t_67abfb9b90e619 9-11,33-35,38-40,43-47
+src/viewer/core/connection.ts
+  s_0c69fc4bd2bb00::t_137c1747c04cd2 6-8,15-17,23-25,31-33,43-45,52-55,64-68,82-84,104-106,130-133,162-164
+src/viewer/main.ts
+  s_0c69fc4bd2bb00::t_eda212e7f2038c 1-6
+src/viewer/scene/agents.ts
+  s_0c69fc4bd2bb00::t_6ff8c38b0e7657 14-16,24-26,31-33,41-43,45-47,51-53,71-73,92-94,97-99,104-106,222-225,271-273,286-289,315-317
+src/viewer/scene/assets.ts
+  s_0c69fc4bd2bb00::t_26b2609a9bb756 16-18,76-78,80-82,84-86,88-90,92-94,97-99,115-118,135-138,146-148,163-165,168-170,187-194
+src/viewer/scene/buildings.ts
+  s_0c69fc4bd2bb00::t_4ce37663823e88 29-31,186-188
+src/viewer/scene/camera.ts
+  s_0c69fc4bd2bb00::t_e8b9d8ee05b5c7 12-14,17-19,25-27,44-46,49-51,85-87,96-98,105-107,114-116
+src/viewer/scene/grid.ts
+  s_0c69fc4bd2bb00::t_846869e603c763 10-12,47-49,81-83,101-103,122-124
+src/viewer/scene/ground.ts
+  s_0c69fc4bd2bb00::t_207c4bd5f151ce 9-11,21-23,26-28,34-36,127-129
+src/viewer/scene/highlight.ts
+  s_0c69fc4bd2bb00::t_de7db5cf20df20 13-15,21-23,57-59
+src/viewer/scene/index.ts
+  s_0c69fc4bd2bb00::t_4e39dd8e781aab 39-41,44-46,150-152,269-271
+src/viewer/scene/labels.ts
+  s_0c69fc4bd2bb00::t_2a1b423d8545b2 13-15,18-20,37-39,48-50,75-77,105-107
+src/viewer/scene/lighting.ts
+  s_0c69fc4bd2bb00::t_a074def6abef2d 9-11,28-30
+src/viewer/scene/picking.ts
+  s_0c69fc4bd2bb00::t_c37d27b72e9023 18-20,23-25,31-33,36-38,40-42,57-59,72-74
+src/viewer/scene/roads.ts
+  s_0c69fc4bd2bb00::t_ffe53dcb964fec 19-21,63-65,84-86
+src/viewer/ui/agent-card.ts
+  s_0c69fc4bd2bb00::t_110f86287f66a6 20-22
+src/viewer/ui/avatar.ts
+  s_0c69fc4bd2bb00::t_c65a4d070d3fe1 12-14,19-21,26-28
+src/viewer/ui/graph.ts
+  s_0c69fc4bd2bb00::t_8145a7b334e294 51-53
+src/viewer/ui/sidebar.ts
+  s_0c69fc4bd2bb00::t_7dff4cc80ee98a 61-63
+src/viewer/ui/venue-card.ts
+  s_0c69fc4bd2bb00::t_6bbe7779f4d395 1-7,62-64
+src/world/__tests__/config.test.ts
+  s_0c69fc4bd2bb00::t_81d8594e284adc 12-14
+src/world/config.ts
+  s_0c69fc4bd2bb00::t_79617abef8dfc8 29-31,40-42
+src/world/generator.ts
+  s_0c69fc4bd2bb00::t_6c782420462abd 31-33,44-46,48-50,52-54,72-74,186-188,194-196,274-276
+src/world/layout.ts
+  s_0c69fc4bd2bb00::t_c7ff22850d7e9b 15-18,21-22,24-25,29-31,42-44,49-51,53-55,62-64,68-70,76-78,82-84,103-105,145-148,156-158
+src/world/locations.ts
+  s_0c69fc4bd2bb00::t_778969c3a147b6 1-3,21-23,25-27,37-39,42-44,50-52,54-56,61-62,77-80,83-86,89-91,97-100
+src/world/occupations.ts
+  s_0c69fc4bd2bb00::t_6796dcdd9cba49 20-22,27-29,37-39,90-92,95-97,99-101
+src/world/rng.ts
+  s_0c69fc4bd2bb00::t_131462c35abdd7 13-15,22-24
+src/engine/actions.ts
+  s_0c69fc4bd2bb00::t_8d1f4754ae5dea 39-41,44-46,51-53,64-66,68-70,73-75,77-79,81-83,85-87,89-91,98-100,155-156,166-169,195,197-198,210-212,443-445
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "843ce8ab2b016997c4060e334e0809bba11bff23",
+  "prompts": {},
+  "sessions": {
+    "s_0c69fc4bd2bb00": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fbf4acf4-b682-40d7-8694-7837a363537f",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Iván Campillo <ivncmp@gmail.com>"
+    }
+  }
+}
