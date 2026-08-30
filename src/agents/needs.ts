@@ -1,3 +1,13 @@
+/**
+ * Needs and vice urges — the pressure that makes the reflex layer act.
+ *
+ * Needs count *up* toward 1 = desperate, so decay adds pressure rather than
+ * removing it. Rates are written per world day and converted to per tick, so
+ * the numbers stay meaningful if the tick size ever changes.
+ *
+ * Every need must have something that satisfies it. A decaying need with no
+ * consumer is dead weight that quietly starves an agent of options.
+ */
 import type { Agent, Needs } from './agent.js'
 import { urgeGrowth } from './vices.js'
 import { perDay } from '../engine/clock.js'
@@ -17,6 +27,7 @@ export const NEED_PER_DAY: Needs = {
   fun: 1.44,
 }
 
+/** The per-day rates above, converted to the per-tick amounts the loop adds. */
 export const NEED_DECAY: Needs = {
   hunger: perDay(NEED_PER_DAY.hunger),
   energy: perDay(NEED_PER_DAY.energy),
@@ -38,6 +49,11 @@ export function decayNeeds(needs: Needs): Needs {
   }
 }
 
+/**
+ * Pushes each vice's urge up by its own rate. Calibrated against
+ * `VICE_URGE_THRESHOLD` so a vice fires one to three times a day — often enough
+ * to shape a life, rare enough to stay an event.
+ */
 export function growViceUrges(agent: Agent): Agent['vices'] {
   return agent.vices.map((v) => ({
     ...v,

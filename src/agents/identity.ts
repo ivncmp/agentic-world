@@ -1,3 +1,14 @@
+/**
+ * Turning a freshly authored agent into first-person memories.
+ *
+ * The owner writes numbers on seven axes and picks two vices; a scene prompt
+ * needs sentences. This translates one into the other once, at creation, and
+ * writes the result to dbrain as identity memory.
+ *
+ * First person on purpose — these sit alongside everything life will add, and a
+ * character reading their own history should not find the opening chapter
+ * written about them in the third person.
+ */
 import type { Agent } from './agent.js'
 import { VALUE_AXES, type ValueAxis } from './values.js'
 import { occupationDef } from '../world/occupations.js'
@@ -43,6 +54,14 @@ const VICE_DESCRIPTIONS: Record<string, string> = {
   idleness: 'I am drawn to doing nothing. The couch, the bed, the easy choice — they always win too often.',
 }
 
+/**
+ * The identity memories a new agent starts life with, in their own voice.
+ *
+ * Written to dbrain once at creation. Everything life adds accretes on top; the
+ * owner-authored core here is what an agent falls back on when nothing else
+ * applies, and what the reflection prompt reads to keep a character recognisable
+ * after weeks of drift.
+ */
 export function buildFoundingIdentity(agent: Agent): string[] {
   const occ = occupationDef(agent.occupation).label.toLowerCase()
   const facts: string[] = []

@@ -1,3 +1,14 @@
+/**
+ * The utility AI — the free layer that runs ~95% of ticks.
+ *
+ * Every unoccupied agent scores every plausible action and takes the best.
+ * Needs push, values colour, goals weight, deliberation biases, and the clock
+ * decides what is even reasonable at this hour.
+ *
+ * **`scoreActions` is the only function where a value axis changes anything.**
+ * An axis no branch in here reads is decoration — adding one to the schema
+ * means adding the behaviour that consults it, or it does nothing at all.
+ */
 import type { Agent, AgentId } from '../agents/agent.js'
 import type { ValueVector } from '../agents/values.js'
 import { viceDef } from '../agents/vices.js'
@@ -10,6 +21,10 @@ import { hours } from './clock.js'
  * Layer 1. Utility AI: every candidate action is scored from needs, values and
  * context, and the best one wins. Pure arithmetic — this runs for every agent
  * on every tick and must never touch a model.
+ */
+/**
+ * Everything an agent can do. Closed: `scoreActions` must know how to score it
+ * and `applyAction` must know what it costs, so a kind cannot exist alone.
  */
 export type ActionKind =
   | 'eat'
@@ -26,6 +41,7 @@ export type ActionKind =
   | 'travel'
   | 'idle'
 
+/** A chosen action, with wherever it happens and whoever it involves. */
 export type Action = {
   kind: ActionKind
   /** Where the action must happen; the agent travels first if elsewhere. */
@@ -33,6 +49,7 @@ export type Action = {
   targetAgent?: AgentId
 }
 
+/** Where someone this agent likes currently is — a reason to go there. */
 export type FriendLocation = {
   friendId: AgentId
   affection: number
@@ -118,6 +135,11 @@ const ACTION_HOURS: Record<ActionKind, number> = {
 }
 
 /** Durations in ticks, derived so the tick size stays a real parameter. */
+/**
+ * How long each action occupies an agent. Nothing is instantaneous: a meal
+ * takes a quarter of an hour and a night's sleep takes hours, which is what
+ * stops agents flickering between activities every tick.
+ */
 export const ACTION_TICKS = Object.fromEntries(
   Object.entries(ACTION_HOURS).map(([k, h]) => [k, h === 0 ? 1 : hours(h)]),
 ) as Record<ActionKind, number>
@@ -135,6 +157,10 @@ const THEFT_COOLDOWN_TICKS = hours(72)
  * 0.02 outscores idling, so agents indulge every few ticks and the economy
  * drains — vices should be episodic crises, not a constant background hum.
  */
+/**
+ * Urge past which indulging becomes attractive. Vice growth rates are
+ * calibrated against this to fire one to three times a day.
+ */
 export const VICE_URGE_THRESHOLD = 0.5
 
 /**
@@ -150,6 +176,7 @@ const NEED_THRESHOLD = {
   fun: 0.4,
 } as const
 
+/** One candidate and its utility. `chooseAction` takes the highest. */
 export type ScoredAction = { action: Action; score: number }
 
 /**
@@ -164,6 +191,12 @@ export type ScoredAction = { action: Action; score: number }
  */
 const crowdPenalty = (crowd: number): number => Math.max(0, (crowd - 3) * 0.12)
 
+/**
+ * Scores every action this agent could take right now.
+ *
+ * Returns all candidates rather than a winner so the scoring stays inspectable
+ * — when an agent does something baffling, the whole ranking is the evidence.
+ */
 export function scoreActions(agent: Agent, ctx: ActionContext): ScoredAction[] {
   const v = ctx.values
   const out: ScoredAction[] = []
@@ -391,6 +424,7 @@ export function scoreActions(agent: Agent, ctx: ActionContext): ScoredAction[] {
   return out
 }
 
+/** The highest-scoring action. Ties break by order, so choices stay deterministic. */
 export function chooseAction(agent: Agent, ctx: ActionContext): Action {
   const scored = scoreActions(agent, ctx)
   if (scored.length === 0) return { kind: 'idle', at: agent.location }

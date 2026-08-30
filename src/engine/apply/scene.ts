@@ -1,3 +1,11 @@
+/**
+ * Folding a resolved scene back into the world.
+ *
+ * Pure reducers, so the handler that received the model's answer never edits
+ * the world by hand. `abandonScene` is the failure path and matters as much as
+ * the success one: two agents left holding a scene that will never resolve stay
+ * frozen until something releases them.
+ */
 import type { AgentId, Relationship } from '../../agents/agent.js'
 import type { SceneOutcome } from '../../cognition/scene.js'
 import { pairKey, type WorldState } from '../tick.js'

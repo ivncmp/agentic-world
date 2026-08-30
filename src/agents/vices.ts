@@ -74,16 +74,24 @@ export const VICE_CATALOG = {
   },
 } as const satisfies Record<string, ViceDefinition>
 
+/**
+ * Derived from the catalogue's keys, so adding an entry widens the type while
+ * an arbitrary string still fails to compile. Free-text vices would need a
+ * model call to interpret, which the reflex layer cannot afford.
+ */
 export type ViceKind = keyof typeof VICE_CATALOG
 
 /** A vice as carried by an agent: the kind plus its current pressure. */
+/** One agent's live pull toward one vice. `urge` climbs until it is indulged. */
 export type ViceInstance = {
   kind: ViceKind
   urge: number // 0..1
 }
 
+/** The static definition behind an agent's vice: label, trigger, cost. */
 export const viceDef = (kind: ViceKind): ViceDefinition => VICE_CATALOG[kind]
 
 /** Per-tick urge growth for a vice, derived from its daily frequency. */
+/** Per-tick urge growth that reaches `threshold` at the vice's own frequency. */
 export const urgeGrowth = (kind: ViceKind, threshold: number): number =>
   timesPerDay(VICE_CATALOG[kind].bitesPerDay, threshold)

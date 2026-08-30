@@ -1,3 +1,20 @@
+/**
+ * The tick loop — the free layer, and the heart of the project.
+ *
+ * `tick` is a **pure function**: `(state, deps) => { state, events, jobs }`.
+ * No I/O, no `await`, no model calls. Expensive cognition leaves as job
+ * descriptions for someone else to resolve. That is what makes "never block
+ * the clock" structural rather than aspirational, and it makes a whole
+ * simulated day testable in milliseconds.
+ *
+ * `deps.random` is injected. Keep it that way: determinism is what makes two
+ * runs comparable across a change, and ESLint forbids `Math.random` here.
+ *
+ * What happens each tick, in order: needs decay and vice urges grow, the
+ * economy is charged at day boundaries, every unoccupied agent picks an action,
+ * co-located pairs are scored by the gate, and whatever the budget allows
+ * becomes a queued scene.
+ */
 import type { Agent, AgentId, Relationship } from '../agents/agent.js'
 import { decayNeeds, growViceUrges } from '../agents/needs.js'
 import { resolveValues } from '../agents/values.js'
@@ -25,6 +42,12 @@ import {
 import { detectCrisis, type CrisisJob } from './crisis-detect.js'
 import { applyAction } from './apply/action.js'
 
+/**
+ * Everything that happened this tick, for the feed and the event log.
+ *
+ * Emitted by the loop, never by a cognition handler — a handler folds its
+ * result in through a reducer and publishes its own feed line.
+ */
 export type WorldEvent =
   | { type: 'scene_started'; tick: number; a: AgentId; b: AgentId }
   | { type: 'scene_abandoned'; tick: number; a: AgentId; b: AgentId }
@@ -38,6 +61,11 @@ export type WorldEvent =
   | { type: 'wage_garnished'; tick: number; agent: AgentId; amount: number; remaining: number }
   | { type: 'hired'; tick: number; agent: AgentId }
 
+/**
+ * The whole world, immutable. Every tick returns a new one rather than mutating
+ * in place, which is what lets a cognition result be folded in later by a pure
+ * reducer without racing the loop.
+ */
 export type WorldState = {
   tick: number
   agents: readonly Agent[]
@@ -55,6 +83,7 @@ export type WorldState = {
   openings: ReadonlyMap<LocationId, number>
 }
 
+/** Everything the loop needs from outside itself. Injected so it stays pure. */
 export type TickDeps = {
   now: number
   random: () => number
@@ -64,6 +93,7 @@ export type TickDeps = {
   scenePatienceTicks?: number
 }
 
+/** The new world, what happened, and what it would like someone to think about. */
 export type TickResult = {
   state: WorldState
   events: WorldEvent[]
@@ -88,9 +118,15 @@ export const SCENE_PATIENCE_TICKS = minutes(15)
 
 /** Warmth from simply being around someone. Small on purpose: it should take
  *  many shared rooms to matter, and it must never manufacture drama by itself. */
+/**
+ * Warmth from simply sharing a room. Small on purpose: it exists so people who
+ * see each other daily eventually have something to say, without every
+ * co-location becoming a paid conversation.
+ */
 export const PASSING_AFFECTION = 0.02
 
 /** How much bad blood one robbery leaves behind. */
+/** What being robbed adds to bad blood. Three thefts make an enemy. */
 export const GRIEVANCE_PER_THEFT = 0.35
 
 /**
@@ -102,17 +138,22 @@ export const GRIEVANCE_PER_THEFT = 0.35
 export const GRIEVANCE_DAILY_DECAY = 0.95
 
 /** Layer 1.5: deliberation fires every 12 game-hours. */
+/** Minimum ticks between deliberations for one agent — 12 game hours. */
 export const DELIBERATION_INTERVAL = 144
 /** Deliberation results expire after 12 game-hours. */
+/** How long a plan steers behaviour before it expires and stops mattering. */
 export const DELIBERATION_TTL = 144
 
 /** Crisis monologue cooldown: 4 game-hours between inner thoughts. */
 export const CRISIS_COOLDOWN = 48
 
 /** Arrears thresholds, in multiples of the agent's rent. */
+/** Arrears at this multiple of rent produce a warning event. */
 export const ARREARS_WARNING_FACTOR = 2
+/** And at this multiple, an eviction — currently emitted but not acted on. */
 export const ARREARS_EVICTION_FACTOR = 5
 /** Fraction of each wage tick diverted to pay down arrears. */
+/** Share of wages that would go to arrears once garnishment is wired up. */
 export const GARNISHMENT_RATE = 0.25
 
 /** Events worth tracking in the day's notable set. */
@@ -138,6 +179,11 @@ const UNINTERRUPTIBLE = new Set(['scene', 'sleep'])
 
 const interruptible = (a: Agent): boolean => a.activity == null || !UNINTERRUPTIBLE.has(a.activity.kind)
 
+/**
+ * Order-independent key for a pair. The smaller id comes first, which is also
+ * what makes `debt` signed: positive means the first owes the second, so any
+ * consumer must flip it when reading from the second agent's point of view.
+ */
 export const pairKey = (a: AgentId, b: AgentId): string => (a < b ? `${a}:${b}` : `${b}:${a}`)
 
 const emptyRel = (): Relationship => ({
@@ -156,6 +202,10 @@ const credits = (n: number) => Math.round(n * 100) / 100
  * One world step. Pure, synchronous, allocation-light: no I/O, no model calls,
  * no awaiting. Expensive cognition leaves as queued jobs and resolves later —
  * a tick that lags behind never blocks the clock.
+ */
+/**
+ * Advances the world by one tick. Pure — see the file header for why that is
+ * load-bearing rather than stylistic.
  */
 export function tick(state: WorldState, deps: TickDeps): TickResult {
   const ticksPerDay = deps.ticksPerDay ?? TICKS_PER_DAY

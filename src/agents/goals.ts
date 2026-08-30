@@ -9,10 +9,17 @@ import type { ValueVector } from './values.js'
  */
 
 /** Deposit needed before an agent can stop renting. */
+/**
+ * An aspirational sink. Without somewhere for money to go, a saving agent
+ * accumulates forever and becomes immune to the pressure that makes stories.
+ * Buying drops housing cost by 60%; it typically fires around day 10-12.
+ */
 export const HOME_DEPOSIT = 1200
 /** Capital needed to start a business. */
+/** The larger sink, for agents who get past a home. */
 export const BUSINESS_CAPITAL = 2000
 
+/** What the world looks like from this agent's position, when goals are derived. */
 export type GoalContext = {
   values: ValueVector
   /** Ids this agent owes money to. */
@@ -79,6 +86,7 @@ export function deriveGoals(agent: Agent, ctx: GoalContext): Goal[] {
 }
 
 /** Extra pull a goal lends to earning money. */
+/** How hard current goals push toward working and job-seeking. Read by `scoreActions`. */
 export function savingDrive(goals: readonly Goal[]): number {
   let drive = 0
   for (const g of goals) {
@@ -90,6 +98,7 @@ export function savingDrive(goals: readonly Goal[]): number {
 }
 
 /** Extra pull a goal lends to seeking company. */
+/** How hard current goals push toward socialising. Read by `scoreActions`. */
 export function socialDrive(goals: readonly Goal[]): number {
   return Math.min(
     1,

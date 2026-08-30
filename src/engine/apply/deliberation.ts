@@ -1,3 +1,11 @@
+/**
+ * Storing an agent's new intent.
+ *
+ * Deliberation returns dispositions, never actions: biases that `scoreActions`
+ * adds to its own scoring, and people the agent would like to run into. A route
+ * that returned an action instead would have to run every tick, which is the
+ * cost model this project is built to avoid.
+ */
 import type { AgentId, Deliberation } from '../../agents/agent.js'
 import type { WorldState } from '../tick.js'
 

@@ -1,3 +1,12 @@
+/**
+ * Assembling a new agent and moving them into town.
+ *
+ * Validation lives at the HTTP edge; by the time input reaches here it is
+ * trusted. What this owns is the starting position: a home allocated from the
+ * city's free plots, an occupation with its wage and shift, two vices at rest,
+ * and enough money to survive the first few days without immediately being
+ * desperate.
+ */
 import type { Agent, Housing } from './agent.js'
 import { zeroVector, type ValueVector } from './values.js'
 import type { ViceKind, ViceInstance } from './vices.js'
@@ -11,6 +20,7 @@ import type { Goal } from './agent.js'
  * join through MCP. This is what that endpoint will call, so it must produce a
  * fully placed agent: a private home, a job if one is going, and money.
  */
+/** What an owner supplies. Anything omitted gets a sensible default. */
 export type CreateAgentInput = {
   id: string
   name: string
@@ -25,13 +35,16 @@ export type CreateAgentInput = {
   startingMoney?: number
 }
 
+/** The agent plus the home allocated for them, which the world must register. */
 export type CreatedAgent = {
   agent: Agent
   /** The agent's own home, to be added to the world's locations. */
   home: Location
 }
 
+/** Enough to eat and pay rent for a few days — not enough to be comfortable. */
 export const STARTING_MONEY = 150
+/** Charged daily. Set against wages so a job covers it and idleness does not. */
 export const RENT_DUE = 25
 
 const initialGoals = (vacancy: string | null, homeId: string): Goal[] => {
@@ -40,6 +53,10 @@ const initialGoals = (vacancy: string | null, homeId: string): Goal[] => {
   return goals
 }
 
+/**
+ * Builds the agent and allocates their home. Mutates the city's plot pool, so
+ * two calls never hand out the same tile.
+ */
 export function createAgent(input: CreateAgentInput, city: GeneratedCity): CreatedAgent {
   // The district comes with the plot rather than being chosen separately: it
   // decides which bar and which park this agent habitually uses, so it has to

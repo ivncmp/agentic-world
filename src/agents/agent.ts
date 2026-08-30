@@ -1,9 +1,21 @@
+/**
+ * The agent schema — the source of truth for what an agent *is*.
+ *
+ * Deliberately data, not behaviour: an agent is a row, not a process. There is
+ * no process per agent and no model client per agent; the engine reads these
+ * fields every tick and the cognition routes read them when building a prompt.
+ *
+ * Where each part lives is a deliberate split. The fields here are in Postgres
+ * because the tick loop touches them constantly. The *narrative* behind them —
+ * why this agent distrusts that one — lives in dbrain, recalled by relevance.
+ */
 import type { PersonalityValues } from './values.js'
 import type { ActionKind } from '../engine/actions.js'
 import type { ViceInstance } from './vices.js'
 import type { LocationId } from '../world/locations.js'
 import type { Occupation } from '../world/occupations.js'
 
+/** Slug, not a UUID: it appears in prompts, memories and the viewer. */
 export type AgentId = string
 
 /**
@@ -23,6 +35,7 @@ export type Activity = {
   /** The other party, for scenes. */
   with?: AgentId
 }
+/** The human who authored this agent. Never appears inside the world. */
 export type OwnerId = string
 
 /** Drives that decay each tick and push the reflex layer to act. 0..1. */
@@ -35,6 +48,10 @@ export type Needs = {
   fun: number
 }
 
+/**
+ * Closed set: a goal only exists if the reflex layer knows how to pursue it.
+ * Adding a kind means adding the scoring that reads it.
+ */
 export type GoalKind = 'get_job' | 'buy_home' | 'repay_debt' | 'befriend' | 'start_business'
 
 /** Two agents chasing the same goal + target is a conflict the gate scores. */
@@ -55,22 +72,36 @@ export type Job = {
   shiftEnd: number
 }
 
+/**
+ * Rent is charged daily and missing it accumulates `arrears`. Note that arrears
+ * currently have no consequence — see documentation/economy.md.
+ */
 export type Housing = {
   kind: 'rent' | 'mortgage' | 'none'
   due: number // credits per period
   arrears: number // unpaid — the drama generator
 }
 
+/**
+ * A thumb on the scale for one action, produced by deliberation and read by
+ * `scoreActions`. This is the whole reason deliberation is affordable: it
+ * biases the free layer instead of deciding anything itself.
+ */
 export type ActionBias = {
   action: ActionKind
   bias: number // -1.0..+1.0, additive to scoreActions
 }
 
+/** Someone this agent wants to find, and why. Raises the gate's score for that pair. */
 export type SeekScene = {
   target: AgentId
   reason: string
 }
 
+/**
+ * An agent's current intent. Expires after `DELIBERATION_TTL` ticks so a plan
+ * made this morning does not steer them all week.
+ */
 export type Deliberation = {
   setTick: number
   biases: ActionBias[]
@@ -78,6 +109,10 @@ export type Deliberation = {
   conversationSeed: string | null
 }
 
+/**
+ * One inhabitant. Every field here is read by the tick loop, which is why the
+ * type stays flat and free of anything requiring a lookup to interpret.
+ */
 export type Agent = {
   id: AgentId
   name: string

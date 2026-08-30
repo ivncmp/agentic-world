@@ -1,3 +1,10 @@
+/**
+ * Folding a night's reflection back into the world.
+ *
+ * The only writer of `values.drift`. Drift accumulates without limit and may
+ * overpower the personality the owner authored — that is the mechanism by which
+ * a life changes someone, and there is deliberately no floor under it.
+ */
 import type { AgentId, Relationship } from '../../agents/agent.js'
 import type { ReflectionOutcome } from '../../cognition/reflection.js'
 import { clampAxis } from '../../agents/values.js'
