@@ -1,0 +1,19 @@
+src/viewer/public/assets/textures/License.txt
+  s_eeb4f2b1963f1b::t_56d3e237ee8f98 1-28
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "1d8bbe3cde5fe8bdcc5b927696bc0afda6b5d903",
+  "prompts": {},
+  "sessions": {
+    "s_eeb4f2b1963f1b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "493e8757-61b9-419d-a452-7f8898c633b3",
+        "model": "unknown"
+      },
+      "human_author": "Iván Campillo <ivncmp@gmail.com>"
+    }
+  }
+}
