@@ -1,3 +1,11 @@
+/**
+ * City configuration and baked templates.
+ *
+ * A city is either generated from a seed or loaded from a template file. The
+ * template is validated in full before it is cast, because it is read once at
+ * boot and a missing field would otherwise surface halfway through generation
+ * with a stack trace pointing at the wrong place.
+ */
 import { readFileSync } from 'node:fs'
 import type { LocationKind } from './locations.js'
 import { LOCATION_KINDS } from './locations.js'
@@ -8,6 +16,7 @@ import type { BlockRole } from './layout.js'
  * regenerated from a seed, so this stays small enough for a human to edit and
  * an open-source adopter can ship a different one without touching code.
  */
+/** Knobs for a generated city. Density matters more than size at this scale. */
 export type CityConfig = {
   name: string
   blocksPerSide: number
@@ -18,6 +27,7 @@ export type CityConfig = {
 
 // ---- JSON city template -----------------------------------------------------
 
+/** A rectangle of river, sea or lake. Expanded to tiles by the viewer. */
 export type WaterRegion = {
   kind: 'river' | 'sea' | 'lake'
   x0: number
@@ -26,6 +36,7 @@ export type WaterRegion = {
   y1: number
 }
 
+/** A baked city: the same shape the generator produces, saved to disk. */
 export type CityTemplate = {
   name: string
   grid: { width: number; height: number }
@@ -86,6 +97,10 @@ export function loadTemplate(path: string): CityTemplate {
  * this scale: with ~8 agents a 30-venue city spread them so thin they stopped
  * meeting. Scale this up as agent count grows — it is the dial for how often
  * lives intersect.
+ */
+/**
+ * v0 is one neighbourhood. Density beats size here: with ~8 agents a 30-venue
+ * city spread them so thin they stopped meeting. Scale up as agent count grows.
  */
 export const DEFAULT_CITY: CityConfig = {
   name: 'New Agentown',

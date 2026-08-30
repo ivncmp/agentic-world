@@ -1,3 +1,13 @@
+/**
+ * The append-only half of persistence: the event log, resolved scenes, diaries,
+ * and per-call LLM metering.
+ *
+ * Diaries live here rather than in dbrain even though they are narrative. The
+ * diary is *for the human* and is fetched by agent and day — a lookup. The
+ * consolidated memory from the same reflection is *for the agent* and is
+ * fetched by relevance, so it goes to dbrain. Same reflection, two artefacts,
+ * two access patterns.
+ */
 import type { Pool } from 'pg'
 import type { AgentId } from '../agents/agent.js'
 import type { WorldEvent } from '../engine/tick.js'
@@ -9,6 +19,7 @@ import { TICKS_PER_DAY } from '../engine/clock.js'
  * What happened, as opposed to what is. The world repository can restore a
  * running simulation; this is what lets it remember having lived.
  */
+/** Everything append-only. Nothing here is read by the tick loop. */
 export class HistoryRepository {
   constructor(private readonly pool: Pool) {}
 

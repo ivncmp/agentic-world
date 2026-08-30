@@ -1,3 +1,12 @@
+/**
+ * Building a city — blocks, venues, homes and water.
+ *
+ * Everything here is seeded, so the same seed gives the same town and a layout
+ * bug can be reproduced. Streets are a *rule* rather than a tilemap: the grid
+ * size and street period travel to the viewer, which rebuilds the same street
+ * map from the same rule. Shipping a tilemap would give the engine and the
+ * viewer two copies of one decision, and they would quietly diverge.
+ */
 import type { CityConfig, CityTemplate, WaterRegion } from './config.js'
 import { DEFAULT_CITY } from './config.js'
 import type { Location, LocationId, LocationKind, Tile } from './locations.js'
@@ -19,6 +28,7 @@ const VENUE_NAMES: Partial<Record<LocationKind, readonly string[]>> = {
   cafe: ['Café Rincón', 'La Tertulia', 'Café Sol'],
 }
 
+/** A laid-out city, plus the mutable home-plot pool `createAgent` draws from. */
 export type GeneratedCity = {
   config: CityConfig
   layout: CityLayout
@@ -66,6 +76,7 @@ function rotated<T>(items: T[], rng: () => number): T[] {
  * bare spiral of tiles: a shop belongs on a corner with a road in front of it,
  * and that single constraint is most of what makes the map look inhabited.
  */
+/** Builds a city from a seed. The same seed always gives the same town. */
 export function generateCity(
   config: CityConfig = DEFAULT_CITY,
   seed = 1,
@@ -163,11 +174,13 @@ export function generateCity(
   return { config, layout, locations, openings, allocateHome, markOccupied, water: [] }
 }
 
+/** Every venue of one kind, for picking a bar or an office to send someone to. */
 export const venuesOfKind = (city: GeneratedCity, kind: LocationKind): Location[] =>
   city.locations.filter((l) => l.kind === kind)
 
 // ---- template I/O -----------------------------------------------------------
 
+/** Rebuilds a city from a baked template, so a world keeps its map across changes. */
 export function cityFromTemplate(t: CityTemplate): GeneratedCity {
   const blocksPerSide = Math.floor((t.grid.width - 1) / t.streetPeriod)
   const c = Math.floor(blocksPerSide / 2)
@@ -245,6 +258,7 @@ export function cityFromTemplate(t: CityTemplate): GeneratedCity {
   return { config, layout, locations, openings, allocateHome, markOccupied, water: t.water ?? [] }
 }
 
+/** Freezes a generated city into a template. Used by `src/dev/bake-cities.ts`. */
 export function exportTemplate(city: GeneratedCity, seed: number): CityTemplate {
   const residential = city.layout.blocks.filter((b) => b.role === 'residential')
   const rng = makeRng(seed)

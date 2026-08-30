@@ -16,6 +16,7 @@ import { worldTime, tickAt } from '../engine/clock.js'
  *   about whom   -> fact.relatedEntities (the graph edge dbrain already models)
  *   game tick    -> fact.timestamp       (a real instant; see tickToStamp)
  */
+/** Where dbrain lives. Use a dedicated instance — never share one with another brain. */
 export type DbrainOptions = {
   url: string
   token: string
@@ -24,8 +25,13 @@ export type DbrainOptions = {
   timeoutMs?: number
 }
 
+/**
+ * Game ticks are stored as real instants so dbrain's own decay and tiering work
+ * on them unmodified. There is a regression test pinning this both ways.
+ */
 export const tickToStamp = (tick: number): string => worldTime(tick).toISOString()
 
+/** The inverse. Returns 0 for anything unparseable rather than throwing. */
 export const stampToTick = (stamp: string): number => {
   const ms = Date.parse(stamp)
   if (!Number.isFinite(ms)) return 0
@@ -46,6 +52,7 @@ const isAlreadyExists = (err: unknown): boolean => /already exists|conflict|409|
 
 const isMissingEntity = (err: unknown): boolean => /not found|404/.test(message(err))
 
+/** The production store. Each agent is an entity; each memory is a fact on it. */
 export class DbrainStore implements MemoryStore {
   private readonly known = new Set<AgentId>()
   private readonly client: DBrainClient

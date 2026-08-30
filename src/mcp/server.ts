@@ -1,3 +1,14 @@
+/**
+ * The owner loop's seven MCP tools.
+ *
+ * An owner connects from their own Claude, reads a briefing, sees the tensions
+ * the engine has surfaced, and sends back **guidance** — a shift in disposition,
+ * never an instruction. If the owner can predict what happens tomorrow, the
+ * question was wrong.
+ *
+ * The inference that turns a dilemma into a good question runs on the owner's
+ * subscription, not the world's budget, and never drives a tick.
+ */
 import { Server } from '@modelcontextprotocol/sdk/server/index.js'
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js'
 import { asString } from '../cognition/json.js'
@@ -235,6 +246,10 @@ function tokenResult(data: Record<string, unknown>) {
   }
 }
 
+/**
+ * Builds the MCP server and registers all seven tools. Called per request —
+ * the transport is stateless, so nothing is carried between calls.
+ */
 export function createMcpServer(): Server {
   const server = new Server({ name: 'agentic-world', version: '0.1.0' }, { capabilities: { tools: {} } })
 

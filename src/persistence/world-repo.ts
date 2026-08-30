@@ -1,3 +1,15 @@
+/**
+ * Saving and loading the whole world.
+ *
+ * A world must survive a restart in two senses: identical state after reload,
+ * *and* fifty further ticks agreeing with a run that never stopped. The second
+ * matters more — divergent evolution is worse than lost data.
+ *
+ * Gotchas paid for once and encoded here: JSONB reorders keys, so anything
+ * compared must be canonicalised first; `openings` must be nullable because
+ * `NULL` means "not a workplace" while `0` means "full"; and Postgres `NUMERIC`
+ * comes back as a string.
+ */
 import type { Pool } from 'pg'
 import type { Agent, AgentId, Relationship } from '../agents/agent.js'
 import type { Location } from '../world/locations.js'
@@ -13,6 +25,7 @@ import { pairKey } from '../engine/tick.js'
  * between what ran and what was stored, which is the one bug class that makes a
  * persisted simulation untrustworthy.
  */
+/** Load and save the entire world. Written every game hour, not just at midnight. */
 export class WorldRepository {
   constructor(private readonly pool: Pool) {}
 

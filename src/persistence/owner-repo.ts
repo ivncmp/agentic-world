@@ -1,8 +1,16 @@
+/**
+ * Owners and their tokens.
+ *
+ * Tokens are stored hashed and returned exactly once, at registration — there
+ * is no way to read one back, and no other moment where the owner is guaranteed
+ * to be listening.
+ */
 import { createHash, randomBytes } from 'node:crypto'
 import type { Pool } from 'pg'
 
 const hash = (token: string): string => createHash('sha256').update(token).digest('hex')
 
+/** Owner records and token verification. Tokens are hashed, never stored raw. */
 export class OwnerRepository {
   constructor(private readonly pool: Pool) {}
 

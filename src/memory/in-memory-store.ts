@@ -1,7 +1,15 @@
+/**
+ * Memory with no external services. Used by tests and by `PERSIST=0`.
+ *
+ * Unlike dbrain it forgets nothing on its own, so `forget` here really deletes
+ * — the one place the two implementations genuinely differ in behaviour rather
+ * than in storage.
+ */
 import type { AgentId } from '../agents/agent.js'
 import type { Memory, MemoryStore } from './store.js'
 
 /** For tests and for running the world without a brain. */
+/** Everything in a Map. Nothing persists past the process. */
 export class InMemoryStore implements MemoryStore {
   private readonly memories: Memory[] = []
 

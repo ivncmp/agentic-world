@@ -13,10 +13,16 @@
 import type { Tile } from './locations.js'
 
 /** Buildable tiles along one edge of a block. */
+/** Buildable tiles per block side; the street is the row around them. */
 export const BLOCK_SIZE = 3
 /** Block plus the street that follows it. */
+/**
+ * Every nth row and column is a street. This single number is the whole street
+ * map — the viewer rebuilds the same grid from it rather than being sent tiles.
+ */
 export const STREET_PERIOD = BLOCK_SIZE + 1
 
+/** The street rule itself, shared by the generator, the engine and the viewer. */
 export const isStreet = (x: number, y: number, period = STREET_PERIOD): boolean =>
   x % period === 0 || y % period === 0
 
@@ -25,8 +31,10 @@ export const isStreet = (x: number, y: number, period = STREET_PERIOD): boolean 
  * that is public, a commercial belt around it, and homes further out — the
  * shape that makes a commute, and therefore a rhythm to the day.
  */
+/** What a block is for. Travels to the viewer, which fills it accordingly. */
 export type BlockRole = 'plaza' | 'green' | 'civic' | 'residential' | 'harbor' | 'sea'
 
+/** One block, addressed by block coordinates rather than tile coordinates. */
 export type Block = {
   bx: number
   by: number
@@ -44,6 +52,7 @@ export type Block = {
   plots: Tile[]
 }
 
+/** The grid, its street period, and every block's role. */
 export type CityLayout = {
   grid: { width: number; height: number }
   streetPeriod: number
@@ -72,6 +81,7 @@ const PLOT_ORDER: readonly [number, number][] = [
 const isGreenBlock = (bx: number, by: number, c: number): boolean =>
   (bx === c && Math.abs(by - c) === 2) || (by === c && Math.abs(bx - c) === 2)
 
+/** Lays out blocks and assigns roles, giving each district its own character. */
 export function cityLayout(blocksPerSide = 5): CityLayout {
   const period = STREET_PERIOD
   const span = blocksPerSide * period + 1
@@ -112,6 +122,7 @@ export function cityLayout(blocksPerSide = 5): CityLayout {
 }
 
 /** Which block a tile falls in, or null when it is standing in the street. */
+/** The block containing a tile, or `null` if the tile is a street. */
 export function blockAt(layout: CityLayout, x: number, y: number): Block | null {
   if (isStreet(x, y, layout.streetPeriod)) return null
   const bx = Math.floor(x / layout.streetPeriod)
@@ -119,5 +130,6 @@ export function blockAt(layout: CityLayout, x: number, y: number): Block | null 
   return layout.blocks.find((b) => b.bx === bx && b.by === by) ?? null
 }
 
+/** Every block of one role — how the generator finds somewhere to put a park. */
 export const blocksOfRole = (layout: CityLayout, role: BlockRole): Block[] =>
   layout.blocks.filter((b) => b.role === role)

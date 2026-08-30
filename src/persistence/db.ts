@@ -1,9 +1,18 @@
+/**
+ * The Postgres pool and the migration runner.
+ *
+ * Migrations are numbered SQL files applied in lexicographic order at boot and
+ * tracked by **filename** in `schema_migrations`. That means renaming an
+ * applied migration makes it run again — which is why `012_owners.sql` is
+ * written to be idempotent.
+ */
 import { readFileSync, readdirSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { Pool } from 'pg'
 
 /** Connection from the environment, matching docker-compose defaults. */
+/** The connection pool, configured from the environment. */
 export function makePool(): Pool {
   return new Pool({
     host: process.env.POSTGRES_HOST ?? '127.0.0.1',
@@ -17,6 +26,10 @@ export function makePool(): Pool {
 /**
  * Applies every .sql file in migrations/ in name order, once. Deliberately
  * primitive: a migration tool is worth adding when the schema stops moving.
+ */
+/**
+ * Applies any migration not yet recorded in `schema_migrations`, in
+ * lexicographic order, and returns the filenames it ran.
  */
 export async function migrate(pool: Pool): Promise<string[]> {
   await pool.query(

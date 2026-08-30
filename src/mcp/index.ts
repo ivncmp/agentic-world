@@ -1,3 +1,10 @@
+/**
+ * The MCP server's HTTP host. Stateless streamable transport on its own port.
+ *
+ * Deliberately thin: everything it exposes is a call to the engine, so this
+ * process holds no world state and can never disagree with the engine about
+ * what is true.
+ */
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js'
 import { createMcpServer } from './server.js'
