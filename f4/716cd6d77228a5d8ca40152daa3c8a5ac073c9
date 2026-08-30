@@ -1,0 +1,91 @@
+tools/interior-preview/rooms/bar-dockside-tavern.json
+  s_eeb4f2b1963f1b::t_37f03de08fa19e 49,61-68,72-73,79,85,91,97
+  s_eeb4f2b1963f1b::t_235a63d9bacbe3 24-32,36-38,42-48,50-60,74-78,80-84,86-90,92-96,98-108,112-114,118-120,124-150,154-161,165-174,177-180,184-185,189-192,195-262,264,267-281,283-376
+tools/interior-preview/rooms/supermarket-north-market.json
+  s_eeb4f2b1963f1b::t_e515b3954dfce7 25-26,29-32,35-38,42-44,48-49,54-55,60-62,65-90
+  s_eeb4f2b1963f1b::t_b84cb2fc66b2f6 23-24,91-204,206-211,215-217,221-230,233,235-390
+tools/interior-preview/rooms/supermarket-harbour-fresh.json
+  s_eeb4f2b1963f1b::t_aed0c485776910 25-26,29-32,35-38,42-44,48-49,54-55,60-62,66-67,71-73,77-84
+  s_eeb4f2b1963f1b::t_8ffef2bb0a5777 23-24,85-242,245-257,259-438
+tools/interior-preview/rooms/bar-the-rusty-nail.json
+  s_eeb4f2b1963f1b::t_808056bab5ff11 28-30,34-36,40-72,76-84,88,100
+  s_eeb4f2b1963f1b::t_4c70f26364bb26 89,92-99,101-161,164-178,183-184,188-196,200-207,212-213,218-219,224-226,230-238,242-243,248-309,314-316,320-346,351,357,359-510
+tools/interior-preview/rooms/office-blackwell-and-sons.json
+  s_eeb4f2b1963f1b::t_3efc35aa134b98 164-170
+  s_eeb4f2b1963f1b::t_84d8525ef422cf 28-30,34-36,40-43,47-50,54-55,60-62,66-76,80-81,86-107,110-115,118-133,137-140,143-163,171-183,188,191-238
+tools/interior-preview/rooms/shop-the-iron-market.json
+  s_eeb4f2b1963f1b::t_61322975f46c85 24-26,29-30
+  s_eeb4f2b1963f1b::t_74105ee987faa3 23,31,35-38,42-44,48-49,53-151,155-157,162-229
+tools/interior-preview/rooms/garage-cranks-and-bolts.json
+  s_eeb4f2b1963f1b::t_2fc3866442ed2e 34,40,46,52,58,64,70,76-78,82
+  s_eeb4f2b1963f1b::t_c04e6d295fedae 23-26,29-33,35-39,41-45,47-51,53-57,59-63,65-69,71-72,83-84,87-90,93,95-96,99-102,106-108,111,113-154,156-167,171-228,230-231
+tools/interior-preview/rooms/bar-the-salty-dog.json
+  s_eeb4f2b1963f1b::t_9430b94a1a6e08 31-32,36-43
+  s_eeb4f2b1963f1b::t_f8dd04ae741d93 24-26,30,44-62,66-101,105-107,111-113,117-137,141-142,146-148,152-167,171-172,176-179,182-185,188-189,191-256,258-363
+tools/interior-preview/rooms/shop-the-compass-rose.json
+  s_eeb4f2b1963f1b::t_746c3015181594 24-26,29-32,35-37,41-43,47-48
+  s_eeb4f2b1963f1b::t_6915d28157db47 23,49,54-72,74-157,162-163,165-200
+tools/interior-preview/rooms/cafe-the-morning-press.json
+  s_eeb4f2b1963f1b::t_5a7dd9fe6c870c 42,48,54-56,60
+  s_eeb4f2b1963f1b::t_5ad7100bf8b027 22-39,43-47,49-53,61,64-105,108-139,144-145,149-151,155-158,161-169,173-176,179-212,215-217,219-304
+tools/interior-preview/rooms/gym-the-furnace-gym.json
+  s_eeb4f2b1963f1b::t_e0e06ece21ccb4 163-164,167-169
+  s_eeb4f2b1963f1b::t_9eb8d00133b57d 27-29,33-35,39-41,46-47,51-142,144-157,161-162,170,173-175,179-181,183-196
+tools/interior-preview/rooms/bar-the-forge.json
+  s_eeb4f2b1963f1b::t_0be307ffa76e91 30-32,36-38,42-48
+  s_eeb4f2b1963f1b::t_88b59c074597f5 22-27,49-68,72-80,84-86,90-92,96-127,130-153,156-157,161-164,167-187,191-193,197-206,209-217,220-255,258-271,273-388
+tools/interior-preview/index.html
+  s_eeb4f2b1963f1b::t_eb31cb87c04f18 45-51,62-66,82-84,86-89,91-93,108-136,138,140-142,145-146,151-152,156-228,230-233,236-257,265-284,290-291
+  s_eeb4f2b1963f1b::t_ab492274570593 292-293,295,297-299,307-308,310,315-316,322-337,339-340,343-344,346,348,350-351,353,355-356,383
+tools/interior-preview/rooms/cafe-bean-and-anvil.json
+  s_eeb4f2b1963f1b::t_140f0d2d73fa41 30-36
+  s_eeb4f2b1963f1b::t_1117b6460708db 22-27,37-56,60-61,64-104,107-130,132,136-138,142-154,156,161-163,168-169,172-180,185-187,191-199,202-203,208-261,263-305
+tools/interior-preview/rooms/cafe-marina-roast.json
+  s_eeb4f2b1963f1b::t_a798d96a340ba8 24-26,30
+  s_eeb4f2b1963f1b::t_340831d1e8af3b 31-69,73-81,85-98,102-116,120-122,126-135,138-140,144-153,156-159,163-169,172-257
+tools/interior-preview/rooms/bowling-strike-lanes.json
+  s_eeb4f2b1963f1b::t_815e15cc38e88e 211-212,215
+  s_eeb4f2b1963f1b::t_05b7476a0952ae 23-26,29-32,35-38,41-43,47-55,59-67,71-73,76-183,186-187,190-201,204-205,209-210,216-272
+tools/interior-preview/rooms/shop-hillcrest-goods.json
+  s_eeb4f2b1963f1b::t_df5bd8241acd2e 24-26,29-32,36-37,42-43,47-48
+  s_eeb4f2b1963f1b::t_30b4acb1dad4f5 23,49,54,56-151,156-164,168-212
+tools/interior-preview/rooms/restaurant-riverside-grill.json
+  s_eeb4f2b1963f1b::t_760cca29303421 28-29,33-34
+  s_eeb4f2b1963f1b::t_505f22454cf0af 27,35,39-41,45-63,66-117,121-150,152,156-171,174-177,181-210,212,216-231,234-243,247-248,250-379
+tools/interior-preview/rooms/bowling-sea-bowl.json
+  s_eeb4f2b1963f1b::t_b8c88dace883c0 23-119,121-122,125-134,138-140,144-152,156-157,160-171,174-175,179-188,192-193,197-199,201-236
+tools/interior-preview/rooms/cinema-the-lantern-cinema.json
+  s_eeb4f2b1963f1b::t_d9f3a3410fabfa 14-17,20-22,26-28,32-34,38-40,44-46,50-52,56-58,62-64,68-70,76,82,84-381
+tools/interior-preview/rooms/clinic-st-skill-infirmary.json
+  s_eeb4f2b1963f1b::t_7cef896fe21afc 28-42,46-117,121-123,127-129,133-136,139-143,146-149,152-155,158-161,164-167,170-172,174-207
+tools/interior-preview/rooms/gym-coastal-fitness.json
+  s_eeb4f2b1963f1b::t_bfa53fa3e07c52 27-30,33-70,72,75-78,81-96,99-102,105-106,108-146,149-151,155-157,159-178
+tools/interior-preview/rooms/home-one-bedroom.json
+  s_eeb4f2b1963f1b::t_6ec31a4907c828 28-30,34-43,47,53,55,59-60,65-67,71-74,78-98,102-103,107-144,148-149,154-156,160-162,166-179,181-264
+tools/interior-preview/rooms/home-studio.json
+  s_eeb4f2b1963f1b::t_30c7fd18b050d7 24-26,30-39,43,45,49-50,55-56,61-62,64,68-82,86-113,116-122,125-126,128-192
+tools/interior-preview/rooms/office-harbour-trading.json
+  s_eeb4f2b1963f1b::t_f5b67608148237 27-30,34-36,40-43,47-50,54-55,60-62,66-76,80-81,86-113,116-141,144-151,155-168,171-206
+tools/interior-preview/rooms/restaurant-the-captains-table.json
+  s_eeb4f2b1963f1b::t_4d3a2545454aeb 31-145,150-151,156-158,162-188,192-200,204-205,210-211,216-218,222-242,246-260,264-265,270-271,276-278,282-284,288-293,295-296,311-319,321-542
+tools/interior-preview/rooms/school-ironworks-academy.json
+  s_eeb4f2b1963f1b::t_97e98329d0ca09 32-34,37-40,43-52,56-57,62-64,68-69,74-76,80-81,86-88,92-93,98-100,104-105,110-117,120-125,128-129,134-147,150-181,184-217,220-253
+tools/interior-preview/server.mjs
+  s_eeb4f2b1963f1b::t_0cee6ef946db1a 56-65
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "f4716cd6d77228a5d8ca40152daa3c8a5ac073c9",
+  "prompts": {},
+  "sessions": {
+    "s_eeb4f2b1963f1b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "493e8757-61b9-419d-a452-7f8898c633b3",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Iván Campillo <ivncmp@gmail.com>"
+    }
+  }
+}
