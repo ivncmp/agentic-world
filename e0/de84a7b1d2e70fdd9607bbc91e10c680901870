@@ -1,0 +1,45 @@
+src/agents/agent.ts
+  s_0c69fc4bd2bb00::t_663704b99e90fc 1-11,18,38,51-54,75-78,85-89,95,101-104,112-115
+src/agents/create.ts
+  s_0c69fc4bd2bb00::t_3d58a52ecb43a8 1-9,23,38,45,47,56-59
+src/agents/goals.ts
+  s_0c69fc4bd2bb00::t_68f164432d8a43 12-16,19,22,89,101
+src/agents/identity.ts
+  s_0c69fc4bd2bb00::t_a31a45a783e1e0 1-11,57-64
+src/agents/needs.ts
+  s_0c69fc4bd2bb00::t_3a37c5bcac68ea 1-10,30,52-56
+src/agents/values.ts
+  s_0c69fc4bd2bb00::t_1220f5268efc6f 16,45,48,54-57,69-76
+src/agents/vices.ts
+  s_0c69fc4bd2bb00::t_15d5c141c215ec 77-81,85,91,95
+src/engine/actions.ts
+  s_0c69fc4bd2bb00::t_fc91375413be3e 1-11,25-28,44,52,138-142,160-163,179,194-199,427
+src/engine/apply/deliberation.ts
+  s_0c69fc4bd2bb00::t_aa5758c3dd4d86 1-8
+src/engine/apply/reflection.ts
+  s_0c69fc4bd2bb00::t_b90f569bf878f9 1-7
+src/engine/apply/scene.ts
+  s_0c69fc4bd2bb00::t_4cf9d961c9a5ac 1-8
+src/engine/clock.ts
+  s_0c69fc4bd2bb00::t_cf8b54d1f9c74a 18,24,27,33,39,41,45-51,61,65,76
+src/engine/crisis-detect.ts
+  s_0c69fc4bd2bb00::t_c8b7bb775a516a 1-10,14,17,25,41-45
+src/engine/tick.ts
+  s_0c69fc4bd2bb00::t_2becc0c285bc00 1-17,45-50,64-68,86,96,121-125,129,141,144,151,153,156,182-186,206-209
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "e0de84a7b1d2e70fdd9607bbc91e10c680901870",
+  "prompts": {},
+  "sessions": {
+    "s_0c69fc4bd2bb00": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fbf4acf4-b682-40d7-8694-7837a363537f",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Iván Campillo <ivncmp@gmail.com>"
+    }
+  }
+}
