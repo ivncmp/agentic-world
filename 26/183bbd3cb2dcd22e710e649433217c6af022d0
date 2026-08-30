@@ -1,0 +1,27 @@
+src/memory/dbrain-store.ts
+  s_0c69fc4bd2bb00::t_69a369155bc9d3 37-48,70-78,93-98,103-104
+src/world/__tests__/config.test.ts
+  s_0c69fc4bd2bb00::t_ad3ebdff2d5863 1-64
+src/world/config.ts
+  s_0c69fc4bd2bb00::t_35670b70cf9c9f 41-46,49-70,72-77,79-80
+src/mcp/index.ts
+  s_0c69fc4bd2bb00::t_b709bc1475e87f 50-57
+src/server/engine.ts
+  s_0c69fc4bd2bb00::t_318be2ccdb1038 204-217
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "26183bbd3cb2dcd22e710e649433217c6af022d0",
+  "prompts": {},
+  "sessions": {
+    "s_0c69fc4bd2bb00": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fbf4acf4-b682-40d7-8694-7837a363537f",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Iván Campillo <ivncmp@gmail.com>"
+    }
+  }
+}
