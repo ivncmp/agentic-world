@@ -1,0 +1,47 @@
+src/mcp/index.ts
+  s_0c69fc4bd2bb00::t_e91501808ddd99 1-7
+src/mcp/server.ts
+  s_0c69fc4bd2bb00::t_d62b031db08fb5 1-11,249-252
+src/memory/dbrain-store.ts
+  s_0c69fc4bd2bb00::t_d1c51f7582abf7 19,28-31,34,55
+src/memory/in-memory-store.ts
+  s_0c69fc4bd2bb00::t_0222a158df3f74 1-7,12
+src/memory/store.ts
+  s_0c69fc4bd2bb00::t_ec7c00433bf596 1-11,23-27,30,43
+src/persistence/db.ts
+  s_0c69fc4bd2bb00::t_519286dd0622e3 1-8,15,30-33
+src/persistence/history-repo.ts
+  s_0c69fc4bd2bb00::t_01b87ebb4af579 1-10,22
+src/persistence/owner-repo.ts
+  s_0c69fc4bd2bb00::t_a0e9e8f452d34f 1-7,13
+src/persistence/world-repo.ts
+  s_0c69fc4bd2bb00::t_3b739e8660e3e9 1-12,28
+src/world/config.ts
+  s_0c69fc4bd2bb00::t_19d01d1b0d0ebd 1-8,19,30,39,101-104
+src/world/generator.ts
+  s_0c69fc4bd2bb00::t_037b3cdf79de0d 1-9,31,79,177,183,261
+src/world/layout.ts
+  s_0c69fc4bd2bb00::t_040d51ad8faf6c 16,19-22,25,34,37,55,84,125,133
+src/world/locations.ts
+  s_0c69fc4bd2bb00::t_71cdc181a1288f 19,21,31,34,47-50,63,67,70,77
+src/world/occupations.ts
+  s_0c69fc4bd2bb00::t_cc6773eeac817e 1-8,18,34,85,88,90
+src/world/rng.ts
+  s_0c69fc4bd2bb00::t_0ef04938733ca3 5-8,17,24
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "c406649a68ee5cfb4c28ccbdab3f3e022db06505",
+  "prompts": {},
+  "sessions": {
+    "s_0c69fc4bd2bb00": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fbf4acf4-b682-40d7-8694-7837a363537f",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Iván Campillo <ivncmp@gmail.com>"
+    }
+  }
+}
