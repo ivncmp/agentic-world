@@ -26,9 +26,21 @@ preview/
 # externally, and without them every agent renders untextured white.
 src/viewer/public/assets/**/FBX format/
 src/viewer/public/assets/**/OBJ format/
+src/viewer/public/assets/**/STL format/
+src/viewer/public/assets/**/DAE format/
 src/viewer/public/assets/**/Previews/
 src/viewer/public/assets/city/*/Models/Textures/
 tools/render-characters/models/*.glb
+
+# The furniture pack also ships 2D renders of every model. Nothing reads them,
+# and the people pack taught us that a second source for a model's appearance
+# is a bug waiting to happen.
+src/viewer/public/assets/**/Isometric/
+src/viewer/public/assets/**/Side/
+
+# Kenney packs ship shortcut and landing files next to the models.
+src/viewer/public/assets/**/*.url
+src/viewer/public/assets/**/Overview.html
 
 # logs
 logs/
